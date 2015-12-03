@@ -92,8 +92,9 @@ template<class Vec> Vec powersp(const Vec& xx){
   return ff;
 }
 template<class Vec> Vec lowpass(const Vec& xx, unsigned f_cut){
+  if(f_cut==0) return Vec(xx.size());
   Vec ff=fft(xx);
-  for(unsigned i=f_cut; i<ff.size(); i++) ff[i]=0;
+  for(unsigned i=f_cut; i<=ff.size()/2; i++) ff[i]=ff[ff.size()-i]=0;
   return ifft(ff);
 }
 template<class Vec> Vec convolv(const Vec& xx, const Vec& yy){

@@ -73,6 +73,7 @@ template<class T> matrix<T>  inv   (const matrix<T>& m);                        
 template<class T> matrix<T>  pow   (const matrix<T>& m, int n);                 // べき乗 M^n (n<0も可)
 template<class T> matrix<T>  tp    (const matrix<T>& m);                        // 転置   M^T
 template<class T> matrix<T>  orth  (const matrix<T>& m);                        // Schmidt正規直交化
+template<class T> matrix<T>  eigen (const matrix<T>& m);                        // 固有ベクトル(を並べた直交行列)
 template<class T> matrix<T>  getvec(const matrix<T>& m, size_t j);              // 列ベクトル取得
 template<class T> void       setvec(      matrix<T>& m, size_t j, const matrix<T>& v);  // 〃 設定
 template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // 横に連結
@@ -232,6 +233,38 @@ template<class T> matrix<T> orth(const matrix<T>& m0){
     setvec(m,j,v);
   }
   return m;
+}
+
+
+// 固有ベクトル(を並べた直交行列): U=eigen(M) => U^T M U = diagonal
+template<class T> matrix<T> eigen(const matrix<T>& m0){
+  if(m0.nrow()!=m0.ncol()) throw std::domain_error("eigen(M): not square");
+  size_t n=m0.nrow();
+  matrix<T> m=m0+tp(m0), u=matrix<T>(n,n)+T(1);
+
+  for(int extra=m0.dim(); extra; ){
+    // 絶対値最大の成分(i0,j0)
+    size_t i0=0, j0=1;
+    for(size_t i=0; i<n; i++)
+      for(size_t j=0; j<n; j++)
+	if( i!=j and fabs(m(i0,j0))<=fabs(m(i,j)) ) { i0=i; j0=j; }
+
+    // Givens回転角θ
+    T th=atan2(2*m(i0,j0),m(i0,i0)-m(j0,j0))/2;
+    matrix<T> rot(n,n);
+    rot+=T(1);
+    rot(i0,i0)=cos(th);  rot(i0,j0)=-sin(th);
+    rot(j0,i0)=sin(th);  rot(j0,j0)= cos(th);
+
+    // 相似変換＆収束判定
+    T s0=0;  for(size_t k=0; k<n; k++) s0+=m(k,k)*m(k,k);
+    u=u*rot;
+    m=tp(u)*m0*u;
+    T s1=0;  for(size_t k=0; k<n; k++) s1+=m(k,k)*m(k,k);
+    if(!(s0<s1)) extra--;  // Sは単調増加だが、誤差を見て多めにループする
+  }
+
+  return u;  // 固有ベクトルを並べた直交行列
 }
 
 

@@ -1,0 +1,62 @@
+// Non-linear Equation Solvers
+
+
+#ifndef SOLVER_H
+#define SOLVER_H
+
+
+#include "diff.H"
+#include "matrix.H"
+
+
+/******** prototype ********/
+
+template<class Func,class T> T solve       (const Func& f, const T& y0, const T& x0, const T& dx, const T& tol=1.e-8, int iter=100);
+template<class Func,class T> T solve_bisect(const Func& f, const T& y0, const T& x1, const T& x2, const T& tol=1.e-8);
+template<class Func,class T> matrix<T> solve(const Func& f, const matrix<T>& y0, const matrix<T>& x0, const matrix<T>& dx, const T& tol=1.e-8, int iter=100);
+
+
+/******** implementation ********/
+
+// Solve f(x)=y0 near x0 by Newton method (scalar version)
+template<class Func,class T> T solve(const Func& f, const T& y0, const T& x0, const T& dx, const T& tol, int iter){
+  T x,y;
+  x=x0;
+  for(int i=0; i<iter; i++){
+    y=f(x);
+    x-=(y-y0)/gradient(f,x,dx,true);  // numerical differentiation
+    if(fabs(y-y0)<tol) break;
+  }
+  return x;
+}
+
+// Solve f(x)=y0 near x0 by Newton method (vecor version)
+template<class Func,class T> matrix<T> solve(const Func& f, const matrix<T>& y0, const matrix<T>& x0, const matrix<T>& dx, const T& tol, int iter){
+  matrix<T> x,y;
+  x=x0;
+  for(int i=0; i<iter; i++){
+    y=f(x);
+    x-=inv(jacobian(f,x,dx,true))*(y-y0);  // numerical differentiation
+    if(norm(y-y0)<tol) break;
+  }
+  return x;
+}
+
+// Solve f(x)=y0 in [x1,x2] by bisection
+template<class Func,class T> T solve_bisect(const Func& f, const T& y0, const T& x10, const T& x20, const T& tol){
+  T x,y,x1(x10),x2(x20),y1(f(x10)),y2(f(x20));
+  if(y2<y1){ std::swap(x1,x2); std::swap(y1,y2); }
+  while(true){
+    x=(x1+x2)/T(2);
+    y=f(x);
+    if(fabs(x2-x1)<tol or !((x1<x and x<x2) or (x2<x and x<x1))) break;  // x=x1=x2 (or nan or inf...)
+    else if(y<y0){ x1=x; y1=y; }
+    else if(y0<y){ x2=x; y2=y; }
+    else break;  // y=y0 (or nan or inf...)
+  }
+  return x;
+}
+
+
+#endif //SOLVER_H
+

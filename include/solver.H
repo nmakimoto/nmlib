@@ -5,6 +5,7 @@
 #define SOLVER_H
 
 
+#include <cmath>
 #include "diff.H"
 #include "matrix.H"
 
@@ -25,7 +26,7 @@ template<class Func,class T> T solve(const Func& f, const T& y0, const T& x0, co
   for(int i=0; i<iter; i++){
     y=f(x);
     x-=(y-y0)/gradient(f,x,dx,true);  // numerical differentiation
-    if(fabs(y-y0)<tol) break;
+    if(std::abs(y-y0)<tol) break;
   }
   return x;
 }
@@ -49,7 +50,7 @@ template<class Func,class T> T solve_bisect(const Func& f, const T& y0, const T&
   while(true){
     x=(x1+x2)/T(2);
     y=f(x);
-    if(fabs(x2-x1)<tol or !((x1<x and x<x2) or (x2<x and x<x1))) break;  // x=x1=x2 (or nan or inf...)
+    if(std::abs(x2-x1)<tol or !((x1<x and x<x2) or (x2<x and x<x1))) break;  // x=x1=x2 (or nan or inf...)
     else if(y<y0){ x1=x; y1=y; }
     else if(y0<y){ x2=x; y2=y; }
     else break;  // y=y0 (or nan or inf...)

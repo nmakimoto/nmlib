@@ -175,7 +175,7 @@ template<class T> matrix<T> inv(const matrix<T>& m){
     // pivote: k行 <--> i0行
     size_t i0=k;
     for(size_t i=k+1; i<m1.nrow(); i++)
-      if(fabs(m1(i,k))>fabs(m1(i0,k))) i0=i;  // i0 = argmax_{i: i>k} |m1(i,k)|
+      if(std::abs(m1(i,k))>std::abs(m1(i0,k))) i0=i;  // i0 = argmax_{i: i>k} |m1(i,k)|
     if(i0!=k){
       for(size_t j=k; j<m1.nrow(); j++) std::swap(m1(k,j),m1(i0,j));
       for(size_t j=0; j<m2.nrow(); j++) std::swap(m2(k,j),m2(i0,j));
@@ -247,7 +247,7 @@ template<class T> matrix<T> eigen(const matrix<T>& m0){
     size_t i0=0, j0=1;
     for(size_t i=0; i<n; i++)
       for(size_t j=0; j<n; j++)
-	if( i!=j and fabs(m(i0,j0))<=fabs(m(i,j)) ) { i0=i; j0=j; }
+	if( i!=j and std::abs(m(i0,j0))<=std::abs(m(i,j)) ) { i0=i; j0=j; }
 
     // Givens回転角θ
     T th=atan2(2*m(i0,j0),m(i0,i0)-m(j0,j0))/2;

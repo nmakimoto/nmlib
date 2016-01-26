@@ -8,6 +8,9 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <string>
+#include <sstream>
+#include <stdexcept>
 
 
 /******** prototype ********/
@@ -19,6 +22,11 @@ template<class K,class V> std::istream& operator>>(std::istream& str,       std:
 // vector<T> I/O (format: n X1 ... Xn)
 template<class T> std::ostream& operator<<(std::ostream& str, const std::vector<T>& xx);
 template<class T> std::istream& operator>>(std::istream& str,       std::vector<T>& xx);
+
+// string <--> T conversion (via ostream<<T and istream>>T operators)
+template<class T> void        str2any(const std::string& str, T& val);
+template<class T> T           str2any(const std::string& str);
+template<class T> std::string any2str(const T& val,int prec=0);
 
 
 /******** implementation ********/
@@ -48,6 +56,24 @@ template<class T> std::istream& operator>>(std::istream& str, std::vector<T>& xx
   xx=std::vector<T>(n);
   for(i=0; i<n; i++) str >> xx[i];
   return str;
+}
+
+template<class T> void str2any(const std::string& str, T& val){
+  std::stringstream ss;
+  ss<<str;
+  ss>>val;
+  if(ss.fail()) throw std::runtime_error("str2any: bad string");
+}
+template<class T> T    str2any(const std::string& str){
+  T val;
+  str2any(str,val);
+  return val;
+}
+template<class T> std::string any2str(const T& val, int prec){
+  std::stringstream ss;
+  if(prec>0){ ss.precision(prec); ss<<std::scientific; }
+  ss<<val;
+  return ss.str();
 }
 
 

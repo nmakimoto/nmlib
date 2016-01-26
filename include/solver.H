@@ -8,6 +8,7 @@
 #include <cmath>
 #include "diff.H"
 #include "matrix.H"
+namespace nmlib{
 
 
 /******** prototype ********/
@@ -59,5 +60,5 @@ template<class Func,class T> T solve_bisect(const Func& f, const T& y0, const T&
 }
 
 
+}  //namespace nmlib
 #endif //SOLVER_H
-

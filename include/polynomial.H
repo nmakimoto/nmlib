@@ -8,6 +8,7 @@
 #include <vector>
 #include <cmath>
 #include <stdexcept>
+namespace nmlib{
 
 
 /******** class I/F ********/
@@ -193,4 +194,5 @@ template<class T> polynomial<T> legendre(int n){
 }
 
 
+}  //namespace nmlib
 #endif //POLYNOMIAL_H

@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
+namespace nmlib{
 
 
 /******** クラス一覧 ********/
@@ -316,4 +317,5 @@ template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m
 }
 
 
+}  //namespace nmlib
 #endif //MATRIX_H

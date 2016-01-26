@@ -6,6 +6,7 @@
 
 
 #include <sys/time.h>
+namespace nmlib{
 
 
 class Chrono{
@@ -20,4 +21,5 @@ private:
 };
 
 
+}  //namespace nmlib
 #endif  //CHRONO_H

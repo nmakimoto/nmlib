@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+namespace nmlib{
 
 
 /******** クラス一覧 ********/
@@ -127,4 +128,5 @@ template<class T> void spline<T>::init_abcd(void){
 // "natural"より"clamped"のほうが明示的に形状の知識を使った計算になる。
 
 
+}  //namespace nmlib
 #endif //SPLINE_H

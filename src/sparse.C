@@ -7,7 +7,8 @@
 #include <sstream>
 #include "sparse.H"
 #include "matrix.H"
-//#include "util/io.H"
+//#include "io.H"
+namespace nmlib{
 
 
 // 略記
@@ -274,3 +275,6 @@ void ilu0(Sparse& a){
     }
   }
 }
+
+
+}  //namespace nmlib

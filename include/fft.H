@@ -10,6 +10,7 @@
 #include <complex>
 #include <cmath>
 #include <stdexcept>
+namespace nmlib{
 
 
 /******** prototype ********/
@@ -106,4 +107,5 @@ template<class Vec> Vec convolv(const Vec& xx, const Vec& yy){
 }
 
 
+}  //namespace nmlib
 #endif  //FFT_H

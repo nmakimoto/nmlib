@@ -11,6 +11,7 @@
 #include <string>
 #include <sstream>
 #include <stdexcept>
+namespace nmlib{
 
 
 /******** prototype ********/
@@ -77,4 +78,5 @@ template<class T> std::string any2str(const T& val, int prec){
 }
 
 
+}  //namespace nmlib
 #endif //IO_H

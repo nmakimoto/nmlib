@@ -6,6 +6,7 @@
 
 
 #include "matrix.H"
+namespace nmlib{
 
 
 /******** prototype ********/
@@ -65,4 +66,5 @@ template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& 
 }
 
 
+}  //namespace nmlib
 #endif //DIFF_H

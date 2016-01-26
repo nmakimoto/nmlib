@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include "matrix.H"
+namespace nmlib{
 
 
 /******** クラス定義 ********/
@@ -98,4 +99,5 @@ Matrix sluxb (const Sparse& lu, const Matrix& b);  // (LU)^-1 b (solve LUx=b)
 Matrix slutxb(const Sparse& lu, const Matrix& b);  // (LU)^-T b (solve LU^T x=b)
 
 
+}  //namespace nmlib
 #endif //SPARSE_H

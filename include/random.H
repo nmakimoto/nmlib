@@ -18,6 +18,12 @@ inline double urand(void){ return genrand64_real3(); }                          
 inline double nrand(void){ return sqrt(-2*log(urand()))*cos(2*M_PI*urand()); }  // N(0,1) gaussian
 inline double erand(void){ return -log(urand()); }                              // Ex(1)  exponential
 
+inline double lds(unsigned n, unsigned b=2){  // low-descrepancy sequence (van der Corput)
+  unsigned g=0, bl=1;
+  while(n){ g*=b; g+=(n%b); bl*=b; n/=b; }  // revert digits of b-ary n
+  return (g+0.5)/bl;  // normalize to (0,1)
+}
+
 
 }  //namespace nmlib
 #endif //RANDOM_H

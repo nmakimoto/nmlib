@@ -1,4 +1,4 @@
-// 行列クラスライブラリ
+// Matrix class template library
 
 
 #ifndef MATRIX_H
@@ -13,80 +13,81 @@
 namespace nmlib{
 
 
-/******** クラス一覧 ********/
+/******** Class I/F ********/
 
-template<class T> class matrix;  // T値行列
-typedef matrix<double> Matrix;   // 実数版
+template<class T> class matrix;  // T-valued matrix
+typedef matrix<double> Matrix;   // real matrix (alias)
 
 
-/******** クラスI/F ********/
-
-// 行列クラス
 template<class T> class matrix{
 public:
-  explicit matrix(size_t r=0, size_t c=1);  // 指定サイズ
-  matrix(T x, T y, T z);                    // 3Dベクトル
+  explicit matrix(size_t r=0, size_t c=1);  // M(r,c)
+  matrix(T x, T y, T z);                    // 3-vector
 
-  size_t nrow(void) const;
-  size_t ncol(void) const;
-  size_t dim (void) const;
+  size_t nrow(void) const;  // number of rows
+  size_t ncol(void) const;  // number of columns
+  size_t dim (void) const;  // number of components
 
-  T  operator()(size_t i, size_t j) const;  // 参照 t=M(i,j)
-  T& operator()(size_t i, size_t j);        // 設定 M(i,j)=t
-  T  operator()(size_t i) const;  // t=V(i)
-  T& operator()(size_t i);        // V(i)=t
+  T  operator()(size_t i, size_t j) const;  // get t=M(i,j)
+  T& operator()(size_t i, size_t j);        // set M(i,j)=t
+  T  operator()(size_t i) const;  // get t=V(i)
+  T& operator()(size_t i);        // set V(i)=t
 
 private:
-  size_t row,col;      // サイズ
-  std::vector<T> val;  // データ
+  size_t row,col;      // dimensions
+  std::vector<T> val;  // components
 };
 
 
-/******** ユーティリティ関数I/F ********/
+/******** Utilitiy I/F ********/
 
-template<class T> matrix<T>& operator+=(matrix<T>& m, T t);  // インクリメンタル演算..
-template<class T> matrix<T>& operator-=(matrix<T>& m, T t);
-template<class T> matrix<T>& operator*=(matrix<T>& m, T t);
-template<class T> matrix<T>& operator/=(matrix<T>& m, T t);
-template<class T> matrix<T>& operator+=(matrix<T>& m1, const matrix<T>& m2);
-template<class T> matrix<T>& operator-=(matrix<T>& m1, const matrix<T>& m2);
-//template<class T> matrix<T>& operator*=(matrix<T>& m1, const matrix<T>& m2);
-//template<class T> matrix<T>& operator/=(matrix<T>& m1, const matrix<T>& m2);
+// Basic operations (incremental)
+template<class T> matrix<T>& operator+=(matrix<T>& m, T t);  // M+=sI
+template<class T> matrix<T>& operator-=(matrix<T>& m, T t);  // M-=sI
+template<class T> matrix<T>& operator*=(matrix<T>& m, T t);  // M*=s
+template<class T> matrix<T>& operator/=(matrix<T>& m, T t);  // M/=s
+template<class T> matrix<T>& operator+=(matrix<T>& m1, const matrix<T>& m2);  // M1+=M2
+template<class T> matrix<T>& operator-=(matrix<T>& m1, const matrix<T>& m2);  // M1-=M2
+//template<class T> matrix<T>& operator*=(matrix<T>& m1, const matrix<T>& m2);  // M1*=M2 (ambiguous)
+//template<class T> matrix<T>& operator/=(matrix<T>& m1, const matrix<T>& m2);  // M1/=M2 (ambiguous)
 
-template<class T> matrix<T> operator-(const matrix<T>& m     );  // 単項マイナス
-template<class T> matrix<T> operator+(const matrix<T>& m, T t);  // スカラー演算..
-template<class T> matrix<T> operator-(const matrix<T>& m, T t);
-template<class T> matrix<T> operator*(const matrix<T>& m, T t);
-template<class T> matrix<T> operator/(const matrix<T>& m, T t);
-template<class T> matrix<T> operator+(T t, const matrix<T>& m);
-template<class T> matrix<T> operator-(T t, const matrix<T>& m);
-template<class T> matrix<T> operator*(T t, const matrix<T>& m);
-template<class T> matrix<T> operator/(T t, const matrix<T>& m);
-template<class T> matrix<T> operator+(const matrix<T>& m1, const matrix<T>& m2);  // 行列同士..
-template<class T> matrix<T> operator-(const matrix<T>& m1, const matrix<T>& m2);
-template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2);
-//template<class T> matrix<T> operator/(const matrix<T>& m1, const matrix<T>& m2);
+// Basic operations
+template<class T> matrix<T> operator-(const matrix<T>& m     );  // -M (unary)
+template<class T> matrix<T> operator+(const matrix<T>& m, T t);  // M+tI
+template<class T> matrix<T> operator-(const matrix<T>& m, T t);  // M-tI
+template<class T> matrix<T> operator*(const matrix<T>& m, T t);  // M*t
+template<class T> matrix<T> operator/(const matrix<T>& m, T t);  // M/t
+template<class T> matrix<T> operator+(T t, const matrix<T>& m);  // tI+M
+template<class T> matrix<T> operator-(T t, const matrix<T>& m);  // tI-M
+template<class T> matrix<T> operator*(T t, const matrix<T>& m);  // t*M
+template<class T> matrix<T> operator/(T t, const matrix<T>& m);  // t*M^-1
+template<class T> matrix<T> operator+(const matrix<T>& m1, const matrix<T>& m2);  // M1+M2
+template<class T> matrix<T> operator-(const matrix<T>& m1, const matrix<T>& m2);  // M1-M2
+template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2);  // M1*M2
+//template<class T> matrix<T> operator/(const matrix<T>& m1, const matrix<T>& m2);  // M1/M2 (ambiguous)
 
-template<class T> T          norm  (const matrix<T>& m);                        // ノルム
-template<class T> T          inner (const matrix<T>& m1, const matrix<T>& m2);  // 内積
-template<class T> matrix<T>  outer (const matrix<T>& v1, const matrix<T>& v2);  // 外積(3D限定)
-template<class T> matrix<T>  inv   (const matrix<T>& m);                        // 逆行列 M^-1
-template<class T> matrix<T>  pow   (const matrix<T>& m, int n);                 // べき乗 M^n (n<0も可)
-template<class T> matrix<T>  tp    (const matrix<T>& m);                        // 転置   M^T
-template<class T> matrix<T>  orth  (const matrix<T>& m);                        // Schmidt正規直交化
-template<class T> matrix<T>  eigen (const matrix<T>& m);                        // 固有ベクトル(を並べた直交行列)
-template<class T> matrix<T>  getvec(const matrix<T>& m, size_t j);              // 列ベクトル取得
-template<class T> void       setvec(      matrix<T>& m, size_t j, const matrix<T>& v);  // 〃 設定
-template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // 横に連結
-template<class T> matrix<T>  vcat  (const matrix<T>& m1, const matrix<T>& m2);  // 縦に連結
+// Miscelanaous operations
+template<class T> T          norm  (const matrix<T>& m);                        // norm |M|
+template<class T> T          inner (const matrix<T>& m1, const matrix<T>& m2);  // inner product <M1,M2>
+template<class T> matrix<T>  outer (const matrix<T>& v1, const matrix<T>& v2);  // outer product V1xV2 of 3-vectors
+template<class T> matrix<T>  inv   (const matrix<T>& m);                        // inverse M^-1
+template<class T> matrix<T>  pow   (const matrix<T>& m, int n);                 // power M^n (n<0 is ok)
+template<class T> matrix<T>  tp    (const matrix<T>& m);                        // transpose M^T
+template<class T> matrix<T>  orth  (const matrix<T>& m);                        // Gram-Schmidt orthonormalization of M
+template<class T> matrix<T>  eigen (const matrix<T>& m);                        // eigen vectors of symmetric M
+template<class T> matrix<T>  getvec(const matrix<T>& m, size_t j);              // get column vector Mj
+template<class T> void       setvec(      matrix<T>& m, size_t j, const matrix<T>& v);  // set column vector Mj to V
+template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // horizontal concatenation
+template<class T> matrix<T>  vcat  (const matrix<T>& m1, const matrix<T>& m2);  // vertical concatenation
 
-template<class T> std::istream& operator>>(std::istream&,       matrix<T>& m);  // 入出力
-template<class T> std::ostream& operator<<(std::ostream&, const matrix<T>& m);
+// stream I/O
+template<class T> std::istream& operator>>(std::istream& str,       matrix<T>& m);  // str>>M
+template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m);  // str<<M
 
 
-/******** インライン実装 ********/
+/******** Implementation ********/
 
-// クラスメソッド
+// Class methods
 template<class T>        matrix<T>::matrix(size_t r, size_t c): row(r), col(c), val(r*c) {}
 template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3) {  val[0]=x;  val[1]=y;  val[2]=z;  }
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
@@ -97,7 +98,7 @@ template<class T> T      matrix<T>::operator()(size_t i          ) const {  retu
 template<class T> T&     matrix<T>::operator()(size_t i, size_t j)       {  return val[i*col+j];  }
 template<class T> T&     matrix<T>::operator()(size_t i          )       {  return val[i];        }
 
-// インクリメンタル演算
+// Basic operations (incremental)
 template<class T> matrix<T>& operator+=(matrix<T>& m, T t){
   if(m.nrow()!=m.ncol()) throw std::domain_error("operator+=(M,t): not square");
   for(size_t i=0; i<m.nrow(); i++) m(i,i)+=t;
@@ -117,18 +118,18 @@ template<class T> matrix<T>& operator-=(matrix<T>& m, const matrix<T>& dm){
   return m;
 }
 
-// スカラー演算
-template<class T> matrix<T> operator-(const matrix<T>& m0     ){  matrix<T> m=m0;  m*=-T(1); return m;  }  // 単項マイナス
-template<class T> matrix<T> operator+(const matrix<T>& m0, T t){  matrix<T> m=m0;  m+=t;  return m;  }  // 行列 vs. スカラー
+// Basic operations (scalar vs. matrix)
+template<class T> matrix<T> operator-(const matrix<T>& m0     ){  matrix<T> m=m0;  m*=-T(1); return m;  }
+template<class T> matrix<T> operator+(const matrix<T>& m0, T t){  matrix<T> m=m0;  m+=t;  return m;  }
 template<class T> matrix<T> operator-(const matrix<T>& m0, T t){  matrix<T> m=m0;  m-=t;  return m;  }
 template<class T> matrix<T> operator*(const matrix<T>& m0, T t){  matrix<T> m=m0;  m*=t;  return m;  }
 template<class T> matrix<T> operator/(const matrix<T>& m0, T t){  matrix<T> m=m0;  m/=t;  return m;  }
-template<class T> matrix<T> operator+(T t, const matrix<T>& m0){  matrix<T> m=m0;  m+=t;  return m;  }  // スカラー vs. 行列
+template<class T> matrix<T> operator+(T t, const matrix<T>& m0){  matrix<T> m=m0;  m+=t;  return m;  }
 template<class T> matrix<T> operator-(T t, const matrix<T>& m0){  matrix<T> m=-m0; m+=t;  return m;  }
 template<class T> matrix<T> operator*(T t, const matrix<T>& m0){  matrix<T> m=m0;  m*=t;  return m;  }
 template<class T> matrix<T> operator/(T t, const matrix<T>& m0){  matrix<T> m=inv(m0);  m*=t;  return m;  }
 
-// 行列同士の演算
+// Basic operations (matrix vs. matrix)
 template<class T> matrix<T> operator+(const matrix<T>& m1, const matrix<T>& m2){  matrix<T> m=m1;  m+=m2;  return m;  }
 template<class T> matrix<T> operator-(const matrix<T>& m1, const matrix<T>& m2){  matrix<T> m=m1;  m-=m2;  return m;  }
 template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2){
@@ -144,13 +145,13 @@ template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2){
 }
 
 
-// ノルム
+// Norm |M|
 template<class T> T norm (const matrix<T>& m){
   return sqrt(inner(m,m));
 }
 
 
-// 内積
+// Inner product <M1,M2> (aka "dot" product)
 template<class T> T inner(const matrix<T>& m1, const matrix<T>& m2){
   if( !(m1.nrow()==m2.nrow() and m1.ncol()==m2.ncol()) ) throw std::domain_error("inner(M,M): sizes mismatch");
   T t=0;
@@ -159,33 +160,33 @@ template<class T> T inner(const matrix<T>& m1, const matrix<T>& m2){
 }
 
 
-// 外積(3D限定)
+// Outer product VxW of 3-vectors (aka "cross" product)
 template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w){
   if( !(v.nrow()==3 and w.ncol()==1 and v.nrow()==3 and v.ncol()==1) ) throw std::domain_error("outer(V,V): not 3-vectors");
   return matrix<T>(v(1)*w(2)-w(1)*v(2), v(2)*w(0)-w(2)*v(0), v(0)*w(1)-w(0)*v(1));
 }
 
 
-// 逆行列 M^-1
+// Inverse M^-1
 template<class T> matrix<T> inv(const matrix<T>& m){
   if( m.nrow()!=m.ncol() ) throw std::domain_error("inv(M): not square");
   matrix<T> m1=m;
-  matrix<T> m2=matrix<T>(m.nrow(),m.nrow())+T(1);  // m^-1 の入れ物
+  matrix<T> m2=matrix<T>(m.nrow(),m.nrow())+T(1);  // container of m^-1
 
   for(size_t k=0; k<m.nrow(); k++){
-    // pivote: k行 <--> i0行
+    // swapping: k-th row <--> i0-th row
     size_t i0=k;
     for(size_t i=k+1; i<m1.nrow(); i++)
-      if(std::abs(m1(i,k))>std::abs(m1(i0,k))) i0=i;  // i0 = argmax_{i: i>k} |m1(i,k)|
+      if(std::abs(m1(i,k))>std::abs(m1(i0,k))) i0=i;  // i0=argmax_{i>k} |m1(i,k)|
     if(i0!=k){
       for(size_t j=k; j<m1.nrow(); j++) std::swap(m1(k,j),m1(i0,j));
       for(size_t j=0; j<m2.nrow(); j++) std::swap(m2(k,j),m2(i0,j));
     }
 
-    // sweep: m1(i,k) --> δ(i,k)
+    // elimination: m1(i,k) --> \delta(i,k)
     T t;
-    t=m1(k,k);  // ゼロ除算注意
-    for(size_t j=k; j<m1.ncol(); j++) m1(k,j)/=t;
+    t=m1(k,k);
+    for(size_t j=k; j<m1.ncol(); j++) m1(k,j)/=t;  // (division-by-zero handling?)
     for(size_t j=0; j<m2.ncol(); j++) m2(k,j)/=t;
     for(size_t i=0; i<m1.nrow(); i++){
       if(i==k) continue;
@@ -199,7 +200,7 @@ template<class T> matrix<T> inv(const matrix<T>& m){
 }
 
 
-// べき乗 M^n (n<=0も可)
+// Power M^n (n<=0 is OK)
 template<class T> matrix<T> pow(const matrix<T>& m, int n){
   if(m.nrow()!=m.ncol()) throw std::domain_error("pow(M,n): not square");
   if(n<0) return inv(pow(m,-n));
@@ -210,7 +211,7 @@ template<class T> matrix<T> pow(const matrix<T>& m, int n){
 }
 
 
-// 転置 M^T
+// Transpose M^T
 template<class T> matrix<T> tp(const matrix<T>& m0){
   matrix<T> m1(m0.ncol(),m0.nrow());
   for(size_t i=0; i<m0.nrow(); i++)
@@ -220,7 +221,7 @@ template<class T> matrix<T> tp(const matrix<T>& m0){
 }
 
 
-// Schmidt正規直交化
+// Gram-Schmidt orthonormalization of M (an orthonormal frame U s.t. U^T M = upper trianglar)
 template<class T> matrix<T> orth(const matrix<T>& m0){
   if(m0.nrow()<m0.ncol()) throw std::domain_error("orth(M): nrow<ncol");
   matrix<T> m=m0, v, v1;
@@ -230,46 +231,46 @@ template<class T> matrix<T> orth(const matrix<T>& m0){
       v1=getvec(m,j1);
       v-=inner(v,v1)*v1;
     }
-    v/=norm(v);
+    v/=norm(v);  // (division-by-zero handling?)
     setvec(m,j,v);
   }
   return m;
 }
 
 
-// 固有ベクトル(を並べた直交行列): U=eigen(M) => U^T M U = diagonal
+// Eigen vectors of symmetric M (an orthonormal frame U s.t. U^T M U = diagonal)
 template<class T> matrix<T> eigen(const matrix<T>& m0){
   if(m0.nrow()!=m0.ncol()) throw std::domain_error("eigen(M): not square");
   size_t n=m0.nrow();
   matrix<T> m=m0+tp(m0), u=matrix<T>(n,n)+T(1);
 
   for(int extra=m0.dim(); extra; ){
-    // 絶対値最大の成分(i0,j0)
+    // (i0,j0) = argmax_(i,j) |M(i,j)|
     size_t i0=0, j0=1;
     for(size_t i=0; i<n; i++)
       for(size_t j=0; j<n; j++)
 	if( i!=j and std::abs(m(i0,j0))<=std::abs(m(i,j)) ) { i0=i; j0=j; }
 
-    // Givens回転角θ
+    // \theta = Givens rotation angle
     T th=atan2(2*m(i0,j0),m(i0,i0)-m(j0,j0))/2;
     matrix<T> rot(n,n);
     rot+=T(1);
     rot(i0,i0)=cos(th);  rot(i0,j0)=-sin(th);
     rot(j0,i0)=sin(th);  rot(j0,j0)= cos(th);
 
-    // 相似変換＆収束判定
-    T s0=0;  for(size_t k=0; k<n; k++) s0+=m(k,k)*m(k,k);
+    // Rotate and check convergence
+    T s0=0;  for(size_t k=0; k<n; k++) s0+=m(k,k)*m(k,k);  // norm^2 of diagonal part - monotoincally increasing in theory
     u=u*rot;
     m=tp(u)*m0*u;
     T s1=0;  for(size_t k=0; k<n; k++) s1+=m(k,k)*m(k,k);
-    if(!(s0<s1)) extra--;  // Sは単調増加だが、誤差を見て多めにループする
+    if(!(s0<s1)) extra--;  // almost done, but try extra loop to avoid calculation error
   }
 
-  return u;  // 固有ベクトルを並べた直交行列
+  return u;
 }
 
 
-// 列ベクトル取得・設定
+// Get/set column vector
 template<class T> matrix<T> getvec(const matrix<T>& m, size_t j){
   if(!(j<m.ncol())) throw std::domain_error("getvec(M,j): bad column");
   matrix<T> v(m.nrow());
@@ -282,10 +283,10 @@ template<class T> void setvec(matrix<T>& m, size_t j, const matrix<T>& v){
 }
 
 
-// 横・縦に連結
+// Horizonta/vertical concatenation
 template<class T> matrix<T> hcat(const matrix<T>& m1, const matrix<T>& m2){
   if(m1.nrow()!=m2.nrow()) throw std::domain_error("hcat(M,M): sizes mismatch");
-  matrix<T> m(m1.nrow(),m1.ncol()+m2.ncol());
+  matrix<T> m(m1.nrow(),m1.ncol()+m2.ncol());  // M(r,c1+c2)
   for(size_t i=0; i<m.nrow(); i++)
     for(size_t j=0; j<m.ncol(); j++)
       m(i,j) = (j<m1.ncol() ? m1(i,j) : m2(i,j-m1.ncol()));
@@ -293,7 +294,7 @@ template<class T> matrix<T> hcat(const matrix<T>& m1, const matrix<T>& m2){
 }
 template<class T> matrix<T> vcat(const matrix<T>& m1, const matrix<T>& m2){
   if(m1.ncol()!=m2.ncol()) throw std::domain_error("vcat(M,M): sizes mismatch");
-  matrix<T> m(m1.nrow()+m2.nrow(),m1.ncol());
+  matrix<T> m(m1.nrow()+m2.nrow(),m1.ncol());  // M(r1+r2,c)
   for(size_t i=0; i<m.nrow(); i++)
     for(size_t j=0; j<m.ncol(); j++)
       m(i,j) = (i<m1.nrow() ? m1(i,j) : m2(i-m1.nrow(),j));
@@ -301,7 +302,7 @@ template<class T> matrix<T> vcat(const matrix<T>& m1, const matrix<T>& m2){
 }
 
 
-// 入出力
+// stream I/O (format: r c m00 m01... m10 m11...)
 template<class T> std::istream& operator>>(std::istream& str, matrix<T>& m){
   size_t r,c;
   str >> r >> c;

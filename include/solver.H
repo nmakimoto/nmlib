@@ -1,4 +1,4 @@
-// Non-linear Equation Solvers
+// Non-linear equation solvers
 
 
 #ifndef SOLVER_H
@@ -11,14 +11,14 @@
 namespace nmlib{
 
 
-/******** prototype ********/
+/******** Prototype ********/
 
 template<class Func,class T> T solve       (const Func& f, const T& y0, const T& x0, const T& dx, const T& tol=1.e-8, int iter=100);
 template<class Func,class T> T solve_bisect(const Func& f, const T& y0, const T& x1, const T& x2, const T& tol=1.e-8);
 template<class Func,class T> matrix<T> solve(const Func& f, const matrix<T>& y0, const matrix<T>& x0, const matrix<T>& dx, const T& tol=1.e-8, int iter=100);
 
 
-/******** implementation ********/
+/******** Implementation ********/
 
 // Solve f(x)=y0 near x0 by Newton method (scalar version)
 template<class Func,class T> T solve(const Func& f, const T& y0, const T& x0, const T& dx, const T& tol, int iter){

@@ -1,4 +1,4 @@
-// スパース行列ライブラリ
+// Sparse matrix and solvers (CG/BiCG/PBCG)
 
 
 #ifndef SPARSE_H
@@ -12,44 +12,44 @@
 namespace nmlib{
 
 
-/******** クラス定義 ********/
+/******** Class I/F ********/
 
-// スパース行列クラス
+// Sparse matrices
 class Sparse{
 public:
   explicit Sparse(size_t r=0, size_t c=0);
 
-  size_t nrow(void) const;  // 行数
-  size_t ncol(void) const;  // 列数
-  double  operator()(size_t i, size_t j) const;  // 成分参照 s=A(i,j)
-  double& operator()(size_t i, size_t j);        // 成分設定 A(i,j)=s
+  size_t nrow(void) const;  // number of rows
+  size_t ncol(void) const;  // number of columns
+  double  operator()(size_t i, size_t j) const;  // get s=A(i,j)
+  double& operator()(size_t i, size_t j);        // set A(i,j)=s
 
-  const std::map<size_t,double>& columns(size_t i) const{ return val[i]; }  // 行iの列j=>値Aij
-        std::map<size_t,double>& columns(size_t i)      { return val[i]; }  // 〃(非const版)
+  const std::map<size_t,double>& columns(size_t i) const{ return val[i]; }  // i-th row (map j=>Aij)
+        std::map<size_t,double>& columns(size_t i)      { return val[i]; }  // i-th row (non-const version)
 
 private:
-  size_t row, col;  // サイズ
-  std::vector<std::map<size_t,double> > val;  // 成分 val[i][j]  CRS(Condensed Row Storage)形式
+  size_t row, col;  // dimentions
+  std::vector<std::map<size_t,double> > val;  // componets val[i][j]  CRS(Condensed Row Storage)
 };
 
 
-// 計算条件
+// Configurations for sparse solvers
 class SparseConf{
 public:
   SparseConf(void): tol(1.e-8), loop(100), x0(), lu(), verb(false) {}
-  void init_ilu0(const Sparse& a);  // 前処理行列の設定(ILU0)
+  void init_ilu0(const Sparse& a);  // initialize preconditioner(ILU0)
 
-  double  tol;   // 許容誤差 |Ax-b|/|b|
-  int     loop;  // 反復回数上限
-  Matrix  x0;    // 初期近似解
-  Sparse  lu;    // 前処理行列
-  bool    verb;  // 途中経過をcerrに表示
+  double  tol;   // tolerance |Ax-b|/|b|
+  int     loop;  // max iteration
+  Matrix  x0;    // initial value
+  Sparse  lu;    // preconditioner
+  bool    verb;  // verbosity (show progress to std::cerr)
 };
 
 
-/******** ユーティリティ一覧 ********/
+/******** Utility I/F ********/
 
-// インクリメンタル演算
+// Incremental operations
 Sparse& operator+=(Sparse& a, double s);   // A=A+sI
 Sparse& operator-=(Sparse& a, double s);   // A=A-sI
 Sparse& operator*=(Sparse& a, double s);   // A=A*s
@@ -59,8 +59,8 @@ Sparse& operator-=(Sparse& a, const Sparse& b);  // A=A-B
 //Sparse& operator*=(Sparse& a, const Sparse& b);
 //Sparse& operator/=(Sparse& a, const Sparse& b);
 
-// スカラー演算
-Sparse operator-(const Sparse& a);            // -A (単項)
+// Scalar operations
+Sparse operator-(const Sparse& a);            // -A (unary)
 Sparse operator+(const Sparse& a, double s);  // A+sI
 Sparse operator-(const Sparse& a, double s);  // A-sI
 Sparse operator*(const Sparse& a, double s);  // A*s
@@ -70,30 +70,30 @@ Sparse operator-(double s, const Sparse& a);  // sI-A
 Sparse operator*(double s, const Sparse& a);  // s*A
 //Sparse operator/(double s, const Sparse& a);  // s*inv(A)
 
-// 行列同士の演算
+// Sparse-Sparse operations
 Sparse operator+(const Sparse& a, const Sparse& b);  // A+B
 Sparse operator-(const Sparse& a, const Sparse& b);  // A-B
 Sparse operator*(const Sparse& a, const Sparse& b);  // A*B
-Matrix operator*(const Sparse& a, const Matrix& b);  // A*b (Matrix版)
+Matrix operator*(const Sparse& a, const Matrix& b);  // A*b (dense Matrix version)
 
-// ユーティリティ
+// Utilities
 Sparse tp   (const Sparse& a);  // A^T
-Matrix dense(const Sparse& a);  // 密行列変換
+Matrix dense(const Sparse& a);  // conversion to dens matrix - use with care
 Matrix tpab (const Sparse& a, const Matrix& b);  // A^T * b
 
-// 入出力
-std::istream& operator>>(std::istream& s,       Sparse& a);  // テキストI/O
-std::ostream& operator<<(std::ostream& s, const Sparse& a);  // 〃
-std::istream& read      (std::istream& s,       Sparse& a);  // バイナリI/O
-std::ostream& write     (std::ostream& s, const Sparse& a);  // 〃
+// I/O
+std::istream& operator>>(std::istream& s,       Sparse& a);  // text I/O
+std::ostream& operator<<(std::ostream& s, const Sparse& a);  // text I/O
+std::istream& read      (std::istream& s,       Sparse& a);  // binary I/O
+std::ostream& write     (std::ostream& s, const Sparse& a);  // binary I/O
 
-// スパースソルバ: Ax=b を解く
-Matrix solve_cg  (const Sparse& a, const Matrix& b, const SparseConf& cf=SparseConf());  // CG法 (A:対称正定値)
-Matrix solve_bcg (const Sparse& a, const Matrix& b, const SparseConf& cf=SparseConf());  // BiCG法
+// Sparse solvers
+Matrix solve_cg  (const Sparse& a, const Matrix& b, const SparseConf& cf=SparseConf());  // CG (for symmetric positive definit A)
+Matrix solve_bcg (const Sparse& a, const Matrix& b, const SparseConf& cf=SparseConf());  // BiCG
 Matrix solve_pbcg(const Sparse& a, const Matrix& b, const SparseConf& cf=SparseConf());  // Preconditioned BiCG
 
-// 前処理
-void   ilu0(Sparse& a);  // Aの不完全LU分解ILU(0)を上書き算出
+// Preconditioners
+void   ilu0(Sparse& a);  // incomplete LU decomposition ILU(0) (overwrites A)
 Matrix lux   (const Sparse& lu, const Matrix& x);  // LUx
 Matrix sluxb (const Sparse& lu, const Matrix& b);  // (LU)^-1 b (solve LUx=b)
 Matrix slutxb(const Sparse& lu, const Matrix& b);  // (LU)^-T b (solve LU^T x=b)

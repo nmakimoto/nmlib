@@ -14,7 +14,7 @@
 namespace nmlib{
 
 
-/******** prototype ********/
+/******** Prototype ********/
 
 // map<K,V> I/O (format: n K1 V1 ... Kn Vn)
 template<class K,class V> std::ostream& operator<<(std::ostream& str, const std::map<K,V>& k2v);
@@ -30,7 +30,7 @@ template<class T> T           str2any(const std::string& str);
 template<class T> std::string any2str(const T& val,int prec=0);
 
 
-/******** implementation ********/
+/******** Implementation ********/
 
 template<class K,class V> std::ostream& operator<<(std::ostream& str, const std::map<K,V>& k2v){
   str << k2v.size() << "\n";

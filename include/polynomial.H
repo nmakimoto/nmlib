@@ -11,7 +11,7 @@
 namespace nmlib{
 
 
-/******** class I/F ********/
+/******** Class I/F ********/
 
 template<class T> class polynomial;
 typedef polynomial<double> Polynomial;
@@ -20,12 +20,12 @@ typedef polynomial<double> Polynomial;
 template<class T> class polynomial{
 public:
   explicit polynomial(const std::vector<T>& cc=std::vector<T>());  // p(x):=\sum_k cc[k] x^k
-  void set(const std::vector<T>& cc);
-  void get(      std::vector<T>& cc) const;
+  void set(const std::vector<T>& cc);        // set coefficients
+  void get(      std::vector<T>& cc) const;  // get coefficients
 
   int deg(void)  const;              // degree
-  T&  c(int k);                      // p.c(k)=c
-  T   c(int k) const;                // c=p.c(k)
+  T&  c(int k);                      // set p.c(k)=c
+  T   c(int k) const;                // get c=p.c(k)
   T   operator()(const T& x) const;  // y=p(x)
 
 private:
@@ -33,9 +33,9 @@ private:
 };
 
 
-/******** utility I/F ********/
+/******** Utility I/F ********/
 
-// incremental operations
+// Basic operations (incremental)
 template<class T> polynomial<T>& operator+=(polynomial<T>& p, const T& s);  // p+=s
 template<class T> polynomial<T>& operator-=(polynomial<T>& p, const T& s);  // p-=s
 template<class T> polynomial<T>& operator*=(polynomial<T>& p, const T& s);  // p*=s
@@ -48,7 +48,7 @@ template<class T> polynomial<T>& operator%=(polynomial<T>& p, const polynomial<T
 template<class T> polynomial<T>& operator<<=(polynomial<T>& p, int n);  // p(x)*x^n
 template<class T> polynomial<T>& operator>>=(polynomial<T>& p, int n);  // p(x)/x^n
 
-// polynomial-scalar operations
+// Basic operations (polynomial vs. scalar)
 template<class T> polynomial<T> operator-(const polynomial<T>& p);  // unary -p
 template<class T> polynomial<T> operator+(const polynomial<T>& p, const T& s);  // p+s
 template<class T> polynomial<T> operator-(const polynomial<T>& p, const T& s);  // p-s
@@ -59,7 +59,7 @@ template<class T> polynomial<T> operator-(const T& s, const polynomial<T>& p);  
 template<class T> polynomial<T> operator*(const T& s, const polynomial<T>& p);  // s*p
 //template<class T> polynomial<T> operator/(const T& s, const polynomial<T>& p);  // s/p
 
-// polynomial-polynomial operations
+// Basic operations (polynomial vs. polynomial)
 template<class T> polynomial<T> operator+ (const polynomial<T>& p, const polynomial<T>& q);  // p+q
 template<class T> polynomial<T> operator- (const polynomial<T>& p, const polynomial<T>& q);  // p-q
 template<class T> polynomial<T> operator* (const polynomial<T>& p, const polynomial<T>& q);  // p*q
@@ -68,7 +68,7 @@ template<class T> polynomial<T> operator% (const polynomial<T>& p, const polynom
 template<class T> polynomial<T> operator<<(const polynomial<T>& p, int n);  // p*x^n
 template<class T> polynomial<T> operator>>(const polynomial<T>& p, int n);  // p/x^n
 
-// polynomial manipulations
+// Polynomial manipulations
 template<class T> polynomial<T> shrink (const polynomial<T>& p, const T& eps=T(0), const T& x=T(1));  // omit terms s.t. |c_i|<|eps*x^i|
 template<class T> polynomial<T> compose(const polynomial<T>& p, const polynomial<T>& q);  // p(q(x))
 template<class T> polynomial<T> power  (const polynomial<T>& p, int n);       // p(x)^n
@@ -80,7 +80,7 @@ template<class T> polynomial<T> integ  (const polynomial<T>& p);              //
 template<class T> polynomial<T> legendre(int n);  // Legendre polynomial Pn(x)
 
 
-/******** implementation ********/
+/******** Implementation ********/
 
 template<class T>      polynomial<T>::polynomial(const std::vector<T>& cc0){ set(cc0); }
 template<class T> void polynomial<T>::set(const std::vector<T>& cc0)       { cc=cc0; }

@@ -1,4 +1,4 @@
-// Numerical Differentiation
+// Numerical differentiation
 
 
 #ifndef DIFF_H
@@ -9,19 +9,19 @@
 namespace nmlib{
 
 
-/******** prototype ********/
+/******** Prototype ********/
 
-// (part or all of) gradient of scalar-valued function f: R^n --> R
+// Gradient of scalar-valued function f: R^n --> R
 template<class F,class T>        T  gradient(const F& f, const        T & x,        const T & dx , bool romberg=false);  // df/dx
 template<class F,class T>        T  gradient(const F& f, const matrix<T>& x, int j, const T & dxj, bool romberg=false);  // df/dxj
 template<class F,class T> matrix<T> gradient(const F& f, const matrix<T>& x, const matrix<T>& dx , bool romberg=false);  // (df/dxj)_j
 
-// (part or all of) jacobian of vector-valued function f: R^n --> R^m
+// Jacobian of vector-valued function f: R^n --> R^m
 template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x, int j, const T & dxj, bool romberg=false);  // (dfi/dxj)_i
 template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x, const matrix<T>& dx , bool romberg=false);  // (dfi/dxj)_ij
 
 
-/******** implementation ********/
+/******** Implementation ********/
 
 // df/dx
 template<class Func,class T> T gradient(const Func& f, const T& x, const T& dx, bool romberg){

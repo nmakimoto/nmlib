@@ -13,9 +13,7 @@
 namespace nmlib{
 
 
-/******** prototype ********/
-
-// Assumptions: Vec=vector<complex<T>>, xx.size()=2^nu
+/******** Prototype ********/
 
 template<class Vec> Vec fft    (const Vec& xx, bool inverse=false);  // FFT
 template<class Vec> Vec ifft   (const Vec& ff);                      // inverse FFT
@@ -28,7 +26,7 @@ template<class Vec> Vec ft_slow (const Vec& xx, bool inverse=false);
 template<class Vec> Vec ift_slow(const Vec& xx);
 
 
-/******** implementation ********/
+/******** Implementation ********/
 
 inline unsigned shuffle(unsigned i,unsigned n){
   unsigned j=0;

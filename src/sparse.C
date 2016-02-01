@@ -33,6 +33,7 @@ typedef Row::iterator        IT;
 void chk(size_t r1, size_t c1, size_t r2, size_t c2, char op){
   if( (op=='@' and 0<=r1 and r1<r2 and 0<=c1 and c1<=c2) or
       (op=='+' and r1==r2 and c1==c2)  or
+      (op=='-' and r1==r2 and c1==c2)  or
       (op=='*' and c1==r2)  or
       (op=='/' and r1==c1 and c1==r2 and c2==1) ) return;
   std::stringstream msg;

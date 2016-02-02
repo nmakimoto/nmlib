@@ -25,6 +25,7 @@ public:
   void get(      std::map<T,T>& x2y) const;  // get control points (xi,yi)
 
   T operator()(T x, int deg=3) const;  // interpolation at x (degree=0,1,3)
+  T grad(T x) const;  // d/dx
 
 private:
   std::vector<T> xx,yy,aa,bb,cc,dd;  // control points and spline coefficients
@@ -56,13 +57,23 @@ template<class T> T spline<T>::operator()(T x, int deg) const{
   if(n<=1) return (n==1 ? yy[0] : 0);
   if(n==2) deg=std::min(deg,1);
 
-  int k=std::upper_bound(xx.begin(),xx.end(),x)-xx.begin()-1;  // x in [xx[k],xx[k+1])
-  k=std::max(std::min(k,n-2),0);  // extrapolation
-  x-=xx[k];
+  int k0=std::upper_bound(xx.begin(),xx.end(),x)-xx.begin()-1;  // x in [xx[k0],xx[k0+1])
+  int k1=std::max(std::min(k0,n-2),0);  // valid interval [xx[k1],xx[k1+1]]
+  if(deg<1) return (x-xx[k1]<xx[k1+1]-x ? yy[k1] : yy[k1+1]);  // nearest neighbour
+  if(deg<3) return yy[k1]+(yy[k1+1]-yy[k1])*(x-xx[k1])/(xx[k1+1]-xx[k1]);  // linear
+  if(k0!=k1) return (k0<0 ? cc[0]*(x-xx[0])+dd[0] : grad(xx[n-1])*(x-xx[n-1])+yy[n-1]);  // linear extrapolation
+  x-=xx[k1];
+  return ((aa[k1]*x+bb[k1])*x+cc[k1])*x+dd[k1];  // cubic spline
+}
 
-  if(deg<1) return (x*2<xx[k+1]-xx[k] ? yy[k] : yy[k+1]);  // nearest neighbour
-  if(deg<3) return yy[k]+(yy[k+1]-yy[k])*x/(xx[k+1]-xx[k]);  // linear
-  return ((aa[k]*x+bb[k])*x+cc[k])*x+dd[k];  // cubic spline
+template<class T> T spline<T>::grad(T x) const{
+  int n=xx.size();
+  int k=std::upper_bound(xx.begin(),xx.end(),x)-xx.begin()-1;  // x in [xx[k-1],xx[k])
+  if(n<3) return (n<2 ? 0 : (yy[1]-yy[0])/(xx[1]-xx[0]));
+  if(k  <0){ k=0;   x=xx[0]; }    // extrapolation (left)
+  if(n-2<k){ k=n-2; x=xx[n-1]; }  // extrapolation (right)
+  x-=xx[k];
+  return (3*aa[k]*x+2*bb[k])*x+cc[k];
 }
 
 // Calculation of spline coefficients

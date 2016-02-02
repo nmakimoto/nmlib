@@ -100,7 +100,7 @@ M solve_cg(const S& a, const M& b, const SparseConf& cf){
   p=r=b-a*x;
   for(int j=0; j<cf.loop; j++){
     if(cf.verb) std::cerr<<"CG["<<j<<"]\t"<<norm(r)/norm(b)<<"\t"<<norm(a*x-b)<<"\n";
-    if(norm(r)<norm(b)*cf.tol) break;  // convergence
+    if(norm(r)<=norm(b)*cf.tol) break;  // convergence
     rr=inner(r,r);
     q=a*p;
     t=rr/inner(p,q);
@@ -125,7 +125,7 @@ M solve_bcg(const S& a, const M& b, const SparseConf& cf){
   p2=r2=r1;
   for(int j=0; j<cf.loop; j++){
     if(cf.verb) std::cerr<<"BCG["<<j<<"]\t"<<norm(r1)/norm(b)<<"\t"<<norm(a*x-b)<<"\n";
-    if(norm(r1)<norm(b)*cf.tol) break;
+    if(norm(r1)<=norm(b)*cf.tol) break;
     rr=inner(r1,r2);
     q1=a*p1;
     q2=tpab(a,p2);  // A^T*p2
@@ -157,7 +157,7 @@ M solve_pbcg(const S& a, const M& b, const SparseConf& cf){
 
   for(int j=0; j<cf.loop; j++){
     if(cf.verb) std::cerr<<"PBCG["<<j<<"]\t"<<norm(a*x-b)/norm(b)<<"\t"<<norm(a*x-b)<<"\t"<<"\n";
-    if(norm(a*x-b)<norm(b)*cf.tol) break;
+    if(norm(a*x-b)<=norm(b)*cf.tol) break;
     rr=inner(r1,r2);
     q1=sluxb(lu,a*p1);  //lu.prod_inv(a*p1);                 // (C^-1 A) * p1
     q2=tpab(a,slutxb(lu,p2));  //tpab(a,lu.prod_tpinv(p2));  // (C^-1 A)^T * p2

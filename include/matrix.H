@@ -79,6 +79,8 @@ template<class T> matrix<T>  orth  (const matrix<T>& m);                        
 template<class T> matrix<T>  eigen (const matrix<T>& m);                        // eigen vectors of symmetric M
 template<class T> matrix<T>  getvec(const matrix<T>& m, size_t j);              // get column vector Mj
 template<class T> void       setvec(      matrix<T>& m, size_t j, const matrix<T>& v);  // set column vector Mj to V
+template<class T> matrix<T>  getsub(const matrix<T>& m, size_t i0, size_t j0, size_t r, size_t c);  // get submatrix
+template<class T> void       setsub(      matrix<T>& m, size_t i0, size_t j0, const matrix<T> m1);  // set submatrix
 template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // horizontal concatenation
 template<class T> matrix<T>  vcat  (const matrix<T>& m1, const matrix<T>& m2);  // vertical concatenation
 
@@ -287,6 +289,24 @@ template<class T> matrix<T> getvec(const matrix<T>& m, size_t j){
 template<class T> void setvec(matrix<T>& m, size_t j, const matrix<T>& v){
   if(!(j<m.ncol() and m.nrow()==v.nrow() and v.ncol()==1)) throw std::domain_error("setvec(M,j,V): bad column or size");
   for(size_t i=0; i<m.nrow(); i++) m(i,j)=v(i);
+}
+
+
+// Get/set submatrix  M i0+[0,r) x j0+[0,c) <--> M1 [0,r) x [0,c)
+template<class T> matrix<T>  getsub(const matrix<T>& m, size_t i0, size_t j0, size_t r, size_t c){
+  if(m.nrow()<i0+r or m.ncol()<j0+c) throw std::domain_error("getsub(M,i0,j0,r,c): bad dimension");
+  matrix<T> m1(r,c);
+  for(size_t i=0; i<r; i++)
+    for(size_t j=0; j<c; j++)
+      m1(i,j)=m(i0+i,j0+j);
+  return m1;
+}
+template<class T> void setsub(matrix<T>& m, size_t i0, size_t j0, const matrix<T> m1){
+  size_t r=m1.nrow(), c=m1.ncol();
+  if(m.nrow()<i0+r or m.ncol()<j0+c) throw std::domain_error("setsub(M,i0,j0,m1): bad dimension");
+  for(size_t i=0; i<r; i++)
+    for(size_t j=0; j<c; j++)
+      m(i0+i,j0+j)=m1(i,j);
 }
 
 

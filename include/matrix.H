@@ -22,8 +22,11 @@ typedef matrix<double> Matrix;   // real matrix (alias)
 
 template<class T> class matrix{
 public:
-  explicit matrix(size_t r=0, size_t c=1);  // M(r,c)
-  matrix(T x, T y, T z);                    // 3-vector
+  explicit matrix(size_t r=0, size_t c=1);    // rxc zero matrix
+  explicit matrix(const std::vector<T>& v);   // nx1 val=v
+  explicit matrix(const T *v0, const T *vn);  // nx1 val=[v0..vn)
+  explicit matrix(T x, T y, T z);             // 3-vector
+  operator std::vector<T>          (void) const;
 
   size_t nrow(void) const;  // number of rows
   size_t ncol(void) const;  // number of columns
@@ -93,10 +96,13 @@ template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m
 
 // Class methods
 template<class T>        matrix<T>::matrix(size_t r, size_t c): row(r), col(c), val(r*c) {}
+template<class T>        matrix<T>::matrix(const std::vector<T>& v): row(v.size()), col(1), val(v) {}
+template<class T>        matrix<T>::matrix(const T *v0, const T *vn): row(vn-v0), col(1), val(v0,v0) {}
 template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3) {  val[0]=x;  val[1]=y;  val[2]=z;  }
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
 template<class T> size_t matrix<T>::ncol(void) const {  return col;  }
 template<class T> size_t matrix<T>::dim (void) const {  return row*col;  }
+template<class T>        matrix<T>::operator std::vector<T> (void) const {  return val;  }
 template<class T> T      matrix<T>::operator()(size_t i, size_t j) const {  return val[i*col+j];  }
 template<class T> T      matrix<T>::operator()(size_t i          ) const {  return val[i];        }
 template<class T> T&     matrix<T>::operator()(size_t i, size_t j)       {  return val[i*col+j];  }

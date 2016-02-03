@@ -345,8 +345,10 @@ template<class T> std::istream& operator>>(std::istream& str, matrix<T>& m){
 }
 template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m){
   size_t r=m.nrow(), c=m.ncol();
-  str << r << '\t' << c << '\t';
-  for(size_t k=0; k<r*c; k++) str << m(k) << '\t';
+  str << r << ' ' << c << '\t';
+  for(size_t i=0; i<r; i++)
+    for(size_t j=0; j<c; j++)
+      str << m(i,j) << (j+1==c ? '\t' : ' ');
   return str;
 }
 

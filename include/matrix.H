@@ -6,6 +6,7 @@
 
 
 #include <vector>
+#include <complex>
 #include <cmath>
 #include <algorithm>
 #include <iostream>
@@ -68,6 +69,7 @@ template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2);
 
 // Miscelanaous operations
 template<class T> T          norm  (const matrix<T>& m);                        // norm |M|
+template<class T> T          norm  (const matrix<std::complex<T> >& m);         // norm |M| (complex M)
 template<class T> T          inner (const matrix<T>& m1, const matrix<T>& m2);  // inner product <M1,M2>
 template<class T> matrix<T>  outer (const matrix<T>& v1, const matrix<T>& v2);  // outer product V1xV2 of 3-vectors
 template<class T> matrix<T>  inv   (const matrix<T>& m);                        // inverse M^-1
@@ -148,6 +150,11 @@ template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2){
 // Norm |M|
 template<class T> T norm (const matrix<T>& m){
   return sqrt(inner(m,m));
+}
+template<class T> T norm (const matrix<std::complex<T> >& m){
+  T s=0;
+  for(size_t k=0; k<m.dim(); k++) s+=std::norm(m(k));  // note: std::norm(C):=|C|^2
+  return sqrt(s);
 }
 
 

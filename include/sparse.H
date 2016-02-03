@@ -77,6 +77,7 @@ Sparse operator*(const Sparse& a, const Sparse& b);  // A*B
 Matrix operator*(const Sparse& a, const Matrix& b);  // A*b (dense Matrix version)
 
 // Utilities
+double norm (const Sparse& a);  // |A|
 Sparse tp   (const Sparse& a);  // A^T
 Matrix dense(const Sparse& a);  // conversion to dens matrix - use with care
 Matrix tpab (const Sparse& a, const Matrix& b);  // A^T * b

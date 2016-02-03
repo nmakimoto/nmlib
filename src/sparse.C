@@ -82,6 +82,7 @@ M operator*(const S& a, const M& b){ chk(a,b,'*'); M c(a.nrow(),b.ncol()); FOR_K
 
 
 // Utilities
+T norm (const S& a){ T s=0; FOR_IJ(a){ T t=M_IJ; s+=t*t; } return sqrt(s); }
 S tp   (const S& a){ S b(a.ncol(),a.nrow()); FOR_IJ(a) b(J,I)=M_IJ; return b; }
 M dense(const S& a){ M b(a.nrow(),a.ncol()); FOR_IJ(a) b(I,J)=M_IJ; return b; }
 M tpab (const S& a, const M& b){ chk(a.ncol(),a.nrow(),b.nrow(),b.ncol(),'*'); M c(b.nrow(),b.ncol()); FOR_K(c) FOR_IJ(a) c(J,K)+=M_IJ*b(I,K); return c; }

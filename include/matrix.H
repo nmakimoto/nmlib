@@ -25,6 +25,7 @@ public:
   explicit matrix(size_t r=0, size_t c=1);    // rxc zero matrix
   explicit matrix(const std::vector<T>& v);   // nx1 val=v
   explicit matrix(const T *v0, const T *vn);  // nx1 val=[v0..vn)
+  operator matrix<std::complex<T> >(void) const;
   explicit matrix(T x, T y, T z);             // 3-vector
   operator std::vector<T>          (void) const;
 
@@ -87,6 +88,14 @@ template<class T> void       setsub(      matrix<T>& m, size_t i0, size_t j0, co
 template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // horizontal concatenation
 template<class T> matrix<T>  vcat  (const matrix<T>& m1, const matrix<T>& m2);  // vertical concatenation
 
+// Complex/real matrix conversion
+template<class T> matrix<T> real(const matrix<std::complex<T> >& m);
+template<class T> matrix<T> imag(const matrix<std::complex<T> >& m);
+template<class T> matrix<std::complex<T> > conj(const matrix<std::complex<T> >& m);
+template<class T> matrix<T> real(const matrix<T>& m);
+template<class T> matrix<T> imag(const matrix<T>& m);
+template<class T> matrix<T> conj(const matrix<T>& m);
+
 // stream I/O
 template<class T> std::istream& operator>>(std::istream& str,       matrix<T>& m);  // str>>M
 template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m);  // str<<M
@@ -102,7 +111,8 @@ template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
 template<class T> size_t matrix<T>::ncol(void) const {  return col;  }
 template<class T> size_t matrix<T>::dim (void) const {  return row*col;  }
-template<class T>        matrix<T>::operator std::vector<T> (void) const {  return val;  }
+template<class T>        matrix<T>::operator        std::vector <T>  (void) const {  return val;  }
+template<class T>        matrix<T>::operator matrix<std::complex<T> >(void) const {  matrix<std::complex<T> > mc(nrow(),ncol()); for(size_t k=0; k<dim(); k++) mc(k)=val[k]; return mc;  }
 template<class T> T      matrix<T>::operator()(size_t i, size_t j) const {  return val[i*col+j];  }
 template<class T> T      matrix<T>::operator()(size_t i          ) const {  return val[i];        }
 template<class T> T&     matrix<T>::operator()(size_t i, size_t j)       {  return val[i*col+j];  }
@@ -333,6 +343,27 @@ template<class T> matrix<T> vcat(const matrix<T>& m1, const matrix<T>& m2){
       m(i,j) = (i<m1.nrow() ? m1(i,j) : m2(i-m1.nrow(),j));
   return m;
 }
+
+
+// Complex/real matrix conversion
+template<class T> matrix<T> real(const matrix<std::complex<T> >& m){
+  matrix<T> mr(m.nrow(),m.ncol());
+  for(size_t k=0; k<m.dim(); k++) mr(k)=m(k).real();
+  return mr;
+}
+template<class T> matrix<T> imag(const matrix<std::complex<T> >& m){
+  matrix<T> mr(m.nrow(),m.ncol());
+  for(size_t k=0; k<m.dim(); k++) mr(k)=m(k).imag();
+  return mr;
+}
+template<class T> matrix<std::complex<T> > conj(const matrix<std::complex<T> >& m){
+  matrix<std::complex<T> > mc(m.nrow(),m.ncol());
+  for(size_t k=0; k<m.dim(); k++) mc(k)=std::conj(m(k));
+  return mc;
+}
+template<class T> matrix<T> real(const matrix<T>& m){ return m; }
+template<class T> matrix<T> imag(const matrix<T>& m){ return matrix<T>(m.nrow(),m.ncol()); }
+template<class T> matrix<T> conj(const matrix<T>& m){ return m; }
 
 
 // stream I/O (format: r c m00 m01... m10 m11...)

@@ -95,6 +95,8 @@ template<class T> matrix<std::complex<T> > conj(const matrix<std::complex<T> >& 
 template<class T> matrix<T> real(const matrix<T>& m);
 template<class T> matrix<T> imag(const matrix<T>& m);
 template<class T> matrix<T> conj(const matrix<T>& m);
+template<class T> std::complex<T> cnj(std::complex<T> x);
+template<class T>              T  cnj(             T  x);
 
 // stream I/O
 template<class T> std::istream& operator>>(std::istream& str,       matrix<T>& m);  // str>>M
@@ -126,7 +128,7 @@ template<class T> matrix<T>& operator+=(matrix<T>& m, T t){
 }
 template<class T> matrix<T>& operator-=(matrix<T>& m, T t){  m+=(-t);  return m;  }
 template<class T> matrix<T>& operator*=(matrix<T>& m, T t){  for(size_t k=0; k<m.dim(); k++) m(k)*=t;  return m;  }
-template<class T> matrix<T>& operator/=(matrix<T>& m, T t){  m*=(1/t);  return m;  }
+template<class T> matrix<T>& operator/=(matrix<T>& m, T t){  m*=(T(1)/t);  return m;  }
 template<class T> matrix<T>& operator+=(matrix<T>& m, const matrix<T>& dm){
   if(!(m.nrow()==dm.nrow() and m.ncol()==dm.ncol())) throw std::domain_error("operator+=(M,M): sizes mismatch");
   for(size_t k=0; k<m.dim(); k++) m(k)+=dm(k);
@@ -180,7 +182,7 @@ template<class T> T norm (const matrix<std::complex<T> >& m){
 template<class T> T inner(const matrix<T>& m1, const matrix<T>& m2){
   if( !(m1.nrow()==m2.nrow() and m1.ncol()==m2.ncol()) ) throw std::domain_error("inner(M,M): sizes mismatch");
   T t=0;
-  for(size_t k=0; k<m1.dim(); k++) t+=m1(k)*m2(k);
+  for(size_t k=0; k<m1.dim(); k++) t+=cnj(m1(k))*m2(k);
   return t;
 }
 
@@ -241,7 +243,7 @@ template<class T> matrix<T> tp(const matrix<T>& m0){
   matrix<T> m1(m0.ncol(),m0.nrow());
   for(size_t i=0; i<m0.nrow(); i++)
     for(size_t j=0; j<m0.ncol(); j++)
-      m1(j,i)=m0(i,j);
+      m1(j,i)=cnj(m0(i,j));
   return m1;
 }
 
@@ -254,9 +256,9 @@ template<class T> matrix<T> orth(const matrix<T>& m0){
     v=getvec(m,j);
     for(size_t j1=0; j1<j; j1++){
       v1=getvec(m,j1);
-      v-=inner(v,v1)*v1;
+      v-=inner(v1,v)*v1;
     }
-    v/=norm(v);  // (division-by-zero handling?)
+    v/=T(norm(v));  // (division-by-zero handling?)
     setvec(m,j,v);
   }
   return m;
@@ -292,6 +294,10 @@ template<class T> matrix<T> eigen(const matrix<T>& m0){
   }
 
   return u;
+}
+template<class T> matrix<std::complex<T> > eigen(const matrix<std::complex<T> >& m0){
+  throw std::domain_error("E Sorry, complex (hermitian) eigensolver is not supported");
+  return m0;
 }
 
 
@@ -364,6 +370,8 @@ template<class T> matrix<std::complex<T> > conj(const matrix<std::complex<T> >& 
 template<class T> matrix<T> real(const matrix<T>& m){ return m; }
 template<class T> matrix<T> imag(const matrix<T>& m){ return matrix<T>(m.nrow(),m.ncol()); }
 template<class T> matrix<T> conj(const matrix<T>& m){ return m; }
+template<class T> std::complex<T> cnj(std::complex<T> x){ return std::conj(x); }
+template<class T>              T  cnj(             T  x){ return           x;  }
 
 
 // stream I/O (format: r c m00 m01... m10 m11...)

@@ -273,6 +273,16 @@ template<class T> double eigen_error(const matrix<T>& m){
       if(i!=j) s+=cnj(m(i,j))*m(i,j);
   return sqrt(std::abs(s));
 }
+template<class T> void eigen_halfangle(T x, T y, T& c, T& s){
+  T t=atan2(y,x)/2;
+  c=cos(t);
+  s=sin(t);
+}
+template<class T> void eigen_halfangle(std::complex<T> x, std::complex<T> y, std::complex<T>& c, std::complex<T>&s){
+  T c2=cos(atan2(std::abs(y),std::abs(x)));
+  c=sqrt(std::abs(1+c2)/2);
+  s=sqrt(std::abs(1-c2)/2) * std::polar<T>(1,std::arg(x*y));
+}
 
 
 // Eigen vectors of symmetric M (an orthonormal frame U s.t. U^T M U = diagonal)
@@ -288,12 +298,13 @@ template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
       for(size_t j=0; j<n; j++)
 	if( i!=j and std::abs(m(i0,j0))<=std::abs(m(i,j)) ) { i0=i; j0=j; }
 
-    // \theta = Givens rotation angle
-    T th=atan2(2*m(i0,j0),m(i0,i0)-m(j0,j0))/2;
+    // Givens rotation by c=cos(t),s=sin(t)
+    T c,s;
+    eigen_halfangle(m(i0,i0)-m(j0,j0),T(2)*m(i0,j0),c,s);  // (x,y)=(r cos(2t),r sin(2t)) --> (c,s)=(cos(t),sin(t))
     matrix<T> rot(n,n);
     rot+=T(1);
-    rot(i0,i0)=cos(th);  rot(i0,j0)=-sin(th);
-    rot(j0,i0)=sin(th);  rot(j0,j0)= cos(th);
+    rot(i0,i0)=c;       rot(i0,j0)=-s;
+    rot(j0,i0)=cnj(s);  rot(j0,j0)= c;
 
     // Rotate and check convergence
     double err0=eigen_error(m);
@@ -304,10 +315,6 @@ template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
   }
 
   return u;
-}
-template<class T> matrix<std::complex<T> > eigen(const matrix<std::complex<T> >& m0){
-  throw std::domain_error("E Sorry, complex (hermitian) eigensolver is not supported");
-  return m0;
 }
 
 

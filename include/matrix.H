@@ -80,7 +80,7 @@ template<class T> matrix<T>  inv   (const matrix<T>& m);                        
 template<class T> matrix<T>  pow   (const matrix<T>& m, int n);                 // power M^n (n<0 is ok)
 template<class T> matrix<T>  tp    (const matrix<T>& m);                        // transpose M^T
 template<class T> matrix<T>  orth  (const matrix<T>& m);                        // Gram-Schmidt orthonormalization of M
-template<class T> matrix<T>  eigen (const matrix<T>& m);                        // eigen vectors of symmetric M
+template<class T> matrix<T>  eigen (const matrix<T>& m, double tol=0, int iter=-1);  // eigen vectors of symmetric M
 template<class T> matrix<T>  getvec(const matrix<T>& m, size_t j);              // get column vector Mj
 template<class T> void       setvec(      matrix<T>& m, size_t j, const matrix<T>& v);  // set column vector Mj to V
 template<class T> matrix<T>  getsub(const matrix<T>& m, size_t i0, size_t j0, size_t r, size_t c);  // get submatrix
@@ -265,13 +265,23 @@ template<class T> matrix<T> orth(const matrix<T>& m0){
 }
 
 
+// Utilities only for eigen()
+template<class T> double eigen_error(const matrix<T>& m){
+  T s(0);
+  for(size_t i=0; i<m.nrow(); i++)
+    for(size_t j=0; j<m.ncol(); j++)
+      if(i!=j) s+=cnj(m(i,j))*m(i,j);
+  return sqrt(std::abs(s));
+}
+
+
 // Eigen vectors of symmetric M (an orthonormal frame U s.t. U^T M U = diagonal)
-template<class T> matrix<T> eigen(const matrix<T>& m0){
+template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
   if(m0.nrow()!=m0.ncol()) throw std::domain_error("eigen(M): not square");
   size_t n=m0.nrow();
   matrix<T> m=m0+tp(m0), u=matrix<T>(n,n)+T(1);
 
-  for(int extra=m0.dim(); extra; ){
+  while(iter--){
     // (i0,j0) = argmax_(i,j) |M(i,j)|
     size_t i0=0, j0=1;
     for(size_t i=0; i<n; i++)
@@ -286,11 +296,11 @@ template<class T> matrix<T> eigen(const matrix<T>& m0){
     rot(j0,i0)=sin(th);  rot(j0,j0)= cos(th);
 
     // Rotate and check convergence
-    T s0=0;  for(size_t k=0; k<n; k++) s0+=m(k,k)*m(k,k);  // norm^2 of diagonal part - monotoincally increasing in theory
+    double err0=eigen_error(m);
     u=u*rot;
     m=tp(u)*m0*u;
-    T s1=0;  for(size_t k=0; k<n; k++) s1+=m(k,k)*m(k,k);
-    if(!(s0<s1)) extra--;  // almost done, but try extra loop to avoid calculation error
+    double err1=eigen_error(m);
+    if(err1<tol or !(err1<err0)) break;
   }
 
   return u;

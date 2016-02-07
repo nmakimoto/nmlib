@@ -266,12 +266,13 @@ template<class T> matrix<T> orth(const matrix<T>& m0){
 
 
 // Utilities only for eigen()
-template<class T> double eigen_error(const matrix<T>& m){
-  T s(0);
-  for(size_t i=0; i<m.nrow(); i++)
-    for(size_t j=0; j<m.ncol(); j++)
-      if(i!=j) s+=cnj(m(i,j))*m(i,j);
-  return sqrt(std::abs(s));
+template<class T> double eigen_error(const matrix<T>& m, size_t i0, size_t j0){
+  T s=0;
+  for(size_t k=0; k<m.nrow(); k++){
+    if(k!=i0) s+=cnj(m(k,i0))*m(k,i0)+cnj(m(i0,k))*m(i0,k);
+    if(k!=j0) s+=cnj(m(k,j0))*m(k,j0)+cnj(m(j0,k))*m(j0,k);
+  }
+  return std::abs(s);  // |off diagonal part|^2
 }
 template<class T> void eigen_halfangle(T x, T y, T& c, T& s){
   T t=atan2(y,x)/2;
@@ -289,7 +290,7 @@ template<class T> void eigen_halfangle(std::complex<T> x, std::complex<T> y, std
 template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
   if(m0.nrow()!=m0.ncol()) throw std::domain_error("eigen(M): not square");
   size_t n=m0.nrow();
-  matrix<T> m=m0+tp(m0), u=matrix<T>(n,n)+T(1);
+  matrix<T> m=m0, u=matrix<T>(n,n)+T(1);
 
   while(iter--){
     // (i0,j0) = argmax_(i,j) |M(i,j)|
@@ -298,20 +299,15 @@ template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
       for(size_t j=0; j<n; j++)
 	if( i!=j and std::abs(m(i0,j0))<=std::abs(m(i,j)) ) { i0=i; j0=j; }
 
-    // Givens rotation by c=cos(t),s=sin(t)
-    T c,s;
-    eigen_halfangle(m(i0,i0)-m(j0,j0),T(2)*m(i0,j0),c,s);  // (x,y)=(r cos(2t),r sin(2t)) --> (c,s)=(cos(t),sin(t))
-    matrix<T> rot(n,n);
-    rot+=T(1);
-    rot(i0,i0)=c;       rot(i0,j0)=-s;
-    rot(j0,i0)=cnj(s);  rot(j0,j0)= c;
-
-    // Rotate and check convergence
-    double err0=eigen_error(m);
-    u=u*rot;
-    m=tp(u)*m0*u;
-    double err1=eigen_error(m);
-    if(err1<tol or !(err1<err0)) break;
+    // Givens rotation R for (i0,j0)
+    double err0=eigen_error(m,i0,j0);  // (will be decreased by 2|M(i0,j0)|^2 after rotation)
+    T c,s,p,q;
+    eigen_halfangle(m(i0,i0)-m(j0,j0),T(2)*m(i0,j0),c,s);  // (x,y)=(r cos(2th),r sin(2th)) --> (c,s)=(cos(th),sin(th))
+    for(size_t i=0; i<n; i++){ p=u(i,i0); q=u(i,j0); u(i,i0)=c*p+cnj(s)*q; u(i,j0)=    -s *p+c*q; }  // U=U*R(th)
+    for(size_t i=0; i<n; i++){ p=m(i,i0); q=m(i,j0); m(i,i0)=c*p+cnj(s)*q; m(i,j0)=    -s *p+c*q; }  // M=M*R(th)
+    for(size_t j=0; j<n; j++){ p=m(i0,j); q=m(j0,j); m(i0,j)=c*p+    s *q; m(j0,j)=-cnj(s)*p+c*q; }  // M=R(th)^T*M
+    double err1=eigen_error(m,i0,j0);
+    if(!(tol<err1 and err1<err0)) break;
   }
 
   return u;

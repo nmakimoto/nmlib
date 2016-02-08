@@ -95,8 +95,6 @@ template<class T> matrix<std::complex<T> > conj(const matrix<std::complex<T> >& 
 template<class T> matrix<T> real(const matrix<T>& m);
 template<class T> matrix<T> imag(const matrix<T>& m);
 template<class T> matrix<T> conj(const matrix<T>& m);
-template<class T> std::complex<T> cnj(std::complex<T> x);
-template<class T>              T  cnj(             T  x);
 
 // stream I/O
 template<class T> std::istream& operator>>(std::istream& str,       matrix<T>& m);  // str>>M
@@ -104,6 +102,14 @@ template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m
 
 
 /******** Implementation ********/
+
+// Private utils for complex/real number
+template<class T> std::complex<T> cnj (std::complex<T> x){ return std::conj(x); }
+template<class T>              T  cnj (             T  x){ return           x;  }
+template<class T> std::complex<T> sgn (std::complex<T> x){ return std::polar(T(1),std::arg(x)); }
+template<class T>              T  sgn (             T  x){ return x>0 ? +T(1) : -T(1); }
+template<class T>              T  nrm2(std::complex<T> x){ return std::norm(x); }
+template<class T>              T  nrm2(             T  x){ return x*x; }
 
 // Class methods
 template<class T>        matrix<T>::matrix(size_t r, size_t c): row(r), col(c), val(r*c) {}
@@ -383,8 +389,6 @@ template<class T> matrix<std::complex<T> > conj(const matrix<std::complex<T> >& 
 template<class T> matrix<T> real(const matrix<T>& m){ return m; }
 template<class T> matrix<T> imag(const matrix<T>& m){ return matrix<T>(m.nrow(),m.ncol()); }
 template<class T> matrix<T> conj(const matrix<T>& m){ return m; }
-template<class T> std::complex<T> cnj(std::complex<T> x){ return std::conj(x); }
-template<class T>              T  cnj(             T  x){ return           x;  }
 
 
 // stream I/O (format: r c m00 m01... m10 m11...)

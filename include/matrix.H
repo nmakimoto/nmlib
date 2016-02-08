@@ -271,27 +271,6 @@ template<class T> matrix<T> orth(const matrix<T>& m0){
 }
 
 
-// Utilities only for eigen()
-template<class T> double eigen_error(const matrix<T>& m, size_t i0, size_t j0){
-  T s=0;
-  for(size_t k=0; k<m.nrow(); k++){
-    if(k!=i0) s+=cnj(m(k,i0))*m(k,i0)+cnj(m(i0,k))*m(i0,k);
-    if(k!=j0) s+=cnj(m(k,j0))*m(k,j0)+cnj(m(j0,k))*m(j0,k);
-  }
-  return std::abs(s);  // |off diagonal part|^2
-}
-template<class T> void eigen_halfangle(T x, T y, T& c, T& s){
-  T t=atan2(y,x)/2;
-  c=cos(t);
-  s=sin(t);
-}
-template<class T> void eigen_halfangle(std::complex<T> x, std::complex<T> y, std::complex<T>& c, std::complex<T>&s){
-  T c2=cos(atan2(std::abs(y),std::abs(x)));
-  c=sqrt(std::abs(1+c2)/2);
-  s=sqrt(std::abs(1-c2)/2) * std::polar<T>(1,std::arg(x*y));
-}
-
-
 // Eigen vectors of symmetric M (an orthonormal frame U s.t. U^T M U = diagonal)
 template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
   if(m0.nrow()!=m0.ncol()) throw std::domain_error("eigen(M): not square");
@@ -305,14 +284,25 @@ template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
       for(size_t j=0; j<n; j++)
 	if( i!=j and std::abs(m(i0,j0))<=std::abs(m(i,j)) ) { i0=i; j0=j; }
 
-    // Givens rotation R for (i0,j0)
-    double err0=eigen_error(m,i0,j0);  // (will be decreased by 2|M(i0,j0)|^2 after rotation)
+    // error before rotation - will be decreased by 2|M(i0,j0)|^2 after rotation
+    double err0=0;
+    for(size_t k=0; k<n; k++)
+      err0 += (k==i0 ? 0 : nrm2(m(k,i0))+nrm2(m(i0,k))) + (k==j0 ? 0 :nrm2(m(k,j0))+nrm2(m(j0,k)));
+
+    // Givens rotation R - atan2(2mij,mii-mjj)/2
     T c,s,p,q;
-    eigen_halfangle(m(i0,i0)-m(j0,j0),T(2)*m(i0,j0),c,s);  // (x,y)=(r cos(2th),r sin(2th)) --> (c,s)=(cos(th),sin(th))
-    for(size_t i=0; i<n; i++){ p=u(i,i0); q=u(i,j0); u(i,i0)=c*p+cnj(s)*q; u(i,j0)=    -s *p+c*q; }  // U=U*R(th)
-    for(size_t i=0; i<n; i++){ p=m(i,i0); q=m(i,j0); m(i,i0)=c*p+cnj(s)*q; m(i,j0)=    -s *p+c*q; }  // M=M*R(th)
-    for(size_t j=0; j<n; j++){ p=m(i0,j); q=m(j0,j); m(i0,j)=c*p+    s *q; m(j0,j)=-cnj(s)*p+c*q; }  // M=R(th)^T*M
-    double err1=eigen_error(m,i0,j0);
+    p=m(i0,i0)-m(j0,j0);
+    q=T(2)*m(i0,j0);
+    c = cos(atan2(std::abs(q),std::abs(p))/2);
+    s = sin(atan2(std::abs(q),std::abs(p))/2) * sgn(cnj(p)) * sgn(q);
+    for(size_t i=0; i<n; i++){ p=u(i,i0); q=u(i,j0); u(i,i0)=c*p+cnj(s)*q; u(i,j0)=    -s *p+c*q; }  // U=U*R
+    for(size_t i=0; i<n; i++){ p=m(i,i0); q=m(i,j0); m(i,i0)=c*p+cnj(s)*q; m(i,j0)=    -s *p+c*q; }  // M=M*R
+    for(size_t j=0; j<n; j++){ p=m(i0,j); q=m(j0,j); m(i0,j)=c*p+    s *q; m(j0,j)=-cnj(s)*p+c*q; }  // M=R^T*M
+
+    // error after rotation - check for convergence
+    double err1=0;
+    for(size_t k=0; k<n; k++)
+      err1 += (k==i0 ? 0 : nrm2(m(k,i0))+nrm2(m(i0,k))) + (k==j0 ? 0 :nrm2(m(k,j0))+nrm2(m(j0,k)));
     if(!(tol<err1 and err1<err0)) break;
   }
 

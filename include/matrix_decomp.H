@@ -1,4 +1,4 @@
-// Matrix decomposition tools - LU/LUP
+// Matrix decomposition tools - LU/LUP, QR
 
 
 #ifndef MATRIX_DECOMP_H
@@ -14,6 +14,9 @@ namespace nmlib{
   // LU and LUP decomposition of A=(P)LU
   template<class T> void lu_decomp   (matrix<T>& l, matrix<T>& u,               const matrix<T>& a);
   template<class T> void lup_decomp  (matrix<T>& l, matrix<T>& u, matrix<T>& p, const matrix<T>& a, bool pivote=true);
+
+  // QR decompoosition of A=QR
+  template<class T> void qr_decomp   (matrix<T>& q, matrix<T>& r,               const matrix<T>& a);
 
 
   /******** Implementation ********/
@@ -52,6 +55,37 @@ namespace nmlib{
 	T s=a(perm[i],k);  // (PA)(i,k)
 	for(size_t j=0; j<i; j++) s-=l(i,j)*u(j,k);
 	u(i,k)=s;
+      }
+    }
+  }
+
+
+  // QR decomposition of M  (M=QR, Q:unitary, R:upper triangular)
+  template<class T> void qr_decomp(matrix<T>& q, matrix<T>& r, const matrix<T>& a){
+    size_t n=a.nrow();
+    r=a;
+    for(size_t k=0; k<n-1; k++){
+      // v = Householder reflection direction
+      matrix<T> b=getsub(r,k,k,n-k,1), v=b;
+      v(0)+=norm(v)*sgn(v(0));  // v/|v| <--> ek
+      v/=T(norm(v));  // (handle division by zero...)
+
+      // reflection - h=1-2vv^T; q=qh; r=hr;
+      matrix<T> qv=getsub(q,0,k,n,n-k)*v, vr=tp(v)*getsub(r,k,0,n-k,n);
+      for(size_t i=0; i<n; i++){
+	for(size_t j=0; j<n-k; j++){
+	  q(i,k+j)-=T(2)*qv(i)*cnj(v(j));  // q=qh
+	  r(k+j,i)-=T(2)*v(j)*vr(i);  // r=hr
+	}
+      }
+    }
+
+    // normalizization - r(i,i)>=0
+    for(size_t i=0; i<n; i++){
+      T s=sgn(r(i,i));
+      for(size_t j=0; j<n; j++){
+	r(i,j)*=cnj(s);
+	q(j,i)*=s;
       }
     }
   }

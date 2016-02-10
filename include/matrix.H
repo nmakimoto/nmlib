@@ -22,12 +22,13 @@ typedef matrix<double> Matrix;   // real matrix (alias)
 
 template<class T> class matrix{
 public:
-  explicit matrix(size_t r=0, size_t c=1);    // rxc zero matrix
+  explicit matrix(void);                      // empty matrix
+  explicit matrix(size_t r, size_t c=1);      // rxc zero matrix
   explicit matrix(const std::vector<T>& v);   // nx1 val=v
   explicit matrix(const T *v0, const T *vn);  // nx1 val=[v0..vn)
-  operator matrix<std::complex<T> >(void) const;
   explicit matrix(T x, T y, T z);             // 3-vector
   operator std::vector<T>          (void) const;
+  operator matrix<std::complex<T> >(void) const;
 
   size_t nrow(void) const;  // number of rows
   size_t ncol(void) const;  // number of columns
@@ -112,6 +113,7 @@ template<class T>              T  nrm2(std::complex<T> x){ return std::norm(x); 
 template<class T>              T  nrm2(             T  x){ return x*x; }
 
 // Class methods
+template<class T>        matrix<T>::matrix(void): row(0), col(0), val() {}
 template<class T>        matrix<T>::matrix(size_t r, size_t c): row(r), col(c), val(r*c) {}
 template<class T>        matrix<T>::matrix(const std::vector<T>& v): row(v.size()), col(1), val(v) {}
 template<class T>        matrix<T>::matrix(const T *v0, const T *vn): row(vn-v0), col(1), val(v0,v0) {}

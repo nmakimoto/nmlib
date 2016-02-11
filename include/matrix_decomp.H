@@ -1,4 +1,4 @@
-// Matrix decomposition tools - LU/LUP, QR
+// Matrix decomposition tools - LU/LUP, QR, tridiagonalization
 
 
 #ifndef MATRIX_DECOMP_H
@@ -17,6 +17,9 @@ namespace nmlib{
 
   // QR decompoosition of A=QR
   template<class T> void qr_decomp   (matrix<T>& q, matrix<T>& r,               const matrix<T>& a);
+
+  // Tridiagonalization D=U'AU of symmetric A
+  template<class T> void tridiag     (matrix<T>& u, matrix<T>& d,               const matrix<T>& a, double tol=0);
 
 
   /******** Implementation ********/
@@ -87,6 +90,33 @@ namespace nmlib{
 	r(i,j)*=cnj(s);
 	q(j,i)*=s;
       }
+    }
+  }
+
+
+  // Tridiagonalization D=U'AU of symmetric A (U:orthogonal, D:tridiagonal)
+  template<class T> void tridiag(matrix<T>& u, matrix<T>& d, const matrix<T>& a, double tol){
+    size_t n=a.nrow();
+    u=matrix<T>(n,n)+T(1);
+    d=a;
+
+    for(size_t k=1; k<n-1; k++){
+      // reflection vector v s.t. b:=lower (n-k) of (k-1)-th row <--> |b|ek
+      matrix<T> v=getsub(d,k,k-1,n-k,1);
+      v(0)+=norm(v)*sgn(v(0));
+      if(std::abs(v(0))<=tol) continue;  // eigen
+      v/=T(norm(v));
+
+      // h=1-2vv^T; d=uh; d=hdh;
+      matrix<T> uv=getsub(u,0,k,n,n-k)*v;
+      for(size_t i=0; i<n; i++)
+	for(size_t j=0; j<n-k; j++) u(i,k+j)-=T(2)*uv(i)*cnj(v(j));  // u=uh
+      matrix<T> dv=getsub(d,0,k,n,n-k)*v;
+      for(size_t i=0; i<n; i++)
+	for(size_t j=0; j<n-k; j++) d(i,k+j)-=T(2)*dv(i)*cnj(v(j));  // d=dh
+      matrix<T> vd=tp(v)*getsub(d,k,0,n-k,n);
+      for(size_t i=0; i<n; i++)
+	for(size_t j=0; j<n-k; j++) d(k+j,i)-=T(2)*v(j)*vd(i);  // d=hd
     }
   }
 

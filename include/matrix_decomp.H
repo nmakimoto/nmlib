@@ -1,4 +1,4 @@
-// Matrix decomposition tools - LU/LUP, QR, tridiagonalization
+// Matrix decomposition tools - LU/LUP, QR, tridiagonalization, eigensolver
 
 
 #ifndef MATRIX_DECOMP_H
@@ -20,6 +20,10 @@ namespace nmlib{
 
   // Tridiagonalization D=U'AU of symmetric A
   template<class T> void tridiag     (matrix<T>& u, matrix<T>& d,               const matrix<T>& a, double tol=0);
+
+  // Eigen solver D=U'AU of symmetric/tridiagonal A (QR algorithm)
+  template<class T> void eigen_qr     (matrix<T>& u, matrix<T>& d,              const matrix<T>& a, bool shift=false, double tol=1.e-8, int iter=1000);
+  template<class T> void eigen_tridiag(matrix<T>& u, matrix<T>& d,              const matrix<T>& a, bool shift=false, double tol=1.e-8, int iter=1000);
 
 
   /******** Implementation ********/
@@ -117,6 +121,54 @@ namespace nmlib{
       matrix<T> vd=tp(v)*getsub(d,k,0,n-k,n);
       for(size_t i=0; i<n; i++)
 	for(size_t j=0; j<n-k; j++) d(k+j,i)-=T(2)*v(j)*vd(i);  // d=hd
+    }
+  }
+
+
+  // Eigen solver D=U'AU of symmetric A (U:orthogonal, D:diagonal) (QR algorithm)
+  template<class T> void eigen_qr(matrix<T>& u, matrix<T>& d, const matrix<T>& a, bool shift, double tol, int iter){
+    matrix<T> u1,d1;
+    tridiag(u1,d1,a,tol);
+    eigen_tridiag(u,d,d1,shift,tol,iter);
+    u=u1*u;
+  }
+
+
+  // Eigen solver D=U'AU of tridiagonal A (U:orthogonal, D:diagonal) (QR algorithm)
+  template<class T> void eigen_tridiag(matrix<T>& u, matrix<T>& d, const matrix<T>& a, bool shift, double tol, int iter){
+    size_t n=a.nrow(), n1=n;
+    u=matrix<T>(n,n)+T(1);
+    d=a;
+
+    for(int it=0; it<iter; it++){
+      // shift
+      T lam=0;
+      if(shift){
+	while(n1>1 and std::abs(d(n1-1,n1-2))<tol/sqrt(n)) n1--;
+	lam=d(n1-1,n1-1);
+      }
+      d-=lam;
+
+      // Givens rotation G by th=atan2(dji,dii)
+      matrix<T> cc(n),ss(n);
+      for(size_t i=0; i<n1-1; i++){
+	size_t j=i+1;
+	T c,s,th;  // c=|dii|/r, s= dji/r (dii/|dii|)~
+	th=atan2(std::abs(d(j,i)),std::abs(d(i,i)));
+	c=cc(i)=cos(th);
+	s=ss(i)=sin(th) * sgn(cnj(d(i,i))) * sgn(d(j,i));  // choose sign to avoid underflow and to keep G unitary
+	for(size_t k=0; k<n1; k++){ T p=d(i,k),q=d(j,k); d(i,k)=c*p+cnj(s)*q; d(j,k)=-s*p+c*q; }  // D=G*D
+      }
+      for(size_t i=0; i<n1-1; i++){
+	size_t j=i+1;
+	T c=cc(i),s=ss(i),p,q;
+	for(size_t k=0; k<n; k++){ p=d(k,i); q=d(k,j); d(k,i)=c*p+s*q; d(k,j)=-cnj(s)*p+c*q; }  // D=D*G^T  G=| c s~|
+	for(size_t k=0; k<n; k++){ p=u(k,i); q=u(k,j); u(k,i)=c*p+s*q; u(k,j)=-cnj(s)*p+c*q; }  // U=U*G^T    |-s c |
+      }
+      d+=lam;
+
+      T err=0; for(size_t k=1; k<n1; k++) err+=nrm2(d(k-1,k));
+      if( std::abs(err)<tol/sqrt(n) ) break;  // (note: not monotonically decreasing)
     }
   }
 

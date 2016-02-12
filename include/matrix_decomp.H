@@ -25,6 +25,9 @@ namespace nmlib{
   template<class T> void eigen_qr     (matrix<T>& u, matrix<T>& d,              const matrix<T>& a, bool shift=false, double tol=1.e-8, int iter=1000);
   template<class T> void eigen_tridiag(matrix<T>& u, matrix<T>& d,              const matrix<T>& a, bool shift=false, double tol=1.e-8, int iter=1000);
 
+  // SVD(Singular Value Decomposition) of A=UDV^T
+  template<class T> void svd_decomp(matrix<T>& u, matrix<T>& d, matrix<T>& v, const matrix<T>& a);
+
 
   /******** Implementation ********/
 
@@ -170,6 +173,15 @@ namespace nmlib{
       T err=0; for(size_t k=1; k<n1; k++) err+=nrm2(d(k-1,k));
       if( std::abs(err)<tol/sqrt(n) ) break;  // (note: not monotonically decreasing)
     }
+  }
+
+
+  // SVD(Singular Value Decomposition) of A=UDV^T (U,V:orthogonal, D:diagonal)
+  template<class T> void svd_decomp(matrix<T>& u, matrix<T>& d, matrix<T>& v, const matrix<T>& a){
+    if(a.nrow()<a.ncol()){ svd_decomp(v,d,u,tp(a)); return; }
+    v=eigen(tp(a)*a);
+    u=orth(a*v);
+    d=tp(u)*a*v;
   }
 
 

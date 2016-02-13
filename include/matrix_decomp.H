@@ -40,9 +40,10 @@ namespace nmlib{
 
   // LUP decomposition with pivoting (PA=LU, P=pivoting of rows)
   template<class T> void lup_decomp(matrix<T>& l, matrix<T>& u, matrix<T>& p, const matrix<T>& a, bool pivote){
+    if(a.nrow()!=a.ncol()) throw std::domain_error("lup_decomp(): A is not square");
     size_t n=a.nrow();
-    std::vector<size_t> perm(n);  // P(i,j)=1 if j=perm[i], 0 otherwise
 
+    std::vector<size_t> perm(n);  // P(i,j)=1 if j=perm[i], 0 otherwise
     l=u=p=matrix<T>(n,n);
     for(size_t k=0; k<n; k++) perm[k]=k;
 
@@ -72,8 +73,12 @@ namespace nmlib{
 
   // QR decomposition of M  (M=QR, Q:unitary, R:upper triangular)
   template<class T> void qr_decomp(matrix<T>& q, matrix<T>& r, const matrix<T>& a){
+    if(a.nrow()!=a.ncol()) throw std::domain_error("qr_decomp(): A is not square");
     size_t n=a.nrow();
+
+    q=matrix<T>(n,n)+T(1);
     r=a;
+
     for(size_t k=0; k<n-1; k++){
       // v = Householder reflection direction
       matrix<T> b=getsub(r,k,k,n-k,1), v=b;
@@ -103,7 +108,9 @@ namespace nmlib{
 
   // Tridiagonalization D=U'AU of symmetric A (U:orthogonal, D:tridiagonal)
   template<class T> void tridiag(matrix<T>& u, matrix<T>& d, const matrix<T>& a, double tol){
+    if(a.nrow()!=a.ncol()) throw std::domain_error("tridiag(): A is not square");
     size_t n=a.nrow();
+
     u=matrix<T>(n,n)+T(1);
     d=a;
 
@@ -139,7 +146,9 @@ namespace nmlib{
 
   // Eigen solver D=U'AU of tridiagonal A (U:orthogonal, D:diagonal) (QR algorithm)
   template<class T> void eigen_tridiag(matrix<T>& u, matrix<T>& d, const matrix<T>& a, bool shift, double tol, int iter){
+    if(a.nrow()!=a.ncol()) throw std::domain_error("eigen_tridiag(): A is not square");
     size_t n=a.nrow(), n1=n;
+
     u=matrix<T>(n,n)+T(1);
     d=a;
 

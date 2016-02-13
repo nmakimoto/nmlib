@@ -45,27 +45,27 @@ namespace nmlib{
 
     std::vector<size_t> perm(n);  // P(i,j)=1 if j=perm[i], 0 otherwise
     l=u=p=matrix<T>(n,n);
-    for(size_t k=0; k<n; k++) perm[k]=k;
+    for(size_t i=0; i<n; i++) perm[i]=i;
 
-    for(size_t k=0; k<n; k++){
-      // Pivoting (will not affect the already established portion of L and U)
+    for(size_t i=0; i<n; i++){
+      // Pivote rows below i (will not affect the already established portion of L and U)
       if(pivote){
-	for(size_t k1=k; k1<n; k1++)
-	  if(std::abs(a(perm[k],k))<std::abs(a(perm[k1],k))) std::swap(perm[k],perm[k1]);
+	for(size_t i1=i; i1<n; i1++)
+	  if(std::abs(a(perm[i],i))<std::abs(a(perm[i1],i))) std::swap(perm[i],perm[i1]);
       }
-      p(k,perm[k])=1;
+      p(i,perm[i])=1;
 
-      // Determine upper left portion of L and U
-      l(k,k)=T(1);
-      for(size_t j=0; j<k; j++){  // L(k,j=0..k-1)
-	T s=a(perm[k],j);  // (PA)(k,j)
-	for(size_t i=0; i<j; i++) s-=l(k,i)*u(i,j);
-	l(k,j)=s/u(j,j);  // (handle division by zero...)
+      // Determine i-th row of L and U
+      l(i,i)=T(1);
+      for(size_t j=0; j<i; j++){  // L(i,j=0..i-1)
+	T s=a(perm[i],j);  // (PA)(i,j)
+	for(size_t k=0; k<j; k++) s-=l(i,k)*u(k,j);
+	l(i,j)=s/u(j,j);  // (handle division by zero...)
       }
-      for(size_t i=0; i<=k; i++){  // U(i=0..k,k)
-	T s=a(perm[i],k);  // (PA)(i,k)
-	for(size_t j=0; j<i; j++) s-=l(i,j)*u(j,k);
-	u(i,k)=s;
+      for(size_t j=i; j<n; j++){  // U(i,j=i..n-1)
+	T s=a(perm[i],j);  // (PA)(i,j)
+	for(size_t k=0; k<i; k++) s-=l(i,k)*u(k,j);
+	u(i,j)=s;
       }
     }
   }

@@ -11,6 +11,14 @@
 using namespace nmlib;
 
 
+class Dummy{
+public:
+  double r,c;
+};
+std::istream& operator>>(std::istream& str,       Dummy& x){ str >> x.r >> x.c; return str; }
+std::ostream& operator<<(std::ostream& str, const Dummy& x){ str << x.r << '\t' << x.c << '\t'; return str; }
+
+
 TEST(io,vector){
   std::stringstream str1, str2;
   std::vector<double> xx;
@@ -74,4 +82,16 @@ TEST(io,string){
   EXPECT_THROW(str2any(s,xx), std::runtime_error);
   s = "3 11 11.1a 22 22.2 33 33.3";
   EXPECT_THROW(str2any(s,xx), std::runtime_error);
+}
+
+
+TEST(io,userclass){
+  std::string s="11 22";
+  Dummy x;
+
+  x=str2any<Dummy>(s);
+  EXPECT_EQ(any2str(x),"11\t22\t");
+
+  x=str2any<Dummy>(s);
+  EXPECT_EQ(any2str(x,3),"1.100e+01\t2.200e+01\t");  // precision=3
 }

@@ -1,7 +1,8 @@
 GTESTDIR=/usr/src/gtest
 CC=g++
 CXXFLAGS=-Wall -O -I../include -I$(GTESTDIR)
-SRC=$(wildcard gtest_*.C)
+LDLIBS=-lpthread
+SRC=$(wildcard gtest_*.C) random.C
 BIN=gtest_main
 
 

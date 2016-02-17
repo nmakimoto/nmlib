@@ -39,6 +39,8 @@ TEST(diff,gradientN1){
     }
     EXPECT_NEAR(norm(gradient(f_n1,x,dx,false)-dy), 0, 10.e-6);  // (df/dxj)_j
     EXPECT_NEAR(norm(gradient(f_n1,x,dx,true )-dy), 0, 10.e-12);
+    EXPECT_NEAR(norm(gradient(f_n1,x,dx(0),false)-dy), 0, 10.e-6);
+    EXPECT_NEAR(norm(gradient(f_n1,x,dx(0),true)-dy), 0, 10.e-12);
   }
 }
 
@@ -60,5 +62,7 @@ TEST(diff,jacobian){
     }
     EXPECT_NEAR(norm(jacobian(f_nm,x,dx,false)-dy), 0, 10.e-6);  // (dfi/dxj)_ij
     EXPECT_NEAR(norm(jacobian(f_nm,x,dx,true )-dy), 0, 10.e-12);
+    EXPECT_NEAR(norm(jacobian(f_nm,x,dx(0),false)-dy), 0, 10.e-6);
+    EXPECT_NEAR(norm(jacobian(f_nm,x,dx(0),true )-dy), 0, 10.e-12);
   }
 }

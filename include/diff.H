@@ -15,10 +15,12 @@ namespace nmlib{
 template<class F,class T>        T  gradient(const F& f, const        T & x,        const T & dx , bool romberg=false);  // df/dx
 template<class F,class T>        T  gradient(const F& f, const matrix<T>& x, int j, const T & dxj, bool romberg=false);  // df/dxj
 template<class F,class T> matrix<T> gradient(const F& f, const matrix<T>& x, const matrix<T>& dx , bool romberg=false);  // (df/dxj)_j
+template<class F,class T> matrix<T> gradient(const F& f, const matrix<T>& x,        const T & dt , bool romberg=false);  // (df/dxj)_j
 
 // Jacobian of vector-valued function f: R^n --> R^m
 template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x, int j, const T & dxj, bool romberg=false);  // (dfi/dxj)_i
 template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x, const matrix<T>& dx , bool romberg=false);  // (dfi/dxj)_ij
+template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x,        const T & dt , bool romberg=false);  // (dfi/dxj)_ij
 
 
 /******** Implementation ********/
@@ -46,6 +48,11 @@ template<class Func,class T> matrix<T> gradient(const Func& f, const matrix<T>& 
   for(int j=0; j<r; j++) dy(j)=gradient(f,x,j,dx(j),romberg);
   return dy;
 }
+template<class Func,class T> matrix<T> gradient(const Func& f, const matrix<T>& x,        const T & dt, bool romberg){
+  matrix<T> dx(x.dim());
+  for(size_t i=0; i<dx.dim(); i++) dx(i)=dt;  // dx=(dt ... dt)^T
+  return gradient(f,x,dx,romberg);
+}
 
 // (dfi/dxj)_i
 template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x, int j, const T& dxj, bool romberg){
@@ -63,6 +70,11 @@ template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& 
   matrix<T> dy(r,c);
   for(int j=0; j<c; j++) setvec(dy,j,jacobian(f,x,j,dx(j),romberg));
   return dy;
+}
+template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x,        const T & dt, bool romberg){
+  matrix<T> dx(x.dim());
+  for(size_t i=0; i<dx.dim(); i++) dx(i)=dt;  // dx=(dt ... dt)^T
+  return jacobian(f,x,dx,romberg);
 }
 
 

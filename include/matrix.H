@@ -116,7 +116,7 @@ template<class T>              T  nrm2(             T  x){ return x*x; }
 template<class T>        matrix<T>::matrix(void): row(0), col(0), val() {}
 template<class T>        matrix<T>::matrix(size_t r, size_t c): row(r), col(c), val(r*c) {}
 template<class T>        matrix<T>::matrix(const std::vector<T>& v): row(v.size()), col(1), val(v) {}
-template<class T>        matrix<T>::matrix(const T *v0, const T *vn): row(vn-v0), col(1), val(v0,v0) {}
+template<class T>        matrix<T>::matrix(const T *v0, const T *vn): row(vn-v0), col(1), val(v0,vn) {}
 template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3) {  val[0]=x;  val[1]=y;  val[2]=z;  }
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
 template<class T> size_t matrix<T>::ncol(void) const {  return col;  }

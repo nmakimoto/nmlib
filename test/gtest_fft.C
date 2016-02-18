@@ -48,3 +48,11 @@ TEST(fft,size){
   xx=VecC(20); EXPECT_THROW(fft(xx), std::domain_error);
   xx=VecC(31); EXPECT_THROW(fft(xx), std::domain_error);
 }
+
+
+TEST(fft,twodim){
+  size_t r=64,c=128;
+  VecC xx=random_sample(r*c),yy(r*c);
+  EXPECT_NEAR(norm(MatC(ifft2d(fft2d(xx,r,c),r,c))-MatC(xx)), 0, 1.e-8);
+  EXPECT_NEAR(norm(MatC(fft2d(ifft2d(xx,r,c),r,c))-MatC(xx)), 0, 1.e-8);
+}

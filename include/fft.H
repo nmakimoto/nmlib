@@ -17,6 +17,8 @@ namespace nmlib{
 
 template<class Vec> Vec fft    (const Vec& xx, bool inverse=false);  // FFT
 template<class Vec> Vec ifft   (const Vec& ff);                      // inverse FFT
+template<class Vec> Vec fft2d  (const Vec& xx, size_t r, size_t c, bool inverse=false);
+template<class Vec> Vec ifft2d (const Vec& ff, size_t r, size_t c);
 
 template<class Vec> Vec powersp(const Vec& xx);                      // power spectrum
 template<class Vec> Vec lowpass(const Vec& xx, unsigned f_cut);      // lowpass filter
@@ -64,6 +66,23 @@ template<class Vec> Vec fft(const Vec& xx0, bool inverse){
 }
 
 
+template<class Vec> Vec fft2d(const Vec& xx, size_t r, size_t c, bool finv){
+  Vec yy(r*c),y1(c);
+  for(size_t i=0; i<r; i++){
+    for(size_t j=0; j<c; j++) y1[j]=xx[i*c+j];
+    y1=fft(y1,finv);
+    for(size_t j=0; j<c; j++) yy[i*c+j]=y1[j];
+  }
+  Vec zz(r*c),z1(r);
+  for(size_t j=0; j<c; j++){
+    for(size_t i=0; i<r; i++) z1[i]=yy[i*c+j];
+    z1=fft(z1,finv);
+    for(size_t i=0; i<r; i++) zz[i*c+j]=z1[i];
+  }
+  return zz;
+}
+
+
 template<class Vec> Vec ft_slow(const Vec& xx0, bool inverse){
   typedef typename Vec::value_type Cpx;
   unsigned n=xx0.size(), i, j;
@@ -83,6 +102,7 @@ template<class Vec> Vec ft_slow(const Vec& xx0, bool inverse){
 
 template<class Vec> Vec ifft    (const Vec& ff){  return fft    (ff,true);  }
 template<class Vec> Vec ift_slow(const Vec& ff){  return ft_slow(ff,true);  }
+template<class Vec> Vec ifft2d  (const Vec& ff, size_t r, size_t c){ return fft2d(ff,r,c,true); }
 
 
 template<class Vec> Vec powersp(const Vec& xx){

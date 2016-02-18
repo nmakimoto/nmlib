@@ -156,7 +156,7 @@ namespace nmlib{
       // shift
       T lam=0;
       if(shift){
-	while(n1>1 and std::abs(d(n1-1,n1-2))<tol/sqrt(n)) n1--;
+	while(n1>1 and nrm2(d(n1-1,n1-2))+nrm2(d(n1-2,n1-1))<nrm2(tol)/n) n1--;
 	lam=d(n1-1,n1-1);
       }
       d-=lam;
@@ -179,8 +179,8 @@ namespace nmlib{
       }
       d+=lam;
 
-      T err=0; for(size_t k=1; k<n1; k++) err+=nrm2(d(k-1,k));
-      if( std::abs(err)<tol/sqrt(n) ) break;  // (note: not monotonically decreasing)
+      T err=0; for(size_t k=1; k<n1; k++) err+=nrm2(d(k-1,k))+nrm2(d(k,k-1));
+      if( std::abs(err)<nrm2(tol)/n ) break;  // (note: not monotonically decreasing)
     }
   }
 

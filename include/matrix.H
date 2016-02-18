@@ -27,7 +27,7 @@ public:
   explicit matrix(const std::vector<T>& v);   // nx1 val=v
   explicit matrix(const T *v0, const T *vn);  // nx1 val=[v0..vn)
   explicit matrix(T x, T y, T z);             // 3-vector
-  operator std::vector<T>          (void) const;
+  operator const std::vector  <T>& (void) const;
   operator matrix<std::complex<T> >(void) const;
 
   size_t nrow(void) const;  // number of rows
@@ -128,7 +128,7 @@ template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
 template<class T> size_t matrix<T>::ncol(void) const {  return col;  }
 template<class T> size_t matrix<T>::dim (void) const {  return row*col;  }
-template<class T>        matrix<T>::operator        std::vector <T>  (void) const {  return val;  }
+template<class T>        matrix<T>::operator const std::vector  <T>& (void) const {  return val;  }
 template<class T>        matrix<T>::operator matrix<std::complex<T> >(void) const {  matrix<std::complex<T> > mc(nrow(),ncol()); for(size_t k=0; k<dim(); k++) mc(k)=val[k]; return mc;  }
 template<class T> T      matrix<T>::operator()(size_t i, size_t j) const {  return val[i*col+j];  }
 template<class T> T      matrix<T>::operator()(size_t i          ) const {  return val[i];        }
@@ -427,6 +427,7 @@ template<class T> matrix<T> conj(const matrix<T>& m){ return m; }
 template<class T> std::istream& operator>>(std::istream& str, matrix<T>& m){
   size_t r,c;
   str >> r >> c;
+  if(!str) return str;
   m=matrix<T>(r,c);
   for(size_t k=0; k<r*c; k++) str >> m(k);
   return str;
@@ -434,9 +435,26 @@ template<class T> std::istream& operator>>(std::istream& str, matrix<T>& m){
 template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m){
   size_t r=m.nrow(), c=m.ncol();
   str << r << ' ' << c << '\t';
-  for(size_t i=0; i<r; i++)
-    for(size_t j=0; j<c; j++)
-      str << m(i,j) << (j+1==c ? '\t' : ' ');
+  if(!str) return str;
+  for(size_t k=0; k<r*c; k++) str << m(k) << ((k+1)%c ? ' ' : '\t');
+  return str;
+}
+template<class T> std::istream& read(std::istream& str, matrix<T>& m){
+  size_t r,c;
+  str.read((char*)&r,sizeof(r));
+  str.read((char*)&c,sizeof(c));
+  if(!str) return str;
+  m=matrix<T>(r,c);
+  str.read((char*)&m(0),sizeof(m(0))*r*c);  // note: assumes contiguous memory
+  return str;
+}
+template<class T> std::ostream& write(std::ostream& str, const matrix<T>& m){
+  size_t r=m.nrow(),c=m.ncol();
+  str.write((char*)&r,sizeof(r));
+  str.write((char*)&c,sizeof(c));
+  if(!str) return str;
+  const std::vector<T>& val=m;  // note: &m(0) does not work
+  str.write((char*)&val[0],sizeof(val[0])*r*c);
   return str;
 }
 

@@ -218,16 +218,57 @@ TEST(matrix,orthgonal){
 }
 
 
-// Outer product
-TEST(matrix,outer){
-  Matrix m1,m2;
+// 3D operation
+TEST(matrix,threedim){
+  Matrix m,v0,v1,v2;
+  double th;
 
-  m1=mrand(3,1);
-  m2=mrand(3,1);
-  EXPECT_NEAR(inner(outer(m1,m2),m1), 0, 1.e-12);
-  EXPECT_NEAR(inner(outer(m1,m2),m2), 0, 1.e-12);
-  EXPECT_NEAR(norm(outer(m1,m2)+outer(m2,m1)), 0, 1.e-12);
-  EXPECT_NEAR(norm(outer(Matrix(1,0,0),Matrix(0,1,0))-Matrix(0,0,1)), 0, 1.e-12);  // ex x ey = ez
+  m=mrand(3,3);
+  v0=getvec(m,0);
+  v1=getvec(m,1);
+  v2=getvec(m,2);
+  th=urand1()*M_PI*2;
+
+  // outer product
+  EXPECT_NEAR(norm(outer(v0,v1)+outer(v0,v2)-outer(v0,v1+v2)), 0, 1.e-8);  // linear
+  EXPECT_NEAR(norm(outer(v0,v1)+outer(v1,v0)), 0, 1.e-8);  // alternate
+  EXPECT_NEAR(inner(outer(Matrix(1,0,0),Matrix(0,1,0)),Matrix(0,0,1)), 1, 1.e-8);  // normalized
+
+  // v in R^3 <--> A in so(3)
+  EXPECT_NEAR(norm(asym2vec(vec2asym(th*v0))-th*v0), 0, 1.e-8);  // V<-->A
+  EXPECT_NEAR(norm(vec2asym(th*v0)+tp(vec2asym(th*v0))), 0, 1.e-8);  // A'=-A
+  EXPECT_NEAR(norm(vec2asym(th*v0)*v0), 0, 1.e-8);  // AV=0
+  EXPECT_NEAR(norm(vec2asym(th*v0)*v1-outer(th*v0,v1)), 0, 1.e-8);  // AX=VxX
+
+  // v in R^3 <--> R in SO(3)  (rotation about v by angle |v|)
+  m=orth(mrand(3,3)+3.0);
+  v0=getvec(m,0);
+  v1=getvec(m,1);
+  v2=getvec(m,2);
+  th=urand1()*M_PI*2 * 0.1;
+  EXPECT_NEAR(norm(rot2vec(vec2rot(th*v0))-th*v0), 0, 1.e-8);  // V<-->R
+  EXPECT_NEAR(norm(tp(vec2rot(th*v0))*vec2rot(th*v0)-1.0), 0, 1.e-8);  // R'R=1
+  EXPECT_NEAR(norm(vec2rot(th*v0)*v0-v0), 0, 1.e-8);  // RV=V
+  EXPECT_NEAR(norm(vec2rot(th*v0)*v1-( cos(th)*v1+sin(th)*v2)), 0, 1.e-8);
+  EXPECT_NEAR(norm(vec2rot(th*v0)*v2-(-sin(th)*v1+cos(th)*v2)), 0, 1.e-8);
+  th=5.e-9;  // very small angle
+  EXPECT_NEAR(norm(vec2rot(th*v0)*v0-v0), 0, 1.e-12);
+  EXPECT_NEAR(norm(vec2rot(th*v0)*v1-( cos(th)*v1+sin(th)*v2)), 0, 1.e-12);
+  EXPECT_NEAR(norm(vec2rot(th*v0)*v2-(-sin(th)*v1+cos(th)*v2)), 0, 1.e-12);
+  EXPECT_NEAR(norm(vec2rot(th*v0)-orth(vec2rot(th*v0))), 0, 1.e-16);
+
+  // rotation about coord axis
+  th=urand1()*M_PI*2;
+  for(int k=0; k<3; k++){
+    m=rotabout(k,th);
+    int i=(k+1)%3, j=(k+2)%3;
+    v0=Matrix(3); v0(i)=1;
+    v1=Matrix(3); v1(j)=1;
+    v2=Matrix(3); v2(k)=1;
+    EXPECT_NEAR(norm( cos(th)*v0+sin(th)*v1 - m*v0), 0, 1.e-8);
+    EXPECT_NEAR(norm(-sin(th)*v0+cos(th)*v1 - m*v1), 0, 1.e-8);
+    EXPECT_NEAR(norm(v2-m*v2), 0, 1.e-8);
+  }
 }
 
 
@@ -267,7 +308,6 @@ TEST(matrix,exception){
   EXPECT_THROW(m1*m2 , std::domain_error);
 
   EXPECT_THROW(inner(m1,m2), std::domain_error);
-  EXPECT_THROW(outer(m1,m2), std::domain_error);
   EXPECT_THROW(inv(m1)     , std::domain_error);
   EXPECT_THROW(pow(m1,3)   , std::domain_error);
   EXPECT_THROW(orth(m1)    , std::domain_error);
@@ -283,6 +323,13 @@ TEST(matrix,exception){
 
   EXPECT_THROW(hcat(m1,m2), std::domain_error);
   EXPECT_THROW(vcat(m1,m2), std::domain_error);
+
+  EXPECT_THROW(outer(Matrix(3,3),Matrix(3,1)), std::domain_error);
+  EXPECT_THROW(vec2rot(Matrix(3,3)), std::domain_error);
+  EXPECT_THROW(rot2vec(Matrix(3,1)), std::domain_error);
+  EXPECT_THROW(vec2asym(Matrix(3,3)), std::domain_error);
+  EXPECT_THROW(asym2vec(Matrix(3,1)), std::domain_error);
+  EXPECT_THROW(rotabout(4,0.0), std::domain_error);
 }
 
 

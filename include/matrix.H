@@ -76,7 +76,6 @@ template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2);
 template<class T> T          norm  (const matrix<T>& m);                        // norm |M|
 template<class T> T          norm  (const matrix<std::complex<T> >& m);         // norm |M| (complex M)
 template<class T> T          inner (const matrix<T>& m1, const matrix<T>& m2);  // inner product <M1,M2>
-template<class T> matrix<T>  outer (const matrix<T>& v1, const matrix<T>& v2);  // outer product V1xV2 of 3-vectors
 template<class T> matrix<T>  inv   (const matrix<T>& m);                        // inverse M^-1
 template<class T> matrix<T>  pow   (const matrix<T>& m, int n);                 // power M^n (n<0 is ok)
 template<class T> matrix<T>  tp    (const matrix<T>& m);                        // transpose M^T
@@ -88,6 +87,14 @@ template<class T> matrix<T>  getsub(const matrix<T>& m, size_t i0, size_t j0, si
 template<class T> void       setsub(      matrix<T>& m, size_t i0, size_t j0, const matrix<T> m1);  // set submatrix
 template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // horizontal concatenation
 template<class T> matrix<T>  vcat  (const matrix<T>& m1, const matrix<T>& m2);  // vertical concatenation
+
+// 3D geometry
+template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w);  // V x W
+template<class T> matrix<T> vec2rot (const matrix<T>& v);  // R^3=so(3)-->SO(3) (exp, rotation about v by angle |v|)
+template<class T> matrix<T> rot2vec (const matrix<T>& r);  // SO(3)-->so(3)=R^3 (log, local inverse of the above)
+template<class T> matrix<T> vec2asym(const matrix<T>& v);  // R^3-->so(3) (AX=VxX)
+template<class T> matrix<T> asym2vec(const matrix<T>& a);  // so(3)-->R^3 (AX=VxX)
+template<class T> matrix<T> rotabout(int k, T th);         // rotation about k-th coord axis by angle th[rad]
 
 // Complex/real matrix conversion
 template<class T> matrix<T> real(const matrix<std::complex<T> >& m);
@@ -192,13 +199,6 @@ template<class T> T inner(const matrix<T>& m1, const matrix<T>& m2){
   T t=0;
   for(size_t k=0; k<m1.dim(); k++) t+=cnj(m1(k))*m2(k);
   return t;
-}
-
-
-// Outer product VxW of 3-vectors (aka "cross" product)
-template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w){
-  if( !(v.nrow()==3 and w.ncol()==1 and v.nrow()==3 and v.ncol()==1) ) throw std::domain_error("outer(V,V): not 3-vectors");
-  return matrix<T>(v(1)*w(2)-w(1)*v(2), v(2)*w(0)-w(2)*v(0), v(0)*w(1)-w(0)*v(1));
 }
 
 
@@ -359,6 +359,46 @@ template<class T> matrix<T> vcat(const matrix<T>& m1, const matrix<T>& m2){
     for(size_t j=0; j<m.ncol(); j++)
       m(i,j) = (i<m1.nrow() ? m1(i,j) : m2(i-m1.nrow(),j));
   return m;
+}
+
+
+// 3D geometry
+template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w){  // V x W
+  if( !(v.nrow()==3 and w.ncol()==1 and v.nrow()==3 and v.ncol()==1) ) throw std::domain_error("outer(V,V): not 3-vectors");
+  return matrix<T>(v(1)*w(2)-w(1)*v(2), v(2)*w(0)-w(2)*v(0), v(0)*w(1)-w(0)*v(1));
+}
+template<class T> matrix<T> vec2rot(const matrix<T>& v){  // R^3=so(3)-->SO(3) (exp, rotation about v by angle |v|)
+  if(!(v.nrow()==3 and v.ncol()==1)) throw std::domain_error("vec2rot(V): not a 3-vector");
+  double th=norm(v);
+  if(std::abs(th)<1.e-8){ matrix<T> r=vec2asym(v);  return r*r/T(2)+r+T(1); }
+  else{ matrix<T> r=vec2asym(v/th); return ((T(1)-cos(th))*r+sin(th))*r+T(1); }  // Rodrigues
+}
+template<class T> matrix<T> rot2vec(const matrix<T>& r){  // SO(3)-->so(3)=R^3 (log, local inverse of exp)
+  if(!(r.nrow()==3 and r.ncol()==3)) throw std::domain_error("rot2vec(R): not a 3x3 matrix");
+  matrix<T> a(r(2,1)-r(1,2),r(0,2)-r(2,0),r(1,0)-r(0,1));
+  double th=acos((r(0,0)+r(1,1)+r(2,2)-T(1))/T(2));
+  return (std::abs(th)<1.e-8 ? (1+th*th/6)/2 : th/sin(th)/2) * a;
+}
+template<class T> matrix<T> asym2vec(const matrix<T>& a){  // so(3)-->R^3 (A-->V s.t. AX=VxX)
+  if(!(a.nrow()==3 and a.ncol()==3)) throw std::domain_error("asym2vec(V): not a 3 by 3 matrix");
+  return matrix<T>(a(2,1),a(0,2),a(1,0));
+}
+template<class T> matrix<T> vec2asym(const matrix<T>& v){  // R^3-->so(3) (V-->A s.t. AX=VxX)
+  if(!(v.nrow()==3 and v.ncol()==1)) throw std::domain_error("vec2asym(V): not a 3-vector");
+  matrix<T> a(3,3);
+  a(2,1)=v(0);  a(1,2)=-v(0);
+  a(0,2)=v(1);  a(2,0)=-v(1);
+  a(1,0)=v(2);  a(0,1)=-v(2);
+  return a;
+}
+template<class T> matrix<T> rotabout(int k, T th){  // rotation about k-th coord axis by angle th
+  if(!(0<=k and k<3)) throw std::domain_error("rotabout(k,th): bad axis");
+  matrix<T> r(3,3);
+  int i=(k+1)%3, j=(k+2)%3;
+  r(i,i)=cos(th);  r(i,j)=-sin(th);
+  r(j,i)=sin(th);  r(j,j)= cos(th);
+  r(k,k)=T(1);
+  return r;
 }
 
 

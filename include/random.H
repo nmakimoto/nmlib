@@ -6,6 +6,7 @@
 
 
 #include <cmath>
+#include "matrix.H"
 namespace nmlib{
 
 
@@ -21,11 +22,40 @@ inline double erand(void){ return -log(urand()); }                              
 
 
 // LDS(low-discrepancy sequence) - van der Corput
-inline double lds(ulong n, ulong b){
+inline double corput(ulong n, ulong b){
   ulong q=0, p=1;
   while(p<=ulong(-1)/b){ q=q*b+(n%b); p*=b; n/=b; }
   return (q+0.5)/p;  // n=(ABCDE)b --> (0.EDCBA)b + 1/2max
 }
+
+
+class Corput{
+public:
+  Corput(ulong base=2, ulong seqno=1): b(base),s(seqno) {}
+  double operator()(void) const { return corput(s++,b); }
+private:
+  ulong b;
+  mutable ulong s;
+};
+
+
+class Halton{
+public:
+  Halton(size_t dim, ulong seqno=1): s(seqno) {
+    if(dim>5) throw std::runtime_error("Halton(dim): currently dim must be <=5");
+    ulong pp[]={2,3,5,7,11};
+    bb=std::vector<ulong>(pp,pp+dim);
+  }
+  Matrix operator()(void) const {
+    Matrix v(bb.size());
+    for(size_t k=0; k<bb.size(); k++) v(k)=corput(s,bb[k]);
+    s++;
+    return v;
+  }
+private:
+  std::vector<ulong> bb;
+  mutable ulong s;
+};
 
 
 }  //namespace nmlib

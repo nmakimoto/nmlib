@@ -19,6 +19,8 @@ inline unsigned long long irand(void){ return genrand64_int64(); }              
 inline double urand(void){ return genrand64_real3(); }                          // U(0,1) uniform
 inline double nrand(void){ return sqrt(-2*log(urand()))*cos(2*M_PI*urand()); }  // N(0,1) gaussian
 inline double erand(void){ return -log(urand()); }                              // Ex(1)  exponential
+inline Matrix urand_m(size_t n){ Matrix x(n); for(size_t k=0; k<n; k++) x(k)=urand(); return x; }  // multidim uniform
+inline Matrix nrand_m(size_t n){ Matrix x(n); for(size_t k=0; k<n; k++) x(k)=nrand(); return x; }  // multidim normal
 
 
 // LDS(low-discrepancy sequence) - van der Corput

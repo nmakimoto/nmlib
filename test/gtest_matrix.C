@@ -164,6 +164,22 @@ TEST(matrix,submat){
   m2=mrand(3,4);
   for(size_t j=0; j<m1.ncol(); j++) setvec(m2,j,getvec(m1,j));
   EXPECT_DOUBLE_EQ(norm(m1-m2), 0);
+
+  m2=m1;
+  m2.resize(5,6);
+  for(size_t k=0;  k<12;   k++) EXPECT_DOUBLE_EQ(m2(k),m1(k));
+  for(size_t k=12; k<30; k++) EXPECT_DOUBLE_EQ(m2(k),0);
+  m2.resize(4,3);
+  for(size_t k=0; k<12; k++) EXPECT_DOUBLE_EQ(m2(k),m1(k));
+  m2.fill(11.1);
+  for(size_t k=0; k<12; k++) EXPECT_DOUBLE_EQ(m2(k),11.1);
+
+  m1=mrand(7,7);
+  m2=getdiag(m1);
+  for(size_t k=0; k<7; k++) EXPECT_DOUBLE_EQ(m2(k),m1(k,k));
+  for(size_t k=0; k<7; k++) m1(k,k)=0;
+  setdiag(m1,m2);
+  for(size_t k=0; k<7; k++) EXPECT_DOUBLE_EQ(m2(k),m1(k,k));
 }
 
 

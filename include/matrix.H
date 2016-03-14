@@ -33,6 +33,8 @@ public:
   size_t nrow(void) const;  // number of rows
   size_t ncol(void) const;  // number of columns
   size_t dim (void) const;  // number of components
+  matrix<T>& resize(size_t r, size_t c);
+  matrix<T>& fill  (T z);
 
   T  operator()(size_t i, size_t j) const;  // get t=M(i,j)
   T& operator()(size_t i, size_t j);        // set M(i,j)=t
@@ -85,6 +87,8 @@ template<class T> matrix<T>  getvec(const matrix<T>& m, size_t j);              
 template<class T> void       setvec(      matrix<T>& m, size_t j, const matrix<T>& v);  // set column vector Mj to V
 template<class T> matrix<T>  getsub(const matrix<T>& m, size_t i0, size_t j0, size_t r, size_t c);  // get submatrix
 template<class T> void       setsub(      matrix<T>& m, size_t i0, size_t j0, const matrix<T> m1);  // set submatrix
+template<class T> matrix<T>  getdiag(const matrix<T>& m);
+template<class T> void       setdiag(      matrix<T>& m, const matrix<T>& v);
 template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // horizontal concatenation
 template<class T> matrix<T>  vcat  (const matrix<T>& m1, const matrix<T>& m2);  // vertical concatenation
 
@@ -128,6 +132,8 @@ template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
 template<class T> size_t matrix<T>::ncol(void) const {  return col;  }
 template<class T> size_t matrix<T>::dim (void) const {  return row*col;  }
+template<class T> matrix<T>& matrix<T>::resize(size_t r, size_t c) {  row=r; col=c; val.resize(r*c); return *this;  }
+template<class T> matrix<T>& matrix<T>::fill  (T z)                {  std::fill(val.begin(),val.end(),z); return *this;  }
 template<class T>        matrix<T>::operator const std::vector  <T>& (void) const {  return val;  }
 template<class T>        matrix<T>::operator matrix<std::complex<T> >(void) const {  matrix<std::complex<T> > mc(nrow(),ncol()); for(size_t k=0; k<dim(); k++) mc(k)=val[k]; return mc;  }
 template<class T> T      matrix<T>::operator()(size_t i, size_t j) const {  return val[i*col+j];  }
@@ -340,6 +346,21 @@ template<class T> void setsub(matrix<T>& m, size_t i0, size_t j0, const matrix<T
   for(size_t i=0; i<r; i++)
     for(size_t j=0; j<c; j++)
       m(i0+i,j0+j)=m1(i,j);
+}
+
+
+// Get/set diagonal part
+template<class T> matrix<T> getdiag(const matrix<T>& m){
+  size_t n=m.nrow();
+  if(m.nrow()!=n or m.ncol()!=n) throw std::domain_error("getdiag(M): not square");
+  matrix<T> v(n);
+  for(size_t k=0; k<n; k++) v(k)=m(k,k);
+  return v;
+}
+template<class T> void setdiag(matrix<T>& m, const matrix<T>& v){
+  size_t n=v.dim();
+  if(m.nrow()!=n or m.ncol()!=n) throw std::domain_error("setdiag(M,V): sizes mismatch");
+  for(size_t k=0; k<n; k++) m(k,k)=v(k);
 }
 
 

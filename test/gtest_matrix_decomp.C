@@ -35,7 +35,7 @@ template<class T> matrix<T> urandm_sym(size_t r, size_t c, T /*c*/=0){
 
 
 template<class T> void verify_lu(const matrix<T>& m, const matrix<T>& l, const matrix<T>& u, const matrix<T>& p0, bool pivote){
-  int n=m.nrow();
+  size_t n=m.nrow();
   matrix<T> p=(pivote ? p0 : matrix<T>(n,n)+T(1));
   EXPECT_NEAR(norm(l*u-p*m), 0, 1.e-8);
   for(size_t i=0; i<n; i++){
@@ -53,7 +53,7 @@ template<class T> void verify_lu(const matrix<T>& m, const matrix<T>& l, const m
 
 
 template<class T> void verify_qr(const matrix<T>& m, const matrix<T>& q, const matrix<T>& r){
-  int n=m.nrow();
+  size_t n=m.nrow();
   EXPECT_NEAR(norm(q*r-m), 0, 1.e-8);
   EXPECT_NEAR(norm(tp(q)*q-T(1)), 0, 1.e-8);
   for(size_t i=0; i<n; i++)

@@ -396,9 +396,10 @@ template<class T> matrix<T> vec2rot(const matrix<T>& v){  // R^3=so(3)-->SO(3) (
 }
 template<class T> matrix<T> rot2vec(const matrix<T>& r){  // SO(3)-->so(3)=R^3 (log, local inverse of exp)
   if(!(r.nrow()==3 and r.ncol()==3)) throw std::domain_error("rot2vec(R): not a 3x3 matrix");
-  matrix<T> a(r(2,1)-r(1,2),r(0,2)-r(2,0),r(1,0)-r(0,1));
-  double th=acos((r(0,0)+r(1,1)+r(2,2)-T(1))/T(2));
-  return (std::abs(th)<1.e-8 ? (1+th*th/6)/2 : th/sin(th)/2) * a;
+  matrix<T> a((r(2,1)-r(1,2))/2, (r(0,2)-r(2,0))/2, (r(1,0)-r(0,1))/2);
+  T c=(r(0,0)+r(1,1)+r(2,2)-1)/2;
+  T th=(c<=-1 ? M_PI : 1<=c ? 0 : acos(c));  // (avoid NaN and loss of significance)
+  return (std::abs(th)<1.e-6 ? (1+inner(a,a)/6) : th/sin(th)) * a;
 }
 template<class T> matrix<T> asym2vec(const matrix<T>& a){  // so(3)-->R^3 (A-->V s.t. AX=VxX)
   if(!(a.nrow()==3 and a.ncol()==3)) throw std::domain_error("asym2vec(V): not a 3 by 3 matrix");

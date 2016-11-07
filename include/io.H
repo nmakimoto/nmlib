@@ -39,7 +39,7 @@ template<class K,class V> std::ostream& operator<<(std::ostream& str, const std:
   return str;
 }
 template<class K,class V> std::istream& operator>>(std::istream& str, std::map<K,V>& k2v){
-  int n,i;
+  size_t n,i;
   k2v.clear();
   str >> n;
   for(i=0; i<n; i++){ K key; V val; str>>key>>val;  k2v[key]=val; }
@@ -48,11 +48,11 @@ template<class K,class V> std::istream& operator>>(std::istream& str, std::map<K
 
 template<class T> std::ostream& operator<<(std::ostream& str, const std::vector<T>& xx){
   str << xx.size() << '\n';
-  for(int i=0; i<xx.size(); i++) str << xx[i] << '\n';
+  for(size_t i=0; i<xx.size(); i++) str << xx[i] << '\n';
   return str;
 }
 template<class T> std::istream& operator>>(std::istream& str, std::vector<T>& xx){
-  int n,i;
+  size_t n,i;
   str >> n;
   xx=std::vector<T>(n);
   for(i=0; i<n; i++) str >> xx[i];

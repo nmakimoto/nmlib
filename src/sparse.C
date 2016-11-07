@@ -31,7 +31,7 @@ typedef Row::iterator        IT;
 
 // Range check for each operation
 void chk(size_t r1, size_t c1, size_t r2, size_t c2, char op){
-  if( (op=='@' and 0<=r1 and r1<r2 and 0<=c1 and c1<=c2) or
+  if( (op=='@' and r1<r2  and c1<=c2)  or
       (op=='+' and r1==r2 and c1==c2)  or
       (op=='-' and r1==r2 and c1==c2)  or
       (op=='*' and c1==r2)  or
@@ -47,7 +47,7 @@ void chk(const S& a, const M& b, char op){ chk(a.nrow(),a.ncol(),b.nrow(),b.ncol
 /*********************************** Basic operations ***********************************/
 
 // Class methods
-S::Sparse(size_t r, size_t c): row(r),col(c) { if(r<0 or c<0) throw std::domain_error("Sparse(r,c): size<0"); val=std::vector<Row>(r); }
+S::Sparse(size_t r, size_t c): row(r),col(c) { val=std::vector<Row>(r); }
 size_t  S::nrow(void) const{ return row; }
 size_t  S::ncol(void) const{ return col; }
 T&   S::operator()(size_t i, size_t j)       { chk(i,j,row,col,'@'); return val[i][j]; }

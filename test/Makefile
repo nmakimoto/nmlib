@@ -29,6 +29,7 @@ gtest_polynomial.o: ../include/polynomial.H ../include/io.H
 gtest_polynomial.o: ../include/solver.H ../include/diff.H ../include/matrix.H
 gtest_diff.o: ../include/diff.H ../include/matrix.H
 gtest_spline.o: ../include/spline.H
+gtest_robot.o: ../include/robot.H ../include/matrix.H ../include/io.H
 gtest_stat.o: ../include/stat.H ../include/matrix.H
 gtest_matrix_decomp.o: ../include/matrix.H ../include/matrix_decomp.H
 random.o: mt19937-64.c ../include/mt64.h

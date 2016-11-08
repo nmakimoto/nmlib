@@ -78,9 +78,9 @@ inline Matrix Robot::ik(const Matrix& hom0, const Matrix& th_ini, double err, in
 
 // jacobian of fk (of k-th part)
 inline Matrix Robot::jacobian(const Matrix& th, int k) const{
-  if(k==6) k--;
   Matrix jac(6,6), hj(4,4), hk=fk(th,k), rk=hom2rot(hk), jac1;
   hj+=1.0;
+  if(k==6) k--;
   for(int j=0; j<=k; j++){
     jac1 = hj*dlk(j,th(j));  // T_0 ... T_{j-1} dT_j
     hj   = hj* lk(j,th(j));  // T_0 ... T_j

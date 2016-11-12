@@ -187,7 +187,7 @@ inline Matrix LP::vertex(void) const{
 
 
 // status of tableau: -1(not feasible), 0(feasible), +1(optimal), +2(unbounded)
-int LP::status(void) const {
+inline int LP::status(void) const {
   int r=tbl.nrow()-2, c=tbl.ncol()-2, i, j;
 
   for(i=0; i<r; i++)

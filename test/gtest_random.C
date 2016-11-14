@@ -8,7 +8,7 @@
 using namespace nmlib;
 
 
-TEST(random,uniformity){
+TEST(random,uniform){
   int n=1000000, k=10;
   double sgm1 = sqrt((1.0/k)*(1-1.0/k));  // stddev of binomial dist B(1/k)
   std::map<int,int> count;
@@ -19,7 +19,7 @@ TEST(random,uniformity){
 }
 
 
-TEST(random,whiteness){
+TEST(random,white){
   int n=1000000;
   double s01=0,x0=0,x1=0;
 
@@ -37,31 +37,34 @@ TEST(random,whiteness){
 
 
 TEST(random,lowdiscrepancy){
-  int n=1000000, k=10, bb[]={2,3,5,7,11};
+  int n=100000, k=10, bb[]={2,3,5,7,11,13}, dim=sizeof(bb)/sizeof(bb[0]);
 
   // van der Corput sequence
-  for(int i=0; i<4; i++){
+  for(int i=0; i<dim; i++){
     int base=bb[i];
-    Corput c(base);
     std::map<int,int> count;
-    for(int seq=0; seq<n; seq++) count[int(c()*k)]++;
-    for(int j=0; j<k; j++) EXPECT_NEAR(count[j], n/k, log(n)/log(base));
+    for(int seq=1; seq<=n; seq++) count[int(corput(seq,base)*k)]++;
+    for(int j=0; j<k; j++) EXPECT_NEAR(count[j], n/k, log(n)/log(base)*5);
   }
 
   // Halton sequence
   {
-    Halton h(3);
-    std::map<int,int> cnt0,cnt1,cnt2;
-    for(int seq=0; seq<n; seq++){
-      Matrix x=h();
-      cnt0[int(x(0)*k)]++;
-      cnt1[int(x(1)*k)]++;
-      cnt2[int(x(2)*k)]++;
+    std::map<int,int> cnt[dim];
+    for(int seq=1; seq<=n; seq++){
+      Matrix x=halton(seq,dim);
+      for(int d=0; d<dim; d++) cnt[d][int(x(d)*k)]++;
     }
-    for(int j=0; j<k; j++) EXPECT_NEAR(cnt0[j], n/k, log(n)/log(2));
-    for(int j=0; j<k; j++) EXPECT_NEAR(cnt1[j], n/k, log(n)/log(3));
-    for(int j=0; j<k; j++) EXPECT_NEAR(cnt2[j], n/k, log(n)/log(5));
+    for(int d=0; d<dim; d++)
+      for(int j=0; j<k; j++) EXPECT_NEAR(cnt[d][j], n/k, log(n)/log(bb[d])*5);  // uniform
 
-    EXPECT_THROW(Halton(6), std::runtime_error);
+    double cov=0;
+    for(int seq=1; seq<=n; seq++){
+      Matrix x=halton(seq,2);
+      cov+=x(0)*x(1);
+    }
+    cov=cov/n-0.5*0.5;
+    EXPECT_NEAR(cov,0,5.0/n);  // no correlation
+
+    EXPECT_THROW(halton(0,7), std::runtime_error);  // max dimension
   }
 }

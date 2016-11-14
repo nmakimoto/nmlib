@@ -10,9 +10,6 @@
 namespace nmlib{
 
 
-#include "mt64.h"  // 64bit Mersenne Twister
-
-
 /******** Utilitiy I/F ********/
 
 void init_rand(unsigned long long seed);  // initialization
@@ -29,11 +26,6 @@ Matrix halton(ulong seq, size_t dim);    // multidim LDS
 
 /******** Implementation ********/
 
-inline void init_rand(unsigned long long seed){ init_genrand64(seed); }
-inline unsigned long long irand(void){ return genrand64_int64(); }
-inline double urand(void){ return genrand64_real3(); }
-inline double nrand(void){ return sqrt(-2*log(urand()))*cos(2*M_PI*urand()); }
-inline double erand(void){ return -log(urand()); }
 inline Matrix urand_m(size_t n){ Matrix x(n); for(size_t k=0; k<n; k++) x(k)=urand(); return x; }
 inline Matrix nrand_m(size_t n){ Matrix x(n); for(size_t k=0; k<n; k++) x(k)=nrand(); return x; }
 

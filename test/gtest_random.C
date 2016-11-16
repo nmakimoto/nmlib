@@ -37,7 +37,7 @@ TEST(random,white){
 
 
 TEST(random,lowdiscrepancy){
-  int n=100000, k=10, bb[]={2,3,5,7,11,13}, dim=sizeof(bb)/sizeof(bb[0]);
+  int n=10000, k=10, bb[]={2,3,5,7,11,13}, dim=sizeof(bb)/sizeof(bb[0]);
 
   // van der Corput sequence
   for(int i=0; i<dim; i++){

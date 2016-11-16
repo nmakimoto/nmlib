@@ -12,8 +12,8 @@ namespace nmlib{
 
 /******** Utilitiy I/F ********/
 
-void init_rand(unsigned long long seed);  // initialization
-unsigned long long irand(void);  // [0,2^64) uniform
+void init_rand(ulong seed=0);  // initialization
+ulong  irand(void);  // [0,2^32) uniform
 double urand(void);  // U(0,1) uniform
 double nrand(void);  // N(0,1) gaussian
 double erand(void);  // Ex(1)  exponential

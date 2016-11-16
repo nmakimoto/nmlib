@@ -79,7 +79,7 @@ template<class T> void verify_eigen(const matrix<T>& m, const matrix<T>& u, cons
   for(size_t i=0; i<n; i++){
     for(size_t j=0; j<n; j++){
       if(i!=j) EXPECT_NEAR(std::abs(d(i,j)), 0, 1.e-8);
-      if(i==j) EXPECT_NEAR(std::abs(d(i,j)-cnj(d(i,j))), 0, 1.e-8);
+      if(i==j) EXPECT_NEAR(std::abs(d(i,j)-nm_conj(d(i,j))), 0, 1.e-8);
     }
   }
 }

@@ -116,12 +116,14 @@ template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m
 /******** Implementation ********/
 
 // Private utils for complex/real number
-template<class T> std::complex<T> cnj (std::complex<T> x){ return std::conj(x); }
-template<class T>              T  cnj (             T  x){ return           x;  }
-template<class T> std::complex<T> sgn (std::complex<T> x){ return std::polar(T(1),std::arg(x)); }
-template<class T>              T  sgn (             T  x){ return x>0 ? +T(1) : -T(1); }
-template<class T>              T  nrm2(std::complex<T> x){ return std::norm(x); }
-template<class T>              T  nrm2(             T  x){ return x*x; }
+template<class T> std::complex<T> nm_conj(std::complex<T> x){ return std::conj(x); }
+template<class T>              T  nm_conj(             T  x){ return           x;  }
+template<class T> std::complex<T> nm_sign(std::complex<T> x){ return std::polar(T(1),std::arg(x)); }
+template<class T>              T  nm_sign(             T  x){ return x>0 ? +T(1) : -T(1); }
+template<class T>              T  nm_nrm2(std::complex<T> x){ return std::norm(x); }
+template<class T>              T  nm_nrm2(             T  x){ return x*x; }
+template<class T>              T  nm_real(std::complex<T> x){ return std::real(x); }
+template<class T>              T  nm_real(             T  x){ return x; }
 
 // Class methods
 template<class T>        matrix<T>::matrix(void): row(0), col(0), val() {}
@@ -203,7 +205,7 @@ template<class T> T norm (const matrix<std::complex<T> >& m){
 template<class T> T inner(const matrix<T>& m1, const matrix<T>& m2){
   if( !(m1.nrow()==m2.nrow() and m1.ncol()==m2.ncol()) ) throw std::domain_error("inner(M,M): sizes mismatch");
   T t=0;
-  for(size_t k=0; k<m1.dim(); k++) t+=cnj(m1(k))*m2(k);
+  for(size_t k=0; k<m1.dim(); k++) t+=nm_conj(m1(k))*m2(k);
   return t;
 }
 
@@ -257,7 +259,7 @@ template<class T> matrix<T> tp(const matrix<T>& m0){
   matrix<T> m1(m0.ncol(),m0.nrow());
   for(size_t i=0; i<m0.nrow(); i++)
     for(size_t j=0; j<m0.ncol(); j++)
-      m1(j,i)=cnj(m0(i,j));
+      m1(j,i)=nm_conj(m0(i,j));
   return m1;
 }
 
@@ -295,22 +297,22 @@ template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
     // error before rotation - will be decreased by 2|M(i0,j0)|^2 after rotation
     double err0=0;
     for(size_t k=0; k<n; k++)
-      err0 += (k==i0 ? 0 : nrm2(m(k,i0))+nrm2(m(i0,k))) + (k==j0 ? 0 :nrm2(m(k,j0))+nrm2(m(j0,k)));
+      err0 += (k==i0 ? 0 : nm_nrm2(m(k,i0))+nm_nrm2(m(i0,k))) + (k==j0 ? 0 :nm_nrm2(m(k,j0))+nm_nrm2(m(j0,k)));
 
     // Givens rotation R - atan2(2mij,mii-mjj)/2
     T c,s,p,q;
     p=m(i0,i0)-m(j0,j0);
     q=T(2)*m(i0,j0);
     c = cos(atan2(std::abs(q),std::abs(p))/2);
-    s = sin(atan2(std::abs(q),std::abs(p))/2) * sgn(cnj(p)) * sgn(q);
-    for(size_t i=0; i<n; i++){ p=u(i,i0); q=u(i,j0); u(i,i0)=c*p+cnj(s)*q; u(i,j0)=    -s *p+c*q; }  // U=U*R
-    for(size_t i=0; i<n; i++){ p=m(i,i0); q=m(i,j0); m(i,i0)=c*p+cnj(s)*q; m(i,j0)=    -s *p+c*q; }  // M=M*R
-    for(size_t j=0; j<n; j++){ p=m(i0,j); q=m(j0,j); m(i0,j)=c*p+    s *q; m(j0,j)=-cnj(s)*p+c*q; }  // M=R^T*M
+    s = sin(atan2(std::abs(q),std::abs(p))/2) * nm_sign(nm_conj(p)) * nm_sign(q);
+    for(size_t i=0; i<n; i++){ p=u(i,i0); q=u(i,j0); u(i,i0)=c*p+nm_conj(s)*q; u(i,j0)=        -s *p+c*q; }  // U=U*R
+    for(size_t i=0; i<n; i++){ p=m(i,i0); q=m(i,j0); m(i,i0)=c*p+nm_conj(s)*q; m(i,j0)=        -s *p+c*q; }  // M=M*R
+    for(size_t j=0; j<n; j++){ p=m(i0,j); q=m(j0,j); m(i0,j)=c*p+        s *q; m(j0,j)=-nm_conj(s)*p+c*q; }  // M=R^T*M
 
     // error after rotation - check for convergence
     double err1=0;
     for(size_t k=0; k<n; k++)
-      err1 += (k==i0 ? 0 : nrm2(m(k,i0))+nrm2(m(i0,k))) + (k==j0 ? 0 :nrm2(m(k,j0))+nrm2(m(j0,k)));
+      err1 += (k==i0 ? 0 : nm_nrm2(m(k,i0))+nm_nrm2(m(i0,k))) + (k==j0 ? 0 :nm_nrm2(m(k,j0))+nm_nrm2(m(j0,k)));
     if(!(tol<err1 and err1<err0)) break;
   }
 

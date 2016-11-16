@@ -21,10 +21,11 @@ $(BIN): $(SRC:.C=.o)
 gtest_io.o: ../include/io.H
 gtest_lp.o: ../include/lp.H ../include/matrix.H ../include/io.H
 gtest_nmlib.o: ../include/nmlib.H ../include/diff.H ../include/matrix.H
-gtest_nmlib.o: ../include/fft.H ../include/io.H ../include/lp.H
-gtest_nmlib.o: ../include/matrix_decomp.H ../include/polynomial.H
-gtest_nmlib.o: ../include/random.H ../include/robot.H ../include/solver.H
-gtest_nmlib.o: ../include/sparse.H ../include/spline.H ../include/stat.H
+gtest_nmlib.o: ../include/fft.H ../include/io.H ../include/kalman.H
+gtest_nmlib.o: ../include/lp.H ../include/matrix_decomp.H
+gtest_nmlib.o: ../include/polynomial.H ../include/random.H ../include/robot.H
+gtest_nmlib.o: ../include/solver.H ../include/sparse.H ../include/spline.H
+gtest_nmlib.o: ../include/stat.H
 gtest_fft.o: ../include/fft.H ../include/matrix.H
 gtest_solver.o: ../include/solver.H ../include/diff.H ../include/matrix.H
 gtest_random.o: ../include/random.H ../include/matrix.H

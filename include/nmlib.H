@@ -12,6 +12,7 @@
 #include "diff.H"
 #include "fft.H"
 #include "io.H"
+#include "kalman.H"
 #include "lp.H"
 #include "matrix.H"
 #include "matrix_decomp.H"

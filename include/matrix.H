@@ -91,6 +91,7 @@ template<class T> matrix<T>  getdiag(const matrix<T>& m);
 template<class T> void       setdiag(      matrix<T>& m, const matrix<T>& v);
 template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // horizontal concatenation
 template<class T> matrix<T>  vcat  (const matrix<T>& m1, const matrix<T>& m2);  // vertical concatenation
+template<class T> void       sort_columns_by_value(matrix<T>& m, const matrix<T>& v);
 
 // 3D geometry
 template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w);  // V x W
@@ -382,6 +383,16 @@ template<class T> matrix<T> vcat(const matrix<T>& m1, const matrix<T>& m2){
     for(size_t j=0; j<m.ncol(); j++)
       m(i,j) = (i<m1.nrow() ? m1(i,j) : m2(i-m1.nrow(),j));
   return m;
+}
+
+
+template<class T> void sort_columns_by_value(matrix<T>& m, const matrix<T>& v){
+  std::vector<size_t> kk(v.dim());
+  std::iota(kk.begin(), kk.end(), 0);
+  std::sort(kk.begin(), kk.end(), [&](int i, int j){ return nm_real(v(i))<nm_real(v(j)); });
+  matrix<T> m1=m;
+  for(size_t k=0; k<v.dim(); k++)
+    if(k<m.ncol() and kk[k]<m1.ncol() and k!=kk[k]) setvec(m,k,getvec(m1,kk[k]));
 }
 
 

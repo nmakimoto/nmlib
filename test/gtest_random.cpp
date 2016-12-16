@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 #include <map>
-#include "random.H"
+#include "random.h"
 using namespace nmlib;
 
 

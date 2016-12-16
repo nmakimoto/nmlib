@@ -5,7 +5,7 @@
 #include <stdexcept>
 
 #include <cstdlib>  // random
-#include "matrix.H"
+#include "matrix.h"
 using namespace nmlib;
 
 

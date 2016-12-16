@@ -5,8 +5,8 @@
 #include <stdexcept>
 
 #include <map>
-#include "kalman.H"
-#include "matrix.H"
+#include "kalman.h"
+#include "matrix.h"
 using namespace nmlib;
 
 

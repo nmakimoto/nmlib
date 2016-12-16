@@ -1,12 +1,12 @@
 // Usage of FFT code
-// - Include "fft.H" and use "nmlib" namespace. No linking is required.
+// - Include "fft.h" and use "nmlib" namespace. No linking is required.
 // - Features include FFT, inverse FFT and their by-products.
 
 
 #include <iostream>
 #include <vector>
 #include <complex>
-#include "fft.H"
+#include "fft.h"
 using namespace nmlib;
 
 

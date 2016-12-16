@@ -1,10 +1,10 @@
 // Usage of equation solvers
-// - Include "solver.H" and use namespace "nmlib". Nothing to link.
+// - Include "solver.h" and use namespace "nmlib". Nothing to link.
 // - Features: non-linear equation solvers (Newton, bisection, multi-dim Newton)
 
 
 #include <iostream>
-#include "solver.H"  // solve*()
+#include "solver.h"  // solve*()
 using namespace nmlib;
 
 

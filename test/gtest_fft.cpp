@@ -6,8 +6,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>  // random
-#include "fft.H"
-#include "matrix.H"
+#include "fft.h"
+#include "matrix.h"
 using namespace nmlib;
 
 

@@ -6,7 +6,7 @@
 
 
 #include <cmath>
-#include "matrix.H"
+#include "matrix.h"
 namespace nmlib{
 
 

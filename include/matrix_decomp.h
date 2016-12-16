@@ -5,7 +5,7 @@
 #define MATRIX_DECOMP_H
 
 
-#include "matrix.H"
+#include "matrix.h"
 namespace nmlib{
 
 

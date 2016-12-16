@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>  // random
-#include "stat.H"
+#include "stat.h"
 using namespace nmlib;
 
 

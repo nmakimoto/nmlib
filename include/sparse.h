@@ -8,7 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include "matrix.H"
+#include "matrix.h"
 namespace nmlib{
 
 

@@ -4,9 +4,9 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
-#include "lp.H"
-#include "matrix.H"
-#include "io.H"
+#include "lp.h"
+#include "matrix.h"
+#include "io.h"
 using namespace nmlib;
 
 

@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>  // rand
-#include "sparse.H"
+#include "sparse.h"
 using namespace nmlib;
 
 

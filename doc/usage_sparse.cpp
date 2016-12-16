@@ -1,12 +1,12 @@
 // Usage of Sparse matrix library
-// - Include sparse.H and matrix.H into your code. Use namespace nmlib.
+// - Include sparse.h and matrix.h into your code. Use namespace nmlib.
 // - Compile and link your code with sparse.C.
 // - See the code below for more on usage.
 
 
 #include <iostream>
-#include "sparse.H"
-#include "matrix.H"
+#include "sparse.h"
+#include "matrix.h"
 using namespace nmlib;
 
 

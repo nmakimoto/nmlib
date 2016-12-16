@@ -2,7 +2,7 @@
 
 
 #include <random>
-#include "random.H"
+#include "random.h"
 namespace nmlib{
 
 

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
-#include "matrix.H"
+#include "matrix.h"
 namespace nmlib {
 
 

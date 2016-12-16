@@ -2,7 +2,7 @@
 
 
 #include <gtest/gtest.h>
-#include "nmlib.H"
+#include "nmlib.h"
 
 
 TEST(nmlib,compile){

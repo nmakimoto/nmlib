@@ -1,11 +1,11 @@
 // Usage of Spline
-// - Include "spline.H" and use namespace "nmlib". No linking is required.
+// - Include "spline.h" and use namespace "nmlib". No linking is required.
 // - Features: interpolation(splint/linear/nearest)
 
 
 #include <iostream>
 #include <map>
-#include "spline.H"
+#include "spline.h"
 using namespace nmlib;
 
 

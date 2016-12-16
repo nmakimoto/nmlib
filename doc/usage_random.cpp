@@ -1,11 +1,11 @@
 // Usage of random number generators
-// - Include "random.H" and use namespace "nmlib".
+// - Include "random.h" and use namespace "nmlib".
 // - Compile and link "random.C" if you use *rand() functions. Nothing to link otherwise.
 // - Features: RNG(random number generator), LDS(low-discrepancy sequence)
 
 
 #include <iostream>
-#include "random.H"  // *rand(), lsd()
+#include "random.h"  // *rand(), lsd()
 using namespace nmlib;
 
 

@@ -1,5 +1,5 @@
 // Usage of I/O utilities
-// - Include "io.H" and use namespace "nmlib". No linking is required.
+// - Include "io.h" and use namespace "nmlib". No linking is required.
 // - Features: string conversion to/from generic T, stream I/O of vector<T> and map<K,T>
 
 
@@ -7,7 +7,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include "io.H"
+#include "io.h"
 using namespace nmlib;
 
 

@@ -1,12 +1,12 @@
 // Usage of matrix class library
-// - Just include "matrix.H" to use nmlib::matrix<T>. No linking is required.
+// - Just include "matrix.h" to use nmlib::matrix<T>. No linking is required.
 // - Features: arithmetic operations, symmetric eigensolvers, stream I/O, etc.
 // - See the code below for more on usage. Enjoy!
 
 
 #include <iostream>
-#include "matrix.H"
-#include "io.H"  // str2any()
+#include "matrix.h"
+#include "io.h"  // str2any()
 using namespace nmlib;
 
 
@@ -33,7 +33,7 @@ void cheatsheet(const Matrix& A, const Matrix& B){
   M=Matrix(r,c);    // zero rxc matrix
   V=Matrix(r);      // zero rx1 matrix (r-vector)
   V=Matrix(x,y,z);  // (x,y,z)^T
-  M=str2any<Matrix>("3  2  0.0  0.1  1.0  1.1  2.0  2.1");  // (see "io.H")
+  M=str2any<Matrix>("3  2  0.0  0.1  1.0  1.1  2.0  2.1");  // (see "io.h")
   std::cin  >> M;
   std::cout << M;
 

@@ -7,7 +7,7 @@
 #include <map>
 #include <cmath>
 #include <cstdlib>
-#include "spline.H"
+#include "spline.h"
 using namespace nmlib;
 
 

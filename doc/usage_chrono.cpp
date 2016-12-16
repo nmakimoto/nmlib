@@ -1,9 +1,9 @@
 // Usage of Chrono class
-// - Include "chrono.H" and use namespace "nmlib". Nothing to compile/link.
+// - Include "chrono.h" and use namespace "nmlib". Nothing to compile/link.
 // - Features: time measurement (resolution=1.0[usec])
 
 
-#include "chrono.H"
+#include "chrono.h"
 using namespace nmlib;
 
 

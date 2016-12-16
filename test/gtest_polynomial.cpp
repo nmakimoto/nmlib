@@ -6,9 +6,9 @@
 
 #include <map>
 #include <cmath>
-#include "polynomial.H"
-#include "io.H"
-#include "solver.H"  // for Legendre zeros
+#include "polynomial.h"
+#include "io.h"
+#include "solver.h"  // for Legendre zeros
 using namespace nmlib;
 
 

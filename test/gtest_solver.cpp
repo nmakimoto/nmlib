@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include <cmath>
-#include "solver.H"
-#include "matrix.H"
+#include "solver.h"
+#include "matrix.h"
 using namespace nmlib;
 
 

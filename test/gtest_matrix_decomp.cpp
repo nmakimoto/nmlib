@@ -4,8 +4,8 @@
 #include <gtest/gtest.h>
 #include <cmath>
 #include <cstdlib>
-#include "matrix.H"
-#include "matrix_decomp.H"
+#include "matrix.h"
+#include "matrix_decomp.h"
 using namespace std;
 using namespace nmlib;
 

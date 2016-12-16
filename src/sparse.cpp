@@ -5,9 +5,9 @@
 #include <map>
 #include <stdexcept>
 #include <sstream>
-#include "sparse.H"
-#include "matrix.H"
-//#include "io.H"
+#include "sparse.h"
+#include "matrix.h"
+//#include "io.h"
 namespace nmlib{
 
 

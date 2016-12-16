@@ -1,10 +1,10 @@
 // Usage of Polynomial class
-// - Include "polynomial.H" and use namespace "nmlib". Nothing to compile/link.
+// - Include "polynomial.h" and use namespace "nmlib". Nothing to compile/link.
 // - Features: arithmetic and other operations
 
 
 #include <iostream>
-#include "polynomial.H"
+#include "polynomial.h"
 using namespace nmlib;
 
 

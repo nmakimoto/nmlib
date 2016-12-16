@@ -5,8 +5,8 @@
 #include <stdexcept>
 
 #include <fstream>
-#include "robot.H"
-#include "io.H"
+#include "robot.h"
+#include "io.h"
 using namespace nmlib;
 
 

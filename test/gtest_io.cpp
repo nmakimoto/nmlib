@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include "io.H"
+#include "io.h"
 using namespace nmlib;
 
 

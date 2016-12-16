@@ -1,10 +1,10 @@
 // Usage of numerical differentiation code
-// - Include "diff.H" and use namespace "nmlib". Nothing to link.
+// - Include "diff.h" and use namespace "nmlib". Nothing to link.
 // - Features: gradient, Jacobian
 
 
 #include <iostream>
-#include "diff.H"  // gradient(), jacobian()
+#include "diff.h"  // gradient(), jacobian()
 using namespace nmlib;
 
 

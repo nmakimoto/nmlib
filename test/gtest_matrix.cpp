@@ -11,7 +11,7 @@ using namespace nmlib;
 
 // Sample data generators
 double urand1(void){
-  return (random()%RAND_MAX+0.5)/RAND_MAX;
+  return (rand()%RAND_MAX+0.5)/RAND_MAX;
 }
 Matrix mrand(size_t r, size_t c){
   Matrix m(r,c);

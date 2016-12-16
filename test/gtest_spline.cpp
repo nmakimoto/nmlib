@@ -12,7 +12,7 @@ using namespace nmlib;
 
 
 inline double urand(void){
-  return (random()+0.5)/RAND_MAX;
+  return (rand()+0.5)/RAND_MAX;
 }
 inline double urand(double x0,double x1){
   return (x1-x0)*urand()+x0;

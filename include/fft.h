@@ -61,7 +61,7 @@ template<class Vec> Vec fft(const Vec& xx0, bool inverse){
   }
 
   if(inverse)
-    for(unsigned i=0; i<n; i++) xx[i]/=n;
+    for(i=0; i<n; i++) xx[i]/=n;
   return xx;
 }
 

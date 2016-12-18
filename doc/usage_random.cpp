@@ -21,7 +21,7 @@ int main(void){
     xn=nrand();  // N(0,1) gaussian
     xe=erand();  // Ex(1)  exponential
 
-    xl=lds(seq,2);  // LDS (base=2 vander Corput)
+    xl=corput(seq,2);  // LDS (base=2 vander Corput)
 
     std::cout<<i<<' '<<xu<<' '<<xn<<' '<<xe<<' '<<xl<<'\n';
   }

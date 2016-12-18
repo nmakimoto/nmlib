@@ -4,7 +4,6 @@
 
 
 #include <gtest/gtest.h>
-#include <src/gtest-all.cc>
 #include <stdexcept>
 #include <iostream>
 

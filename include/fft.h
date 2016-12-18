@@ -52,7 +52,7 @@ template<class Vec> Vec fft(const Vec& xx0, bool inverse){
     if(i<shuffle(i,n)) std::swap(xx[i],xx[shuffle(i,n)]);
 
   for(p=n/2,q=2; p; p>>=1,q<<=1){
-    Cpx w1=exp(Cpx(0,-2*M_PIl/q)), wj;
+    Cpx w1=exp(Cpx(0,-2*M_PI/q)), wj;
     if(inverse) w1=conj(w1);
 
     for(i=0; i<p; i++)
@@ -89,7 +89,7 @@ template<class Vec> Vec ft_slow(const Vec& xx0, bool inverse){
   Vec xx(n);
 
   for(i=0; i<n; i++){
-    Cpx w1=exp(Cpx(0,-2*M_PIl*i/n)), wj;
+    Cpx w1=exp(Cpx(0,-2*M_PI*i/n)), wj;
     if(inverse) w1=conj(w1);
     for(j=0,wj=1; j<n; j++,wj*=w1) xx[i]+=wj*xx0[j];
   }

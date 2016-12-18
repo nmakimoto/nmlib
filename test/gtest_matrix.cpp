@@ -51,22 +51,22 @@ TEST(matrix,init){
 
   double aa[]={1.11,2.22,3.33,4.44,5.55};
   m1=Matrix(aa,aa+5);
-  EXPECT_TRUE(m1.nrow()==5 and m1.ncol()==1 and m1.dim()==5);
-  for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m1(i), (i+1)*1.11d, 1.e-8);
+  EXPECT_TRUE(m1.nrow()==5 && m1.ncol()==1 && m1.dim()==5);
+  for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m1(i), (i+1)*1.11, 1.e-8);
 
   std::vector<double> vv(aa,aa+5);
   m2=Matrix(vv);
-  EXPECT_TRUE(m1.nrow()==5 and m1.ncol()==1 and m1.dim()==5);
-  for(size_t i=0; i<m2.dim(); i++) EXPECT_NEAR(m2(i), (i+1)*1.11d, 1.e-8);
+  EXPECT_TRUE(m1.nrow()==5 && m1.ncol()==1 && m1.dim()==5);
+  for(size_t i=0; i<m2.dim(); i++) EXPECT_NEAR(m2(i), (i+1)*1.11, 1.e-8);
 
   // type converters...
   vv=std::vector<double>(m2);
   EXPECT_TRUE(vv.size()==5);
-  for(size_t i=0; i<vv.size(); i++) EXPECT_NEAR(vv[i], (i+1)*1.11d, 1.e-8);
+  for(size_t i=0; i<vv.size(); i++) EXPECT_NEAR(vv[i], (i+1)*1.11, 1.e-8);
 
   matrix<std::complex<double> > mc = matrix<std::complex<double> >(m1);
-  EXPECT_TRUE(mc.nrow()==5 and mc.ncol()==1 and mc.dim()==5);
-  for(size_t i=0; i<vv.size(); i++) EXPECT_NEAR(mc(i).real(), (i+1)*1.11d, 1.e-8);
+  EXPECT_TRUE(mc.nrow()==5 && mc.ncol()==1 && mc.dim()==5);
+  for(size_t i=0; i<vv.size(); i++) EXPECT_NEAR(mc(i).real(), (i+1)*1.11, 1.e-8);
   for(size_t i=0; i<vv.size(); i++) EXPECT_DOUBLE_EQ(mc(i).imag(), 0);
 }
 

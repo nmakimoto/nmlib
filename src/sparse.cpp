@@ -31,11 +31,11 @@ typedef Row::iterator        IT;
 
 // Range check for each operation
 void chk(size_t r1, size_t c1, size_t r2, size_t c2, char op){
-  if( (op=='@' and r1<r2  and c1<=c2)  or
-      (op=='+' and r1==r2 and c1==c2)  or
-      (op=='-' and r1==r2 and c1==c2)  or
-      (op=='*' and c1==r2)  or
-      (op=='/' and r1==c1 and c1==r2 and c2==1) ) return;
+  if( (op=='@' && r1<r2  && c1<=c2)  ||
+      (op=='+' && r1==r2 && c1==c2)  ||
+      (op=='-' && r1==r2 && c1==c2)  ||
+      (op=='*' && c1==r2)  ||
+      (op=='/' && r1==c1 && c1==r2 && c2==1) ) return;
   std::stringstream msg;
   msg<<"Sparse: ("<<r1<<","<<c1<<") "<< op << " ("<<r2<<","<<c2<<")";
   throw std::domain_error(msg.str());

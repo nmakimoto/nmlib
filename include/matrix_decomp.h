@@ -156,7 +156,7 @@ namespace nmlib{
       // shift
       T lam=0;
       if(shift){
-	while(n1>1 and nm_nrm2(d(n1-1,n1-2))+nm_nrm2(d(n1-2,n1-1))<nm_nrm2(tol)/n) n1--;
+	while(n1>1 && nm_nrm2(d(n1-1,n1-2))+nm_nrm2(d(n1-2,n1-1))<nm_nrm2(tol)/n) n1--;
 	lam=d(n1-1,n1-1);
       }
       d-=lam;

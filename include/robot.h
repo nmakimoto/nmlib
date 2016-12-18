@@ -58,7 +58,7 @@ std::ostream& operator<<(std::ostream& str, const Robot& robot);
 // forward kinematics (of k-th part)
 inline Matrix Robot::fk(const Matrix& th, int k) const{
   Matrix h=Matrix(4,4)+1.0;
-  for(int j=0; j<=k and j<6; j++) h=h*lk(j,th(j));
+  for(int j=0; j<=k && j<6; j++) h=h*lk(j,th(j));
   if(k==6) h=h*lk(k,0);
   return h;
 }
@@ -101,7 +101,7 @@ inline Matrix  Robot::link(int k) const{ return lk0[k]; }
 
 // homogeneous transformation of k-th part relative to (k-1)-th when joint angle=theta
 inline Matrix Robot::lk(int k, double th) const{
-  if(k==6 or th==0) return lk0[k];
+  if(k==6 || th==0) return lk0[k];
   Matrix m(4,4);
   m(0,0)=cos(th); m(0,1)=-sin(th);
   m(1,0)=sin(th); m(1,1)= cos(th);

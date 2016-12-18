@@ -57,7 +57,7 @@ TEST(stat,fivenum){
 
   Matrix y;
   y=fivenum(data);
-  EXPECT_TRUE(y.nrow()==3 and y.ncol()==5);
+  EXPECT_TRUE(y.nrow()==3 && y.ncol()==5);
   for(int i=0; i<3; i++){
     EXPECT_NEAR(y(i,0), i*1000+ 0, 1.e-8);
     EXPECT_NEAR(y(i,1), i*1000+25, 1.e-8);
@@ -115,7 +115,7 @@ TEST(stat,pca){
 
     EXPECT_NEAR(norm(tp(u)*u-1.0), 0, 1.e-8);  // U^T U=1
     EXPECT_NEAR(inner(outer(getvec(u,0),getvec(u,1)),getvec(u,2)), 1, 1.e-8);  // detU=+1
-    EXPECT_TRUE(0<d(2,2) and d(2,2)<d(1,1) and d(1,1)<d(0,0));  // sorted by eigenvalues
+    EXPECT_TRUE(0<d(2,2) && d(2,2)<d(1,1) && d(1,1)<d(0,0));  // sorted by eigenvalues
     setdiag(d,Matrix(3));
     EXPECT_NEAR(norm(d), 0, 1.e-8);  // U^T V U=diag
   }

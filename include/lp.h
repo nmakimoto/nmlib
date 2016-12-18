@@ -55,7 +55,7 @@ inline LP::LP(const Matrix& a, const Matrix& b, const Matrix& c){ init(a,b,c); }
 //   |0   -1 0|  ...  objectives (auxiliary)
 inline void LP::init(const Matrix& aa, const Matrix& bb, const Matrix& cc){
   int r=aa.nrow(), c=aa.ncol();
-  if( !(aa.ncol()==cc.dim() and bb.dim()==aa.nrow()) )
+  if( !(aa.ncol()==cc.dim() && bb.dim()==aa.nrow()) )
     throw std::domain_error("LP::init(): bad dimensions");
 
   // conefficients of original problem
@@ -92,7 +92,7 @@ inline int LP::solve_stdlp(int iter, bool bland, bool aux){
   for(int i=0; i<r; i++)
     if(tbl(i,c+1)<0) return -1;  // infeasible (not b>=0)
   for(int i=0; i<r; i++)
-    if(!aux and idx(c+1+i)<0) return -1;  // infeasible (aux var is basic)
+    if(!aux && idx(c+1+i)<0) return -1;  // infeasible (aux var is basic)
   while(iter--){
     int i0,j0;
     choose_axis(i0,j0,aux,bland);
@@ -137,7 +137,7 @@ inline int LP::choose_axis(int& i0, int &j0, bool aux, bool bland){
   for(int j=0; j<c1; j++){
     if(tbl(r1,j)<=0) continue;
     else if(j0<0) j0=j;
-    else if(bland and idx(j)<idx(j0)) j0=j;  // j0:=argmin_j idx(j) s.t. c(j)>0
+    else if(bland && idx(j)<idx(j0)) j0=j;  // j0:=argmin_j idx(j) s.t. c(j)>0
     else if(tbl(r1,j0)<tbl(r1,j)) j0=j;  // j0:=argmax_i c(j)
   };
   if(j0<0) return 1;  // optimal
@@ -145,7 +145,7 @@ inline int LP::choose_axis(int& i0, int &j0, bool aux, bool bland){
   for(int i=0; i<r; i++){
     if(tbl(i,j0)<=0) continue;
     else if(i0<0) i0=i;
-    else if(bland and idx(c1+i)<idx(c1+i0) and tbl(i,c1)==0) i0=i;  // j0:=argmin_i idx(i) s.t. b(i)=0
+    else if(bland && idx(c1+i)<idx(c1+i0) && tbl(i,c1)==0) i0=i;  // j0:=argmin_i idx(i) s.t. b(i)=0
     else if(tbl(i,c1)/tbl(i,j0)<tbl(i0,c1)/tbl(i0,j0)) i0=i;  // i0:=argmin_i b(i)/A(i,j0) where A(i,j0)>0
   }
   if(i0<0) return 2;  // unbounded
@@ -180,7 +180,7 @@ inline Matrix LP::vertex(void) const{
   Matrix x(c);
   for(int i=0; i<r; i++){
     int j=idx(c+1+i);
-    if(0<=j and j<c) x(j)=tbl(i,c+1);
+    if(0<=j && j<c) x(j)=tbl(i,c+1);
   }
   return x;
 }
@@ -201,7 +201,7 @@ inline int LP::status(void) const {
   if(j==c+1) return 1;  // optimal (c<=0)
 
   for(j=0; j<c+1; j++){
-    if(idx(j)<0 or tbl(r,j)<=0) continue;
+    if(idx(j)<0 || tbl(r,j)<=0) continue;
     for(i=0; i<r; i++)
       if(0<tbl(i,j)) break;
     if(i==r) return 2;  // unbounded (c_j>0 and a_*j<=0)

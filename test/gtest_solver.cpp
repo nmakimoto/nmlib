@@ -49,17 +49,17 @@ TEST(solver,bisect){
   double x0=1.7, y0=f_11(x0), x1=x0-0.3, x2=x0+0.8, x, tol=1.e-12;
 
   x=solve_bisect(f_11,y0,x1,x2,tol);
-  EXPECT_TRUE(x0-tol<x and x<x0+tol);
+  EXPECT_TRUE(x0-tol<x && x<x0+tol);
   EXPECT_NEAR(std::abs(x0-x), 0, tol);
 
   x=solve_bisect(f_11,f_11(x0+2*tol),x1,x2,tol);
-  EXPECT_FALSE(x0-tol<x and x<x0+tol);
+  EXPECT_FALSE(x0-tol<x && x<x0+tol);
 
   x=solve_bisect(f_11,f_11(x0-2*tol),x1,x2,tol);
-  EXPECT_FALSE(x0-tol<x and x<x0+tol);
+  EXPECT_FALSE(x0-tol<x && x<x0+tol);
 
   x=solve_bisect(f_11,f_11(x0),x1,x2,-1.0);
-  EXPECT_TRUE(x0-tol<x and x<x0+tol);
+  EXPECT_TRUE(x0-tol<x && x<x0+tol);
   EXPECT_NEAR(std::abs(x0-x), 0, tol);
   EXPECT_DOUBLE_EQ(x0,x);
 }

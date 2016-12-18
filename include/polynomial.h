@@ -87,7 +87,7 @@ template<class T> void polynomial<T>::set(const std::vector<T>& cc0)       { cc=
 template<class T> void polynomial<T>::get(      std::vector<T>& cc1) const { cc1=cc; }
 template<class T> int  polynomial<T>::deg(void ) const{ return cc.size()-1; }  // note: deg=-1 if cc is empty
 template<class T> T&   polynomial<T>::c  (int k)      { if(k<0) throw std::domain_error("polynomial::c(k): k<0"); if(deg()<k) cc.resize(k+1,0); return cc[k]; }
-template<class T> T    polynomial<T>::c  (int k) const{ return ((0<=k and k<=deg()) ? cc[k] : 0); }
+template<class T> T    polynomial<T>::c  (int k) const{ return ((0<=k && k<=deg()) ? cc[k] : 0); }
 template<class T> T    polynomial<T>::operator()(const T& x) const{ T y=0; for(int i=deg(); i>=0; i--) y=y*x+cc[i]; return y; }
 
 template<class T> polynomial<T>& operator+=(polynomial<T>& p, const T& s){ p.c(0)+=s; return p; }

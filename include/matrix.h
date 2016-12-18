@@ -154,12 +154,12 @@ template<class T> matrix<T>& operator-=(matrix<T>& m, T t){  m+=(-t);  return m;
 template<class T> matrix<T>& operator*=(matrix<T>& m, T t){  for(size_t k=0; k<m.dim(); k++) m(k)*=t;  return m;  }
 template<class T> matrix<T>& operator/=(matrix<T>& m, T t){  m*=(T(1)/t);  return m;  }
 template<class T> matrix<T>& operator+=(matrix<T>& m, const matrix<T>& dm){
-  if(!(m.nrow()==dm.nrow() and m.ncol()==dm.ncol())) throw std::domain_error("operator+=(M,M): sizes mismatch");
+  if(!(m.nrow()==dm.nrow() && m.ncol()==dm.ncol())) throw std::domain_error("operator+=(M,M): sizes mismatch");
   for(size_t k=0; k<m.dim(); k++) m(k)+=dm(k);
   return m;
 }
 template<class T> matrix<T>& operator-=(matrix<T>& m, const matrix<T>& dm){
-  if(!(m.nrow()==dm.nrow() and m.ncol()==dm.ncol())) throw std::domain_error("operator-=(M,M): sizes mismatch");
+  if(!(m.nrow()==dm.nrow() && m.ncol()==dm.ncol())) throw std::domain_error("operator-=(M,M): sizes mismatch");
   for(size_t k=0; k<m.dim(); k++) m(k)-=dm(k);
   return m;
 }
@@ -204,7 +204,7 @@ template<class T> T norm (const matrix<std::complex<T> >& m){
 
 // Inner product <M1,M2> (aka "dot" product)
 template<class T> T inner(const matrix<T>& m1, const matrix<T>& m2){
-  if( !(m1.nrow()==m2.nrow() and m1.ncol()==m2.ncol()) ) throw std::domain_error("inner(M,M): sizes mismatch");
+  if( !(m1.nrow()==m2.nrow() && m1.ncol()==m2.ncol()) ) throw std::domain_error("inner(M,M): sizes mismatch");
   T t=0;
   for(size_t k=0; k<m1.dim(); k++) t+=nm_conj(m1(k))*m2(k);
   return t;
@@ -293,7 +293,7 @@ template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
     size_t i0=0, j0=1;
     for(size_t i=0; i<n; i++)
       for(size_t j=0; j<n; j++)
-	if( i!=j and std::abs(m(i0,j0))<=std::abs(m(i,j)) ) { i0=i; j0=j; }
+	if( i!=j && std::abs(m(i0,j0))<=std::abs(m(i,j)) ) { i0=i; j0=j; }
 
     // error before rotation - will be decreased by 2|M(i0,j0)|^2 after rotation
     double err0=0;
@@ -314,7 +314,7 @@ template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
     double err1=0;
     for(size_t k=0; k<n; k++)
       err1 += (k==i0 ? 0 : nm_nrm2(m(k,i0))+nm_nrm2(m(i0,k))) + (k==j0 ? 0 :nm_nrm2(m(k,j0))+nm_nrm2(m(j0,k)));
-    if(!(tol<err1 and err1<err0)) break;
+    if(!(tol<err1 && err1<err0)) break;
   }
 
   return u;
@@ -329,14 +329,14 @@ template<class T> matrix<T> getvec(const matrix<T>& m, size_t j){
   return v;
 }
 template<class T> void setvec(matrix<T>& m, size_t j, const matrix<T>& v){
-  if(!(j<m.ncol() and m.nrow()==v.nrow() and v.ncol()==1)) throw std::domain_error("setvec(M,j,V): bad column or size");
+  if(!(j<m.ncol() && m.nrow()==v.nrow() && v.ncol()==1)) throw std::domain_error("setvec(M,j,V): bad column or size");
   for(size_t i=0; i<m.nrow(); i++) m(i,j)=v(i);
 }
 
 
 // Get/set submatrix  M i0+[0,r) x j0+[0,c) <--> M1 [0,r) x [0,c)
 template<class T> matrix<T>  getsub(const matrix<T>& m, size_t i0, size_t j0, size_t r, size_t c){
-  if(m.nrow()<i0+r or m.ncol()<j0+c) throw std::domain_error("getsub(M,i0,j0,r,c): bad dimension");
+  if(m.nrow()<i0+r || m.ncol()<j0+c) throw std::domain_error("getsub(M,i0,j0,r,c): bad dimension");
   matrix<T> m1(r,c);
   for(size_t i=0; i<r; i++)
     for(size_t j=0; j<c; j++)
@@ -345,7 +345,7 @@ template<class T> matrix<T>  getsub(const matrix<T>& m, size_t i0, size_t j0, si
 }
 template<class T> void setsub(matrix<T>& m, size_t i0, size_t j0, const matrix<T> m1){
   size_t r=m1.nrow(), c=m1.ncol();
-  if(m.nrow()<i0+r or m.ncol()<j0+c) throw std::domain_error("setsub(M,i0,j0,m1): bad dimension");
+  if(m.nrow()<i0+r || m.ncol()<j0+c) throw std::domain_error("setsub(M,i0,j0,m1): bad dimension");
   for(size_t i=0; i<r; i++)
     for(size_t j=0; j<c; j++)
       m(i0+i,j0+j)=m1(i,j);
@@ -355,14 +355,14 @@ template<class T> void setsub(matrix<T>& m, size_t i0, size_t j0, const matrix<T
 // Get/set diagonal part
 template<class T> matrix<T> getdiag(const matrix<T>& m){
   size_t n=m.nrow();
-  if(m.nrow()!=n or m.ncol()!=n) throw std::domain_error("getdiag(M): not square");
+  if(m.nrow()!=n || m.ncol()!=n) throw std::domain_error("getdiag(M): not square");
   matrix<T> v(n);
   for(size_t k=0; k<n; k++) v(k)=m(k,k);
   return v;
 }
 template<class T> void setdiag(matrix<T>& m, const matrix<T>& v){
   size_t n=v.dim();
-  if(m.nrow()!=n or m.ncol()!=n) throw std::domain_error("setdiag(M,V): sizes mismatch");
+  if(m.nrow()!=n || m.ncol()!=n) throw std::domain_error("setdiag(M,V): sizes mismatch");
   for(size_t k=0; k<n; k++) m(k,k)=v(k);
 }
 
@@ -392,23 +392,23 @@ template<class T> void sort_columns_by_value(matrix<T>& m, const matrix<T>& v){
   std::sort(kk.begin(), kk.end(), [&](int i, int j){ return nm_real(v(i))<nm_real(v(j)); });
   matrix<T> m1=m;
   for(size_t k=0; k<v.dim(); k++)
-    if(k<m.ncol() and kk[k]<m1.ncol() and k!=kk[k]) setvec(m,k,getvec(m1,kk[k]));
+    if(k<m.ncol() && kk[k]<m1.ncol() && k!=kk[k]) setvec(m,k,getvec(m1,kk[k]));
 }
 
 
 // 3D geometry
 template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w){  // V x W
-  if( !(v.nrow()==3 and w.ncol()==1 and v.nrow()==3 and v.ncol()==1) ) throw std::domain_error("outer(V,V): not 3-vectors");
+  if( !(v.nrow()==3 && w.ncol()==1 && v.nrow()==3 && v.ncol()==1) ) throw std::domain_error("outer(V,V): not 3-vectors");
   return matrix<T>(v(1)*w(2)-w(1)*v(2), v(2)*w(0)-w(2)*v(0), v(0)*w(1)-w(0)*v(1));
 }
 template<class T> matrix<T> vec2rot(const matrix<T>& v){  // R^3=so(3)-->SO(3) (exp, rotation about v by angle |v|)
-  if(!(v.nrow()==3 and v.ncol()==1)) throw std::domain_error("vec2rot(V): not a 3-vector");
+  if(!(v.nrow()==3 && v.ncol()==1)) throw std::domain_error("vec2rot(V): not a 3-vector");
   double th=norm(v);
   if(std::abs(th)<1.e-8){ matrix<T> r=vec2asym(v);  return r*r/T(2)+r+T(1); }
   else{ matrix<T> r=vec2asym(v/th); return ((T(1)-cos(th))*r+sin(th))*r+T(1); }  // Rodrigues
 }
 template<class T> matrix<T> rot2vec(const matrix<T>& r){  // SO(3)-->so(3)=R^3 (log, local inverse of exp)
-  if(!(r.nrow()==3 and r.ncol()==3)) throw std::domain_error("rot2vec(R): not a 3x3 matrix");
+  if(!(r.nrow()==3 && r.ncol()==3)) throw std::domain_error("rot2vec(R): not a 3x3 matrix");
   T c=(r(0,0)+r(1,1)+r(2,2)-1)/2;
   T th=(c<=-1 ? M_PI : 1<=c ? 0 : acos(c));  // (singularities sin(th)=0 will be treated separately)
   if(c<-0.99){
@@ -421,11 +421,11 @@ template<class T> matrix<T> rot2vec(const matrix<T>& r){  // SO(3)-->so(3)=R^3 (
   else         return (th/sin(th))          *axis;
 }
 template<class T> matrix<T> asym2vec(const matrix<T>& a){  // so(3)-->R^3 (A-->V s.t. AX=VxX)
-  if(!(a.nrow()==3 and a.ncol()==3)) throw std::domain_error("asym2vec(V): not a 3 by 3 matrix");
+  if(!(a.nrow()==3 && a.ncol()==3)) throw std::domain_error("asym2vec(V): not a 3 by 3 matrix");
   return matrix<T>(a(2,1),a(0,2),a(1,0));
 }
 template<class T> matrix<T> vec2asym(const matrix<T>& v){  // R^3-->so(3) (V-->A s.t. AX=VxX)
-  if(!(v.nrow()==3 and v.ncol()==1)) throw std::domain_error("vec2asym(V): not a 3-vector");
+  if(!(v.nrow()==3 && v.ncol()==1)) throw std::domain_error("vec2asym(V): not a 3-vector");
   matrix<T> a(3,3);
   a(2,1)=v(0);  a(1,2)=-v(0);
   a(0,2)=v(1);  a(2,0)=-v(1);
@@ -433,7 +433,7 @@ template<class T> matrix<T> vec2asym(const matrix<T>& v){  // R^3-->so(3) (V-->A
   return a;
 }
 template<class T> matrix<T> rotabout(int k, T th){  // rotation about k-th coord axis by angle th
-  if(!(0<=k and k<3)) throw std::domain_error("rotabout(k,th): bad axis");
+  if(!(0<=k && k<3)) throw std::domain_error("rotabout(k,th): bad axis");
   matrix<T> r(3,3);
   int i=(k+1)%3, j=(k+2)%3;
   r(i,i)=cos(th);  r(i,j)=-sin(th);

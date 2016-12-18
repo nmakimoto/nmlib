@@ -21,7 +21,7 @@ inline Sparse random_sparse(size_t n, size_t w, size_t k){
   Sparse a(n,n);
   for(size_t i=0; i<n; i++)
     for(size_t j=0; j<n; j++)
-      if( i<=j+w and i<=j+w ) a(i,j)=urand1()*2-1;  // w
+      if( i<=j+w && i<=j+w ) a(i,j)=urand1()*2-1;  // w
   for( ; k>0; k--)
     a(size_t(urand1()*n), size_t(urand1()*n)) = urand1()*2-1;  // random position
   return a;

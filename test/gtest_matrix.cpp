@@ -35,18 +35,18 @@ TEST(matrix,init){
 
   // constructors...
   m1=Matrix();
-  EXPECT_TRUE(m1.nrow()==0 and m1.ncol()==0 and m1.dim()==0);
+  EXPECT_TRUE(m1.nrow()==0 && m1.ncol()==0 && m1.dim()==0);
 
   m1=Matrix(3);
-  EXPECT_TRUE(m1.nrow()==3 and m1.ncol()==1 and m1.dim()==3);
+  EXPECT_TRUE(m1.nrow()==3 && m1.ncol()==1 && m1.dim()==3);
   for(size_t k=0; k<m1.dim(); k++) EXPECT_DOUBLE_EQ(m1(k),0);
 
   m1=Matrix(3,4);
-  EXPECT_TRUE(m1.nrow()==3 and m1.ncol()==4 and m1.dim()==12);
+  EXPECT_TRUE(m1.nrow()==3 && m1.ncol()==4 && m1.dim()==12);
   for(size_t i=0; i<m1.nrow(); i++)  for(size_t j=0; j<m1.ncol(); j++)  EXPECT_DOUBLE_EQ(m1(i,j), 0);
 
   m1=Matrix(1.1, 2.2, 3.3);
-  EXPECT_TRUE(m1.nrow()==3 and m1.ncol()==1 and m1.dim()==3);
+  EXPECT_TRUE(m1.nrow()==3 && m1.ncol()==1 && m1.dim()==3);
   for(size_t k=0; k<m1.dim(); k++) EXPECT_NEAR(m1(k),1.1*(k+1),1.e-12);
 
   double aa[]={1.11,2.22,3.33,4.44,5.55};
@@ -213,7 +213,7 @@ TEST(matrix,transpose){
 
   m1=mrand(4,3);
   m2=tp(m1);
-  EXPECT_TRUE(m1.nrow()==m2.ncol() and m1.ncol()==m2.nrow());
+  EXPECT_TRUE(m1.nrow()==m2.ncol() && m1.ncol()==m2.nrow());
   EXPECT_NEAR(norm(tp(tp(m1))-m1), 0, 1.e-12);  // M^T^T = M
   for(size_t i=0; i<m1.nrow(); i++)
     for(size_t j=0; j<m1.ncol(); j++)

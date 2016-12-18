@@ -30,7 +30,7 @@ Matrix regression (const Matrix& xx, const Matrix& yy, bool add_b=true);  // coe
 inline double pdf_normal(double x){  return exp(-x*x/2)/sqrt(2*M_PI);  }
 inline double cdf_normal(double x){  return erfc(-x/sqrt(2))/2;  }
 inline double pvalue_normal(double p){
-  if(p>0.5 and 0.5>1-p) return -pvalue_normal(1-p);
+  if(p>0.5 && 0.5>1-p) return -pvalue_normal(1-p);
   double x=0,x0=1;
   while(x<x0){
     x0=x;
@@ -58,7 +58,7 @@ inline Matrix covariance(const Matrix& xx, const Matrix& yy){
   return exy-ex*tp(ey);
 }
 inline double correlation(const Matrix& xx, const Matrix& yy){
-  if(!(xx.nrow()==1 and yy.nrow()==1)) throw std::domain_error("correlation(): x and y must be one dimensional");
+  if(!(xx.nrow()==1 && yy.nrow()==1)) throw std::domain_error("correlation(): x and y must be one dimensional");
   return covariance(xx,yy)(0) / sqrt(variance(xx)(0)*variance(yy)(0));
 }
 

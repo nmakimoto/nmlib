@@ -9,7 +9,6 @@
 #include <map>
 #include <queue>
 #include <algorithm>
-#include <stdexcept>
 namespace nmlib{
 
 
@@ -62,40 +61,40 @@ inline Route::Path Route::operator()(Node n0, Node n1, const N2N& prev) const{
   while(true){
     p.push_back(n1);
     if(n1==n0) break;
-    if(n1==prev.at(n1)) return Path();
-    n1=prev.at(n1);
+    auto it=prev.find(n1);
+    if(it==prev.end() || it->first==it->second) return Path();
+    n1=it->second;
   }
   std::reverse(p.begin(),p.end());
   return p;
 }
 
 
-inline Route::N2N Route::dijkstra(Node n_src) const{
-  N2N  prev;  // shortest-path tree of node n_src
+inline Route::N2N Route::dijkstra(Node n0) const{
+  N2N  prev;
   N2D  cost;
-  auto cmp = [&](Node n1, Node n2){ return cost[n1]>cost[n2]; };
-  std::priority_queue<Node,std::vector<Dist>,decltype(cmp)> bdry(cmp);
+  typedef std::pair<Node,Dist> ND;
+  auto cmp = [&](const ND& a, const ND& b){ return a.second>b.second; };
+  std::priority_queue<ND,std::vector<ND>,decltype(cmp)> next(cmp);
 
-  prev[n_src]=n_src;
-  cost[n_src]=0;
-  bdry.push(n_src);
-  if(dist.find(n_src)==dist.end()) return prev;
+  next.push(ND(n0,0));
+  cost[n0]=0;
 
-  while(!bdry.empty()){
-    Node k1=bdry.top(), k0=prev.at(k1);  // (k0,k1) = argmin_{j0:visited, j1:boundary} cost(j0)+length(j0,j1)
-    bdry.pop();
-    prev[k1]=k0;
+  while(!next.empty()){
+    Node k0=next.top().first;
+    Dist d0=next.top().second;
+    next.pop();
 
-    if(dist.find(k1)==dist.end()) continue;
-    const N2D& n2d=dist.at(k1);
+    if(cost[k0]<d0) continue;
+    if(dist.find(k0)==dist.end()) continue;
+    const N2D& n2d=dist.at(k0);
     for(const auto& it: n2d){
-      Node k2=it.first;
-      Dist d =it.second+cost.at(k1);
-      if(prev.find(k2)!=prev.end()) continue;
-      if(cost.find(k2)!=cost.end() && cost[k2]<=d) continue;
-      prev[k2]=k1;
-      cost[k2]=d;  // set/update priority
-      bdry.push(k2);
+      Node k1=it.first;
+      Dist d1=it.second+d0;
+      if(cost.find(k1)!=cost.end() && cost[k1]<=d1) continue;
+      next.push(ND(k1,d1));
+      cost[k1]=d1;
+      prev[k1]=k0;
     }
   }
   return prev;

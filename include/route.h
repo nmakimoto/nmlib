@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <map>
-#include <queue>
+#include <set>
 #include <algorithm>
 namespace nmlib{
 
@@ -73,28 +73,28 @@ inline Route::Path Route::operator()(Node n0, Node n1, const N2N& prev) const{
 inline Route::N2N Route::dijkstra(Node n0) const{
   N2N  prev;
   N2D  cost;
-  typedef std::pair<Node,Dist> ND;
-  auto cmp = [&](const ND& a, const ND& b){ return a.second>b.second; };
-  std::priority_queue<ND,std::vector<ND>,decltype(cmp)> next(cmp);
+  auto cmp = [&](Node a, Node b){ return cost[a]<cost[b]; };
+  std::set<Node,decltype(cmp)> next(cmp);
 
-  next.push(ND(n0,0));
   cost[n0]=0;
+  next.insert(n0);
 
   while(!next.empty()){
-    Node k0=next.top().first;
-    Dist d0=next.top().second;
-    next.pop();
+    Node k0=*next.begin();
+    Dist d0=cost[k0];
+    next.erase(k0);
+    //if(k0==n1) break;  // shortest path to goal
 
-    if(cost[k0]<d0) continue;
     if(dist.find(k0)==dist.end()) continue;
     const N2D& n2d=dist.at(k0);
     for(const auto& it: n2d){
       Node k1=it.first;
       Dist d1=it.second+d0;
       if(cost.find(k1)!=cost.end() && cost[k1]<=d1) continue;
-      next.push(ND(k1,d1));
+      next.erase(k1);  // for consitency: erase k1 and update cost before re-inserting k1
       cost[k1]=d1;
       prev[k1]=k0;
+      next.insert(k1);
     }
   }
   return prev;

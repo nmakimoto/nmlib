@@ -22,6 +22,7 @@ public:
   typedef std::map<Node,Node>  N2N;
   typedef std::map<Node,Dist>  N2D;
   typedef std::map<Node,N2D>   NN2D;
+  typedef std::set<Node>       SetN;
 
   NN2D dist;  // dist[n0][n1] := length of edge (n0,n1)
 
@@ -30,6 +31,7 @@ public:
   Path operator()(Node n0, Node n1) const;  // shortest path from n0 to n1
   Path operator()(Node n0, Node n1, const N2N& prev) const;
   N2N  dijkstra  (Node n0) const;           // shortest-path tree of n0
+  N2N  dijkstra  (Node n0, const SetN& nn1) const;  // nn1: destinations
 };
 
 
@@ -53,7 +55,7 @@ inline Route::Dist Route::length(Node n0, Node n1) const{
 
 
 inline Route::Path Route::operator()(Node n0, Node n1) const{
-  return operator()(n0,n1,dijkstra(n0));
+  return operator()(n0,n1,dijkstra(n0,{n1}));
 }
 inline Route::Path Route::operator()(Node n0, Node n1, const N2N& prev) const{
   if(prev.find(n1)==prev.end()) return Path();
@@ -71,10 +73,14 @@ inline Route::Path Route::operator()(Node n0, Node n1, const N2N& prev) const{
 
 
 inline Route::N2N Route::dijkstra(Node n0) const{
+  return dijkstra(n0, SetN());
+}
+inline Route::N2N Route::dijkstra(Node n0, const SetN& nn1) const{
   N2N  prev;
   N2D  cost;
   auto cmp = [&](Node a, Node b){ return cost[a]<cost[b]; };
   std::set<Node,decltype(cmp)> next(cmp);
+  size_t hit=0;
 
   cost[n0]=0;
   next.insert(n0);
@@ -83,7 +89,7 @@ inline Route::N2N Route::dijkstra(Node n0) const{
     Node k0=*next.begin();
     Dist d0=cost[k0];
     next.erase(k0);
-    //if(k0==n1) break;  // shortest path to goal
+    if(nn1.find(k0)!=nn1.end() && ++hit==nn1.size()) break;
 
     if(dist.find(k0)==dist.end()) continue;
     const N2D& n2d=dist.at(k0);

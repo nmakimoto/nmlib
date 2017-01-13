@@ -363,8 +363,8 @@ TEST(matrix,complex){
   // inner
   m1= MatC(mrand(3,3)) + MatC(mrand(3,3))*Cpx(0,1);
   Cpx c(urand1(),urand1());
-  EXPECT_NEAR(std::abs(inner(c*m,m1)-nm_conj(c)*inner(m,m1)), 0, 1.e-8);
-  EXPECT_NEAR(std::abs(inner(m,c*m1)-        c *inner(m,m1)), 0, 1.e-8);
+  EXPECT_NEAR(std::abs(inner(c*m,m1)-std::conj(c)*inner(m,m1)), 0, 1.e-8);
+  EXPECT_NEAR(std::abs(inner(m,c*m1)-          c *inner(m,m1)), 0, 1.e-8);
   EXPECT_NEAR(std::abs(inner(m,m1) - 
 		       (inner(real(m),real(m1)) + inner(imag(m),imag(m1)) +
 			Cpx(0,1) * (-inner(imag(m),real(m1)) + inner(real(m),imag(m1))))),
@@ -374,7 +374,7 @@ TEST(matrix,complex){
   m1=tp(m);
   for(size_t i=0; i<m.nrow(); i++)
     for(size_t j=0; j<m.ncol(); j++)
-      EXPECT_DOUBLE_EQ(std::norm(m(i,j)-nm_conj(m1(j,i))), 0);
+      EXPECT_DOUBLE_EQ(std::norm(m(i,j)-std::conj(m1(j,i))), 0);
 
   // inv
   EXPECT_NEAR(std::abs(norm(inv(m)*m-Cpx(1.0))), 0, 1.e-8);

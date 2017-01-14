@@ -18,7 +18,7 @@ typedef matrix<C> MatC;
 
 // Random sample
 template<class T> T urand1(T /*c*/=0){
-  return (rand()+0.5)/RAND_MAX;
+  return (random()+0.5)/RAND_MAX;
 }
 template<class T> std::complex<T> urand1(std::complex<T> /*c*/=0){
   return std::complex<T>(urand1<T>(),urand1<T>());

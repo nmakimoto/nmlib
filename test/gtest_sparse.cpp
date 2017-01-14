@@ -10,7 +10,7 @@ using namespace nmlib;
 
 // Random sample generators
 inline double urand1(void    ){
-  return (rand()%RAND_MAX+0.5)/RAND_MAX;
+  return (random()%RAND_MAX+0.5)/RAND_MAX;
 }
 inline Matrix random_vector(size_t n){
   Matrix x(n);

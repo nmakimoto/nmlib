@@ -33,7 +33,7 @@ inline Matrix nrand_m(size_t n){ Matrix x(n); for(size_t k=0; k<n; k++) x(k)=nra
 inline double corput(uint_fast64_t n, uint_fast64_t b){
   uint_fast64_t q=0, p=1;
   while(p<=uint_fast64_t(-1)/b){ q=q*b+(n%b); p*=b; n/=b; }
-  return (q+0.5)/p;  // n=(ABCDE)b --> (0.EDCBA)b + 1/2max
+  return double(q)/p;  // n=(ABCDE)b --> (0.EDCBA)b + 1/2max
 }
 inline Matrix halton(uint_fast64_t n, size_t dim){
   const uint_fast64_t pp[]={2,3,5,7,11,13};

@@ -22,7 +22,7 @@ Matrix urand_m(size_t n);  // multidim uniform U(0,1)^n
 Matrix nrand_m(size_t n);  // multidim gaussian N(0,I)
 
 double corput(uint_fast64_t seq, uint_fast64_t base=2);  // LDS(low-discrepancy sequence) - van der Corput
-Matrix halton(uint_fast64_t seq, size_t dim);    // multidim LDS
+Matrix halton(uint_fast64_t seq, const std::vector<uint_fast64_t>& base);  // multidim LDS - Halton
 
 
 /******** Implementation ********/
@@ -35,11 +35,10 @@ inline double corput(uint_fast64_t n, uint_fast64_t b){
   while(p<=uint_fast64_t(-1)/b){ q=q*b+(n%b); p*=b; n/=b; }
   return double(q)/p;  // n=(ABCDE)b --> (0.EDCBA)b + 1/2max
 }
-inline Matrix halton(uint_fast64_t n, size_t dim){
-  const uint_fast64_t pp[]={2,3,5,7,11,13};
-  if(dim>sizeof(pp)/sizeof(pp[0])) throw std::runtime_error("halton(): dimension too large (>6)");
+inline Matrix halton(uint_fast64_t n, const std::vector<uint_fast64_t>& base){
+  size_t dim=base.size();
   Matrix x(dim);
-  for(size_t k=0; k<dim; k++) x(k)=corput(n,pp[k]);
+  for(size_t k=0; k<dim; k++) x(k)=corput(n,base[k]);
   return x;
 }
 

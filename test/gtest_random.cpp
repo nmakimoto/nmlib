@@ -37,35 +37,31 @@ TEST(random,white){
 
 
 TEST(random,lowdiscrepancy){
-  int n=10000, k=10, bb[]={2,3,5,7,11,13};
-  const int dim=sizeof(bb)/sizeof(bb[0]);
+  int n=10000, k=10;
 
   // van der Corput sequence
-  for(int i=0; i<dim; i++){
-    int base=bb[i];
+  for(int base: {2,3,5,7,11,13}){
     std::map<int,int> count;
     for(int seq=1; seq<=n; seq++) count[int(corput(seq,base)*k)]++;
-    for(int j=0; j<k; j++) EXPECT_NEAR(count[j], n/k, log(n)/log(base)*5);
+    for(int j=0; j<k; j++) EXPECT_NEAR(count[j], n/k, log(n));  // uniform
   }
 
   // Halton sequence
   {
-    std::map<int,int> cnt[dim];
+    std::vector<uint_fast64_t> bb={2,3,5,7,11,13};
+    const int dim=bb.size();
+    Matrix s1(dim), s2(dim,dim);
     for(int seq=1; seq<=n; seq++){
-      Matrix x=halton(seq,dim);
-      for(int d=0; d<dim; d++) cnt[d][int(x(d)*k)]++;
+      Matrix x=halton(seq, bb);
+      s1+=x;
+      s2+=x*tp(x);
     }
-    for(int d=0; d<dim; d++)
-      for(int j=0; j<k; j++) EXPECT_NEAR(cnt[d][j], n/k, log(n)/log(bb[d])*5);  // uniform
-
-    double cov=0;
-    for(int seq=1; seq<=n; seq++){
-      Matrix x=halton(seq,2);
-      cov+=x(0)*x(1);
+    s1/=double(n);
+    s2=s2/double(n)-s1*tp(s1);
+    for(int i=0; i<dim; i++){
+      EXPECT_NEAR(s1(i), 0.5, log(n)/n);  // unbiased
+      for(int j=0; j<dim; j++)
+        if(i!=j) EXPECT_NEAR(s2(i,j), 0.0, log(n)/n);  // uncorrelated
     }
-    cov=cov/n-0.5*0.5;
-    EXPECT_NEAR(cov,0,5.0/n);  // no correlation
-
-    EXPECT_THROW(halton(0,7), std::runtime_error);  // max dimension
   }
 }

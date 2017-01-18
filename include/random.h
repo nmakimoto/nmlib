@@ -32,8 +32,8 @@ inline Matrix nrand_m(size_t n){ Matrix x(n); for(size_t k=0; k<n; k++) x(k)=nra
 
 inline double corput(uint_fast64_t n, uint_fast64_t b){
   uint_fast64_t q=0, p=1;
-  while(p<=uint_fast64_t(-1)/b){ q=q*b+(n%b); p*=b; n/=b; }
-  return double(q)/p;  // n=(ABCDE)b --> (0.EDCBA)b + 1/2max
+  while(n){ q=q*b+(n%b); p*=b; n/=b; }
+  return double(q)/p;  // n=(ABCDE)b --> (0.EDCBA)b
 }
 inline Matrix halton(uint_fast64_t n, const std::vector<uint_fast64_t>& base){
   size_t dim=base.size();

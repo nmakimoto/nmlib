@@ -28,8 +28,14 @@ TEST(stat,normal){
 
   double dx=1.e-6;
   for(double x=-3.0;  x<3.01;   x+=0.1  ) EXPECT_NEAR(pdf_normal(x), (cdf_normal(x+dx)-cdf_normal(x-dx))/(2*dx), 1.e-6);
-  for(double x=-3.0;  x<3.01;   x+=0.1  ) EXPECT_NEAR(pvalue_normal(cdf_normal(x)), x, 1.e-8);
-  for(double p=0.001; p<0.9991; p+=0.001) EXPECT_NEAR(cdf_normal(pvalue_normal(p)), p, 1.e-8);
+  for(double x=-3.0;  x<3.01;   x+=0.1  ) EXPECT_NEAR(pvalue_normal(cdf_normal(x)), x, 1.e-12);
+  for(double p=0.001; p<0.9991; p+=0.001) EXPECT_NEAR(cdf_normal(pvalue_normal(p)), p, 1.e-12);
+
+  // boundary
+  for(double p: {0.5-1.e-10, 0.5-0.9e-10, 0.5, 0.5+0.9e-10, 0.5+1.e-10, 0.5+1.1e-10})
+    EXPECT_NEAR(cdf_normal(pvalue_normal(p)), p, 1.e-12);
+  for(double p: {+1.e-10, 1-1.e-10}) EXPECT_FALSE(std::isinf(pvalue_normal(p)));
+  for(double p: {-1.e-10, 1+1.e-10}) EXPECT_TRUE (std::isinf(pvalue_normal(p)));
 }
 
 

@@ -15,31 +15,40 @@ namespace nmlib{
 // 6-axis manipulator
 class Robot{
 public:
+  Robot(void);
+
   // kinematics
-  Matrix fk(const Matrix& th, int k=6) const;  // forward kinematics (of k-th part)
-  Matrix ik(const Matrix& hom, const Matrix& th_ini, double err=1.e-8, int iter=100) const;  // inverse kinematics
-  Matrix jacobian(const Matrix& th, int k=6) const;  // jacobian of fk (of k-th part)
+  Matrix fk      (const Matrix& th, int k=7) const;  // forward kinematics (of k-th part)
+  Matrix jacobian(const Matrix& th, int k=7) const;  // jacobian of fk (of k-th part)
+  Matrix ik      (const Matrix& hom_dst, const Matrix& th_ini, double err=1.e-8, int iter=100) const;  // inverse kinematics
 
   // configuration
-  void set_zero(const Matrix& th0);  // set offset of joint angles
-  void set_base(const Matrix& hom);  // set position and attitude of the robot
-  Matrix& link(int k);               // set parameters of k-th joint
-  Matrix  link(int k) const;         // get parameters of k-th joint
+  Matrix  zero(void)  const;  // get offset of joint angles
+  Matrix& zero(void);         // set ...
+  Matrix  hom0(int k) const;  // get position and attitude of k-th part
+  Matrix& hom0(int k);        // set ...
 
 private:
-  Matrix  lk(int k, double th) const;  // homog trsf of k-th part relative to (k-1)-th when k-th joint angle=theta
-  Matrix dlk(int k, double th) const;  // dlk/dth
+  Matrix hm0[6+2];  // relative position and attitude of adjacent parts
+  Matrix th0;       // offset of joint angles
 
-  // homogeneous transformations between adjacent parts, connected by k-th joint, at zero angles
-  //   - lk0[k] is the homog trsf from (k-1)-th part to k-th part when k-th joint angle=0
-  //   - rotation axis of k-th joint is "Z"-axis of k-th part
-  //   - for k=0, "(k-1)-th part" is the world
-  //   - for k=6, "k-th part" is a fixed end effector
-  Matrix lk0[6+1];
+  // Notes:
+  // - For k=0..7, hm0[k] represents the homog. trsf. from (k-1)-st part to k-th part when (k-1)-st joint angle is 0.
+  //   By convention, -1st and 7th parts represent the world and an end effector, respectively.
+  // - For k=1..6, the Z axis of k-th part is bound to the rotation axis of (k-1)-st joint.
+  //   Note that there are some freedom of choice of the origin, X axis, and Y axis of k-th part.
+  // - If relevant geometry is given in the world coordinate, then initialization code may look like:
+  //     robot.hom0(k) = inv_homtrsf(T[k-1])*T[k];
+  //     robot.zero()  = robot.ik(T_ref,th_ini);
+  // - IK may fail (e.g. near singularities). User should verify convergence.
 };
 
 
 /******** Utility I/F ********/
+
+// stream I/O
+std::istream& operator>>(std::istream& str,       Robot& robot);
+std::ostream& operator<<(std::ostream& str, const Robot& robot);
 
 // homogeneous transformation matrix <--> (position,rotation)
 Matrix hom2pos(const Matrix& hom);
@@ -48,25 +57,60 @@ Matrix homtrsf(const Matrix& pos, const Matrix& rot);
 Matrix inv_homtrsf(const Matrix& hom);
 bool   is_homtrsf (const Matrix& hom, double err=1.e-8);
 
-// stream I/O
-std::istream& operator>>(std::istream& str,       Robot& robot);
-std::ostream& operator<<(std::ostream& str, const Robot& robot);
-
 
 /******** Implementation ********/
 
+inline Robot::Robot(void){
+  // approximate model of Yaskawa Motoman ES280D-230
+  Matrix eye=rotabout(2,0.0), x90=rotabout(0,M_PI/2), yzx=rotabout(1,M_PI/2)*rotabout(2,M_PI/2);
+  hm0[0] = homtrsf(Matrix(   0,    0,  0),eye);
+  hm0[1] = homtrsf(Matrix( 285,    0,650),tp(x90));
+  hm0[2] = homtrsf(Matrix(   0,-1150,  0),eye);
+  hm0[3] = homtrsf(Matrix(-250,-1015,  0),x90);
+  hm0[4] = homtrsf(Matrix(   0,    0,  0),tp(x90));
+  hm0[5] = homtrsf(Matrix(   0, -250,  0),x90);
+  hm0[6] = homtrsf(Matrix(   0,    0,200),yzx);
+  hm0[7] = homtrsf(Matrix(   0,    0,  0),eye);
+
+  th0 = Matrix(6);
+}
+
+
 // forward kinematics (of k-th part)
 inline Matrix Robot::fk(const Matrix& th, int k) const{
-  Matrix h=Matrix(4,4)+1.0;
-  for(int j=0; j<=k && j<6; j++) h=h*lk(j,th(j));
-  if(k==6) h=h*lk(k,0);
+  if(k<0 || 7<k) throw std::domain_error("Robot::fk: bad part number");
+  Matrix h=hm0[0], rz=Matrix(4,4)+1.0;
+  for(int j=0; j<6 && j<k ; j++){
+    double thj=th(j)+th0(j);
+    setsub(rz, 0,0, rotabout(2,thj));
+    h=h*hm0[j+1]*rz;
+  }
+  if(k==7) h=h*hm0[7];
   return h;
 }
 
 
+// jacobian of fk (of k-th part)
+inline Matrix Robot::jacobian(const Matrix& th, int k) const{
+  if(k<0 || 7<k) throw std::domain_error("Robot::jacobian: bad part number");
+  Matrix jac(6,6), hj=hm0[0], hk=fk(th,k), rk=hom2rot(hk), jac1, rz(4,4), drz(4,4);
+  for(int j=0; j<6 && j<k; j++){
+    double thj=th(j)+th0(j);
+    setsub( rz, 0,0, rotabout(2,thj));          rz(2,2)= rz(3,3)=1;
+    setsub(drz, 0,0, rotabout(2,thj+M_PI/2));  drz(2,2)=drz(3,3)=0;
+    jac1 = hj*hm0[j+1]*drz;           // T_0 ... T_j dT_{j+1}
+    hj   = hj*hm0[j+1]* rz;           // T_0 ... T_j  T_{j+1}
+    jac1 = jac1*inv_homtrsf(hj)*hk;   // T_0 ... T_j dT_{j+1} T_{j+2} ... T_k
+    setsub(jac, 0,j, hom2pos(jac1));  // velocity = dX/dth
+    setsub(jac, 3,j, asym2vec(hom2rot(jac1)*tp(rk)));  // angular velocity = dR/dth R^-1
+  }
+  return jac;
+}
+
+
 // inverse kinematics
-inline Matrix Robot::ik(const Matrix& hom0, const Matrix& th_ini, double err, int iter) const{
-  Matrix th=th_ini, p0=hom2pos(hom0), r0=hom2rot(hom0);
+inline Matrix Robot::ik(const Matrix& hom_dst, const Matrix& th_ini, double err, int iter) const{
+  Matrix th=th_ini, p0=hom2pos(hom_dst), r0=hom2rot(hom_dst);
   while(iter--){
     Matrix t=fk(th), dp=hom2pos(t)-p0, dr=rot2vec(hom2rot(t)*tp(r0));
     if(norm(dp)+norm(dr) < err) return th;
@@ -76,45 +120,23 @@ inline Matrix Robot::ik(const Matrix& hom0, const Matrix& th_ini, double err, in
 }
 
 
-// jacobian of fk (of k-th part)
-inline Matrix Robot::jacobian(const Matrix& th, int k) const{
-  Matrix jac(6,6), hj(4,4), hk=fk(th,k), rk=hom2rot(hk), jac1;
-  hj+=1.0;
-  if(k==6) k--;
-  for(int j=0; j<=k; j++){
-    jac1 = hj*dlk(j,th(j));  // T_0 ... T_{j-1} dT_j
-    hj   = hj* lk(j,th(j));  // T_0 ... T_j
-    jac1 = jac1*inv_homtrsf(hj)*hk;  // T_0 ... T_{j-1} dT_j T_{j+1} ... T_k
-    setsub(jac, 0,j, hom2pos(jac1));  // velocity = dpos/dth_j
-    setsub(jac, 3,j, asym2vec(hom2rot(jac1) * tp(rk)));  // angular velocity = drot/dth_j rot^-1
-  }
-  return jac;
-}
-
-
 // configuration
-inline void Robot::set_zero(const Matrix& th0){ for(int j=0; j<6; j++) link(j)=lk(j,th0(j)); }
-inline void Robot::set_base(const Matrix& hom){ link(0)=hom; }
-inline Matrix& Robot::link(int k)      { return lk0[k]; }
-inline Matrix  Robot::link(int k) const{ return lk0[k]; }
+inline Matrix  Robot::zero(void)  const { return th0; }
+inline Matrix& Robot::zero(void)        { return th0; }
+inline Matrix  Robot::hom0(int k) const { return hm0[k]; }
+inline Matrix& Robot::hom0(int k)       { return hm0[k]; }
 
 
-// homogeneous transformation of k-th part relative to (k-1)-th when joint angle=theta
-inline Matrix Robot::lk(int k, double th) const{
-  if(k==6 || th==0) return lk0[k];
-  Matrix m(4,4);
-  m(0,0)=cos(th); m(0,1)=-sin(th);
-  m(1,0)=sin(th); m(1,1)= cos(th);
-  m(2,2)=m(3,3)=1;
-  return lk0[k]*m;
+// stream I/O
+inline std::istream& operator>>(std::istream& str,       Robot& robot){
+  for(int i=0; i<6+2; i++) str>>robot.hom0(i);
+  str>>robot.zero();
+  return str;
 }
-// dlk/dth
-inline Matrix Robot::dlk(int k, double th) const{
-  Matrix m(4,4);
-  m(0,0)=-sin(th); m(0,1)=-cos(th);
-  m(1,0)= cos(th); m(1,1)=-sin(th);
-  return lk0[k]*m;
-  
+inline std::ostream& operator<<(std::ostream& str, const Robot& robot){
+  for(int i=0; i<6+2; i++) str<<robot.hom0(i)<<"\n";
+  str<<robot.zero()<<"\n";
+  return str;
 }
 
 
@@ -139,17 +161,6 @@ inline Matrix inv_homtrsf(const Matrix& t0){
 // returns true if hom is actually homog trsf matrix
 inline bool is_homtrsf(const Matrix& hom, double err){
   return norm(hom*inv_homtrsf(hom)-1.0)<err;
-}
-
-
-// stream I/O
-inline std::istream& operator>>(std::istream& str,       Robot& robot){
-  for(int i=0; i<6+1; i++) str>>robot.link(i);
-  return str;
-}
-inline std::ostream& operator<<(std::ostream& str, const Robot& robot){
-  for(int i=0; i<6+1; i++) str<<robot.link(i)<<"\n";
-  return str;
 }
 
 

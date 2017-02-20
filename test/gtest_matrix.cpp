@@ -63,11 +63,6 @@ TEST(matrix,init){
   EXPECT_TRUE(m1.nrow()==5 && m1.ncol()==1 && m1.dim()==5);
   for(size_t i=0; i<m2.dim(); i++) EXPECT_NEAR(m2(i), (i+1)*1.11, 1.e-8);
 
-  // type converters...
-  vv=std::vector<double>(m2);
-  EXPECT_TRUE(vv.size()==5);
-  for(size_t i=0; i<vv.size(); i++) EXPECT_NEAR(vv[i], (i+1)*1.11, 1.e-8);
-
   matrix<std::complex<double> > mc = matrix<std::complex<double> >(m1);
   EXPECT_TRUE(mc.nrow()==5 && mc.ncol()==1 && mc.dim()==5);
   for(size_t i=0; i<vv.size(); i++) EXPECT_NEAR(mc(i).real(), (i+1)*1.11, 1.e-8);
@@ -82,6 +77,8 @@ TEST(matrix,component){
   for(size_t i=0; i<m1.nrow(); i++)  for(size_t j=0; j<m1.ncol(); j++)  EXPECT_DOUBLE_EQ(m1(i,j), i*10+j+0.1);
   for(size_t k=0; k<m1.dim(); k++)  m1(k)=k+0.1;
   for(size_t k=0; k<m1.dim(); k++)  EXPECT_DOUBLE_EQ(m1(k), k+0.1);
+  const double* p=m1.data();
+  for(size_t k=0; k<m1.dim(); k++) EXPECT_DOUBLE_EQ(m1(k), p[k]);
 }
 
 

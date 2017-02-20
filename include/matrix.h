@@ -28,7 +28,6 @@ public:
   explicit matrix(const std::initializer_list<T>& v);
   explicit matrix(const T *v0, const T *vn);  // nx1 val=[v0..vn)
   explicit matrix(T x, T y, T z);             // 3-vector
-  operator const std::vector  <T>& (void) const;
   operator matrix<std::complex<T> >(void) const;
 
   size_t nrow(void) const;  // number of rows
@@ -41,6 +40,7 @@ public:
   T& operator()(size_t i, size_t j);        // set M(i,j)=t
   T  operator()(size_t i) const;  // get t=V(i)
   T& operator()(size_t i);        // set V(i)=t
+  const T* data(void) const;  // raw pointer
 
 private:
   size_t row,col;      // dimensions
@@ -134,12 +134,12 @@ template<class T> size_t matrix<T>::ncol(void) const {  return col;  }
 template<class T> size_t matrix<T>::dim (void) const {  return row*col;  }
 template<class T> matrix<T>& matrix<T>::resize(size_t r, size_t c) {  row=r; col=c; val.resize(r*c); return *this;  }
 template<class T> matrix<T>& matrix<T>::fill  (T z)                {  std::fill(val.begin(),val.end(),z); return *this;  }
-template<class T>        matrix<T>::operator const std::vector  <T>& (void) const {  return val;  }
 template<class T>        matrix<T>::operator matrix<std::complex<T> >(void) const {  matrix<std::complex<T> > mc(nrow(),ncol()); for(size_t k=0; k<dim(); k++) mc(k)=val[k]; return mc;  }
 template<class T> T      matrix<T>::operator()(size_t i, size_t j) const {  return val[i*col+j];  }
 template<class T> T      matrix<T>::operator()(size_t i          ) const {  return val[i];        }
 template<class T> T&     matrix<T>::operator()(size_t i, size_t j)       {  return val[i*col+j];  }
 template<class T> T&     matrix<T>::operator()(size_t i          )       {  return val[i];        }
+template<class T> const T* matrix<T>::data(void) const{ return val.data(); }
 
 // Basic operations (incremental)
 template<class T> matrix<T>& operator+=(matrix<T>& m, T t){
@@ -491,8 +491,8 @@ template<class T> std::ostream& write(std::ostream& str, const matrix<T>& m){
   str.write((char*)&r,sizeof(r));
   str.write((char*)&c,sizeof(c));
   if(!str) return str;
-  const std::vector<T>& val=m;  // note: &m(0) does not work
-  str.write((char*)&val[0],sizeof(val[0])*r*c);
+  const T* p=m.data();
+  str.write((char*)p,sizeof(p[0])*r*c);
   return str;
 }
 

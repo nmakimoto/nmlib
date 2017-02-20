@@ -25,6 +25,7 @@ public:
   explicit matrix(void);                      // empty matrix
   explicit matrix(size_t r, size_t c=1);      // rxc zero matrix
   explicit matrix(const std::vector<T>& v);   // nx1 val=v
+  explicit matrix(const std::initializer_list<T>& v);
   explicit matrix(const T *v0, const T *vn);  // nx1 val=[v0..vn)
   explicit matrix(T x, T y, T z);             // 3-vector
   operator const std::vector  <T>& (void) const;
@@ -125,6 +126,7 @@ template<class T>              T  nm_sign(             T  x){ return x>0 ? +T(1)
 template<class T>        matrix<T>::matrix(void): row(0), col(0), val() {}
 template<class T>        matrix<T>::matrix(size_t r, size_t c): row(r), col(c), val(r*c) {}
 template<class T>        matrix<T>::matrix(const std::vector<T>& v): row(v.size()), col(1), val(v) {}
+template<class T>        matrix<T>::matrix(const std::initializer_list<T>& v): row(v.size()), col(1), val(v) {}
 template<class T>        matrix<T>::matrix(const T *v0, const T *vn): row(vn-v0), col(1), val(v0,vn) {}
 template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3) {  val[0]=x;  val[1]=y;  val[2]=z;  }
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }

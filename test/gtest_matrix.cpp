@@ -49,6 +49,10 @@ TEST(matrix,init){
   EXPECT_TRUE(m1.nrow()==3 && m1.ncol()==1 && m1.dim()==3);
   for(size_t k=0; k<m1.dim(); k++) EXPECT_NEAR(m1(k),1.1*(k+1),1.e-12);
 
+  m1=Matrix({1.11,2.22,3.33,4.44,5.55});
+  EXPECT_TRUE(m1.nrow()==5 && m1.ncol()==1);
+  for(size_t k=0; k<m1.dim(); k++) EXPECT_NEAR(m1(k),1.11*(k+1),1.e-12);
+
   double aa[]={1.11,2.22,3.33,4.44,5.55};
   m1=Matrix(aa,aa+5);
   EXPECT_TRUE(m1.nrow()==5 && m1.ncol()==1 && m1.dim()==5);

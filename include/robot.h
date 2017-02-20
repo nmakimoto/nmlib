@@ -112,9 +112,11 @@ inline Matrix Robot::jacobian(const Matrix& th, int k) const{
 inline Matrix Robot::ik(const Matrix& hom_dst, const Matrix& th_ini, double err, int iter) const{
   Matrix th=th_ini, p0=hom2pos(hom_dst), r0=hom2rot(hom_dst);
   while(iter--){
-    Matrix t=fk(th), dp=hom2pos(t)-p0, dr=rot2vec(hom2rot(t)*tp(r0));
+    Matrix t=fk(th), dp=hom2pos(t)-p0, dr=rot2vec(hom2rot(t)*tp(r0)), dth;
     if(norm(dp)+norm(dr) < err) return th;
-    th -= inv(jacobian(th)) * vcat(dp,dr);  // newton
+    dth = inv(jacobian(th)) * vcat(dp,dr);  // newton
+    dth = (norm(dth)<1 ? dth : norm(dth)>1 ? dth/norm(dth) : Matrix(6).fill(0.01));  // avoid singularity
+    th -= dth;
   }
   return th;  // poor convergence; should be verified in the user code
 }

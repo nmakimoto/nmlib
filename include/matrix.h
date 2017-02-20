@@ -113,7 +113,6 @@ template<class T> matrix<T> conj(const matrix<T>& m);
 // stream I/O
 template<class T> std::istream& operator>>(std::istream& str,       matrix<T>& m);  // str>>M
 template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m);  // str<<M
-template<class T> class omstream;  // m << r,c,x_11,x_12,...,x_rc;
 
 
 /******** Implementation ********/
@@ -495,21 +494,6 @@ template<class T> std::ostream& write(std::ostream& str, const matrix<T>& m){
   str.write((char*)p,sizeof(p[0])*r*c);
   return str;
 }
-
-// output matrix stream (usage: m << r,c,x_11,x_12, ..., x_rc)
-template<class T> omstream<T> operator<<(matrix<T>& m0, size_t r0){ return omstream<T>(m0,r0); }  // m<<r...
-template<class T> class omstream{
-public:
-  omstream(matrix<T>& m0, size_t r0)
-    : m(m0),r(r0),c(0),k(0) {}
-  omstream& operator,(T x){
-    if(c==0){ c=size_t(std::real<T>(x)+0.5); m.resize(r,c); return *this; }  // m<<r,c...
-    if(k<r*c){ m(k++)=x; return *this; }  // m<<r,c,x_11...
-    throw std::runtime_error("omstream: too many arguments");
-  }
-  matrix<T>& m;
-  size_t r,c,k;
-};
 
 
 }  //namespace nmlib

@@ -25,7 +25,8 @@ public:
   explicit matrix(void);                      // empty matrix
   explicit matrix(size_t r, size_t c=1);      // rxc zero matrix
   explicit matrix(const std::vector<T>& v);   // nx1 val=v
-  explicit matrix(const std::initializer_list<T>& v);
+  explicit matrix(const std::initializer_list<T>& v);  // column vector M({1,2,3})
+  explicit matrix(const std::initializer_list<std::initializer_list<T>>& v);  // column vectors M({{1,2,3},{4,5,6}})
   explicit matrix(const T *v0, const T *vn);  // nx1 val=[v0..vn)
   explicit matrix(T x, T y, T z);             // 3-vector
   operator matrix<std::complex<T> >(void) const;
@@ -126,6 +127,17 @@ template<class T>        matrix<T>::matrix(void): row(0), col(0), val() {}
 template<class T>        matrix<T>::matrix(size_t r, size_t c): row(r), col(c), val(r*c) {}
 template<class T>        matrix<T>::matrix(const std::vector<T>& v): row(v.size()), col(1), val(v) {}
 template<class T>        matrix<T>::matrix(const std::initializer_list<T>& v): row(v.size()), col(1), val(v) {}
+template<class T>        matrix<T>::matrix(const std::initializer_list<std::initializer_list<T>>& v): row(0), col(0), val() {
+  if( v.size()==0 ) return;
+  col=v.size();  row=v.begin()->size();  val.resize(row*col);
+  size_t j=0;
+  for(auto c: v){
+    if( c.size()!=row ) throw std::domain_error("matrix(): bad initializer_list (variable row size)");
+    size_t i=0;
+    for(auto x: c){ val[i*col+j]=x; i++; }
+    j++;
+  }
+}
 template<class T>        matrix<T>::matrix(const T *v0, const T *vn): row(vn-v0), col(1), val(v0,vn) {}
 template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3) {  val[0]=x;  val[1]=y;  val[2]=z;  }
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }

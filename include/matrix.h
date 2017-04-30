@@ -407,7 +407,7 @@ template<class T> void sort_columns_by_value(matrix<T>& m, const matrix<T>& v){
 // 3D geometry
 template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w){  // V x W
   if( !(v.nrow()==3 && w.ncol()==1 && v.nrow()==3 && v.ncol()==1) ) throw std::domain_error("outer(V,V): not 3-vectors");
-  return matrix<T>(v(1)*w(2)-w(1)*v(2), v(2)*w(0)-w(2)*v(0), v(0)*w(1)-w(0)*v(1));
+  return matrix<T>({v(1)*w(2)-w(1)*v(2), v(2)*w(0)-w(2)*v(0), v(0)*w(1)-w(0)*v(1)});
 }
 template<class T> matrix<T> vec2rot(const matrix<T>& v){  // R^3=so(3)-->SO(3) (exp, rotation about v by angle |v|)
   if(!(v.nrow()==3 && v.ncol()==1)) throw std::domain_error("vec2rot(V): not a 3-vector");
@@ -424,13 +424,13 @@ template<class T> matrix<T> rot2vec(const matrix<T>& r){  // SO(3)-->so(3)=R^3 (
     for(int k=0; k<3; k++) axis+=outer(getvec(sym,(k+1)%3), getvec(sym,(k+2)%3));
     return (th/norm(axis))*axis;
   }
-  matrix<T> axis((r(2,1)-r(1,2))/2, (r(0,2)-r(2,0))/2, (r(1,0)-r(0,1))/2);
+  matrix<T> axis({(r(2,1)-r(1,2))/2, (r(0,2)-r(2,0))/2, (r(1,0)-r(0,1))/2});
   if(th<1.e-6) return (1+inner(axis,axis)/6)*axis;
   else         return (th/sin(th))          *axis;
 }
 template<class T> matrix<T> asym2vec(const matrix<T>& a){  // so(3)-->R^3 (A-->V s.t. AX=VxX)
   if(!(a.nrow()==3 && a.ncol()==3)) throw std::domain_error("asym2vec(V): not a 3 by 3 matrix");
-  return matrix<T>(a(2,1),a(0,2),a(1,0));
+  return matrix<T>({a(2,1),a(0,2),a(1,0)});
 }
 template<class T> matrix<T> vec2asym(const matrix<T>& v){  // R^3-->so(3) (V-->A s.t. AX=VxX)
   if(!(v.nrow()==3 && v.ncol()==1)) throw std::domain_error("vec2asym(V): not a 3-vector");

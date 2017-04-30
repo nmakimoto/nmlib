@@ -63,14 +63,14 @@ bool   is_homtrsf (const Matrix& hom, double err=1.e-8);
 inline Robot::Robot(void){
   // approximate model of Yaskawa Motoman ES280D-230
   Matrix eye=rotabout(2,0.0), x90=rotabout(0,M_PI/2), yzx=rotabout(1,M_PI/2)*rotabout(2,M_PI/2);
-  hm0[0] = homtrsf(Matrix(   0,    0,  0),eye);
-  hm0[1] = homtrsf(Matrix( 285,    0,650),tp(x90));
-  hm0[2] = homtrsf(Matrix(   0,-1150,  0),eye);
-  hm0[3] = homtrsf(Matrix(-250,-1015,  0),x90);
-  hm0[4] = homtrsf(Matrix(   0,    0,  0),tp(x90));
-  hm0[5] = homtrsf(Matrix(   0, -250,  0),x90);
-  hm0[6] = homtrsf(Matrix(   0,    0,200),yzx);
-  hm0[7] = homtrsf(Matrix(   0,    0,  0),eye);
+  hm0[0] = homtrsf(Matrix({   0,    0,  0}),eye);
+  hm0[1] = homtrsf(Matrix({ 285,    0,650}),tp(x90));
+  hm0[2] = homtrsf(Matrix({   0,-1150,  0}),eye);
+  hm0[3] = homtrsf(Matrix({-250,-1015,  0}),x90);
+  hm0[4] = homtrsf(Matrix({   0,    0,  0}),tp(x90));
+  hm0[5] = homtrsf(Matrix({   0, -250,  0}),x90);
+  hm0[6] = homtrsf(Matrix({   0,    0,200}),yzx);
+  hm0[7] = homtrsf(Matrix({   0,    0,  0}),eye);
 
   th0 = Matrix(6);
 }

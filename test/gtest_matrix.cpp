@@ -256,7 +256,7 @@ TEST(matrix,threedim){
   // outer product
   EXPECT_NEAR(norm(outer(v0,v1)+outer(v0,v2)-outer(v0,v1+v2)), 0, 1.e-8);  // linear
   EXPECT_NEAR(norm(outer(v0,v1)+outer(v1,v0)), 0, 1.e-8);  // alternate
-  EXPECT_NEAR(inner(outer(Matrix(1,0,0),Matrix(0,1,0)),Matrix(0,0,1)), 1, 1.e-8);  // normalized
+  EXPECT_NEAR(inner(outer(Matrix({1,0,0}),Matrix({0,1,0})),Matrix({0,0,1})), 1, 1.e-8);  // normalized
 
   // v in R^3 <--> A in so(3)
   EXPECT_NEAR(norm(asym2vec(vec2asym(th*v0))-th*v0), 0, 1.e-8);  // V<-->A
@@ -273,7 +273,7 @@ TEST(matrix,threedim){
   EXPECT_NEAR(norm(rot2vec(vec2rot(th*v0))-th*v0), 0, 1.e-8);  // V<-->R
   EXPECT_NEAR(norm(vec2rot(rot2vec(orth(1.0+m*1.e-6)))-orth(1.0+m*1.e-6)), 0, 1.e-12);  // avoid loss of significance near R=1
   EXPECT_NEAR(norm(rot2vec(Matrix(3,3)+1.0+1.e-15)), 0, 1.e-20);  // avoid NaN error near R=1
-  EXPECT_NEAR(norm(rot2vec(vec2rot(Matrix(0,0,M_PI*0.99))) - Matrix(0,0,M_PI*0.99)), 0,  1.e-12);  // almost 180[deg] rotation
+  EXPECT_NEAR(norm(rot2vec(vec2rot(Matrix({0,0,M_PI*0.99}))) - Matrix({0,0,M_PI*0.99})), 0,  1.e-12);  // almost 180[deg] rotation
   EXPECT_NEAR(norm(tp(vec2rot(th*v0))*vec2rot(th*v0)-1.0), 0, 1.e-8);  // R'R=1
   EXPECT_NEAR(norm(vec2rot(th*v0)*v0-v0), 0, 1.e-8);  // RV=V
   EXPECT_NEAR(norm(vec2rot(th*v0)*v1-( cos(th)*v1+sin(th)*v2)), 0, 1.e-8);

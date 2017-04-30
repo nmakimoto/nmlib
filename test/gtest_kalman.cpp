@@ -40,8 +40,8 @@ TEST(kalman,linear){
   // initialize models
   Q =Matrix(6,6)+0.1*0.1;
   R =Matrix(3,3)+0.1*0.1;
-  p0=Matrix(0,0,0);
-  v0=Matrix(1,2,3);
+  p0=Matrix({0,0,0});
+  v0=Matrix({1,2,3});
   dt=2;
 
   // track target

@@ -14,12 +14,12 @@ inline void init_robot(Robot& rbt, Matrix& th, Matrix& hom){
   Matrix y90=rotabout(1,M_PI/2), z90=rotabout(2,M_PI/2);
 
   rbt = Robot();
-  rbt.hom0(0) = homtrsf(Matrix(1000,2000,1000), z90);
-  rbt.hom0(7) = homtrsf(Matrix(   0,1000,   0), z90*y90);
+  rbt.hom0(0) = homtrsf(Matrix({1000,2000,1000}), z90);
+  rbt.hom0(7) = homtrsf(Matrix({   0,1000,   0}), z90*y90);
 
-  th = vcat(Matrix(20,-20,20),Matrix(-20,20,-20)) * (M_PI/180);
+  th = vcat(Matrix({20,-20,20}),Matrix({-20,20,-20})) * (M_PI/180);
 
-  hom = homtrsf(Matrix(1000,3000,5000), tp(z90));
+  hom = homtrsf(Matrix({1000,3000,5000}), tp(z90));
 }
 
 
@@ -123,7 +123,7 @@ TEST(robot,ik){
   hom0=rbt.fk(th0);
   pos0=hom2pos(hom0);
   rot0=hom2rot(hom0);
-  th1 =th0 + vcat(Matrix(11,12,13),Matrix(14,15,16)) * (M_PI/180);
+  th1 =th0 + vcat(Matrix({11,12,13}),Matrix({14,15,16})) * (M_PI/180);
   hom1=rbt.fk(th1);
   pos1=hom2pos(hom1);
   rot1=hom2rot(hom1);

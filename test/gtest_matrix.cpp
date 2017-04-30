@@ -45,35 +45,35 @@ TEST(matrix,init){
   EXPECT_TRUE(m1.nrow()==3 && m1.ncol()==4 && m1.dim()==12);
   for(size_t i=0; i<m1.nrow(); i++)  for(size_t j=0; j<m1.ncol(); j++)  EXPECT_DOUBLE_EQ(m1(i,j), 0);
 
-  m1=Matrix(1.1, 2.2, 3.3);
-  EXPECT_TRUE(m1.nrow()==3 && m1.ncol()==1 && m1.dim()==3);
-  for(size_t k=0; k<m1.dim(); k++) EXPECT_NEAR(m1(k),1.1*(k+1),1.e-12);
-
   m1=Matrix({1.11,2.22,3.33,4.44,5.55});
   EXPECT_TRUE(m1.nrow()==5 && m1.ncol()==1);
   for(size_t k=0; k<m1.dim(); k++) EXPECT_NEAR(m1(k),1.11*(k+1),1.e-12);
 
-  m1=Matrix({ {1.1,2.2,3.3}, {4.4,5.5,6.6} });
+  m1=Matrix({ {1.1,3.3,5.5}, {2.2,4.4,6.6} });
   EXPECT_TRUE(m1.nrow()==3 && m1.ncol()==2);
   for(size_t i=0; i<m1.nrow(); i++)
     for(size_t j=0; j<m1.ncol(); j++)
-      EXPECT_NEAR(m1(i,j),1.1*(i+1+j*3),1.e-12);
+      EXPECT_NEAR(m1(i,j),1.1*(i*2+j+1),1.e-12);
   EXPECT_THROW(Matrix({ {1,2,3}, {4,5} }), std::domain_error);
 
-  double aa[]={1.11,2.22,3.33,4.44,5.55};
-  m1=Matrix(aa,aa+5);
-  EXPECT_TRUE(m1.nrow()==5 && m1.ncol()==1 && m1.dim()==5);
-  for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m1(i), (i+1)*1.11, 1.e-8);
+  const double aa[]={1.1,2.2,3.3,4.4,5.5,6.6};
+  std::vector<double> vv(aa,aa+6);
 
-  std::vector<double> vv(aa,aa+5);
-  m2=Matrix(vv);
-  EXPECT_TRUE(m1.nrow()==5 && m1.ncol()==1 && m1.dim()==5);
-  for(size_t i=0; i<m2.dim(); i++) EXPECT_NEAR(m2(i), (i+1)*1.11, 1.e-8);
+  m1=Matrix(vv);
+  EXPECT_TRUE(m1.nrow()==6 && m1.ncol()==1);
+  for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m1(i), (i+1)*1.1, 1.e-8);
 
-  matrix<std::complex<double> > mc = matrix<std::complex<double> >(m1);
-  EXPECT_TRUE(mc.nrow()==5 && mc.ncol()==1 && mc.dim()==5);
-  for(size_t i=0; i<vv.size(); i++) EXPECT_NEAR(mc(i).real(), (i+1)*1.11, 1.e-8);
-  for(size_t i=0; i<vv.size(); i++) EXPECT_DOUBLE_EQ(mc(i).imag(), 0);
+  m2=Matrix(2,3,aa);
+  EXPECT_TRUE(m2.nrow()==2 && m2.ncol()==3);
+  for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m2(i), m1(i), 1.e-8);
+
+  m2=Matrix(2,3,vv.data());
+  EXPECT_TRUE(m2.nrow()==2 && m2.ncol()==3);
+  for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m2(i), m1(i), 1.e-8);
+
+  m2=Matrix(2,3,vv.begin());
+  EXPECT_TRUE(m2.nrow()==2 && m2.ncol()==3);
+  for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m2(i), m1(i), 1.e-8);
 }
 
 
@@ -363,13 +363,20 @@ TEST(matrix,exception){
 // Comlex matrix operations
 TEST(matrix,complex){
   typedef std::complex<double> Cpx;
-  typedef matrix<Cpx> MatC;
-  MatC m,m1,u,d;
+  matrix<Cpx> m,m1,u,d;
+  Matrix mr,mi;
 
-  m = MatC(mrand(3,3)) + MatC(mrand(3,3))*Cpx(0,1);
+  // complex/real/imag/conj
+  mr=mrand(3,3);
+  mi=mrand(3,3);
+  m = complex(mr) + complex(mi)*Cpx(0,1);
+  EXPECT_NEAR(norm(real(m)-mr), 0, 1.e-8);
+  EXPECT_NEAR(norm(imag(m)-mi), 0, 1.e-8);
+  EXPECT_NEAR(norm(real(conj(m))-mr), 0, 1.e-8);
+  EXPECT_NEAR(norm(imag(conj(m))+mi), 0, 1.e-8);
 
   // inner
-  m1= MatC(mrand(3,3)) + MatC(mrand(3,3))*Cpx(0,1);
+  m1= complex(mrand(3,3)) + complex(mrand(3,3))*Cpx(0,1);
   Cpx c(urand1(),urand1());
   EXPECT_NEAR(std::abs(inner(c*m,m1)-std::conj(c)*inner(m,m1)), 0, 1.e-8);
   EXPECT_NEAR(std::abs(inner(m,c*m1)-          c *inner(m,m1)), 0, 1.e-8);

@@ -22,14 +22,12 @@ typedef matrix<double> Matrix;   // real matrix (alias)
 
 template<class T> class matrix{
 public:
-  explicit matrix(void);                      // empty matrix
-  explicit matrix(size_t r, size_t c=1);      // rxc zero matrix
-  explicit matrix(const std::vector<T>& v);   // nx1 val=v
-  explicit matrix(const std::initializer_list<T>& v);  // column vector M({1,2,3})
-  explicit matrix(const std::initializer_list<std::initializer_list<T>>& v);  // column vectors M({{1,2,3},{4,5,6}})
-  explicit matrix(const T *v0, const T *vn);  // nx1 val=[v0..vn)
-  explicit matrix(T x, T y, T z);             // 3-vector
-  operator matrix<std::complex<T> >(void) const;
+  matrix(void);                               // empty matrix
+  explicit matrix(size_t r, size_t c=1);      // zero matrix of size (r,c)
+  matrix(const std::vector<T>& v);            // column vector
+  matrix(const std::initializer_list<T>& v);  // column vector M={x,y,z..}
+  matrix(const std::initializer_list<std::initializer_list<T>>& v);  // column vectors M={{x1,y1,z1..},{x2,y2,z2..}..}
+  template<class It> matrix(size_t r, size_t c, const It& first);  // (It: pointer or iterator)
 
   size_t nrow(void) const;  // number of rows
   size_t ncol(void) const;  // number of columns
@@ -42,6 +40,7 @@ public:
   T  operator()(size_t i) const;  // get t=V(i)
   T& operator()(size_t i);        // set V(i)=t
   const T* data(void) const;  // raw pointer
+  const std::vector<T>& vector(void) const;
 
 private:
   size_t row,col;      // dimensions
@@ -104,6 +103,7 @@ template<class T> matrix<T> asym2vec(const matrix<T>& a);  // so(3)-->R^3 (AX=Vx
 template<class T> matrix<T> rotabout(int k, T th);         // rotation about k-th coord axis by angle th[rad]
 
 // Complex/real matrix conversion
+template<class T> matrix<std::complex<T>> complex(const matrix<T>& m);
 template<class T> matrix<T> real(const matrix<std::complex<T> >& m);
 template<class T> matrix<T> imag(const matrix<std::complex<T> >& m);
 template<class T> matrix<std::complex<T> > conj(const matrix<std::complex<T> >& m);
@@ -138,19 +138,19 @@ template<class T>        matrix<T>::matrix(const std::initializer_list<std::init
     j++;
   }
 }
-template<class T>        matrix<T>::matrix(const T *v0, const T *vn): row(vn-v0), col(1), val(v0,vn) {}
-template<class T>        matrix<T>::matrix(T x, T y, T z): row(3), col(1), val(3) {  val[0]=x;  val[1]=y;  val[2]=z;  }
+template<class T> template<class It> matrix<T>::matrix(size_t r, size_t c, const It& first)
+  : row(r),col(c),val(r*c) {  for(size_t k=0; k<r*c; k++) val[k]=*(first+k);  }
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
 template<class T> size_t matrix<T>::ncol(void) const {  return col;  }
 template<class T> size_t matrix<T>::dim (void) const {  return row*col;  }
 template<class T> matrix<T>& matrix<T>::resize(size_t r, size_t c) {  row=r; col=c; val.resize(r*c); return *this;  }
 template<class T> matrix<T>& matrix<T>::fill  (T z)                {  std::fill(val.begin(),val.end(),z); return *this;  }
-template<class T>        matrix<T>::operator matrix<std::complex<T> >(void) const {  matrix<std::complex<T> > mc(nrow(),ncol()); for(size_t k=0; k<dim(); k++) mc(k)=val[k]; return mc;  }
 template<class T> T      matrix<T>::operator()(size_t i, size_t j) const {  return val[i*col+j];  }
 template<class T> T      matrix<T>::operator()(size_t i          ) const {  return val[i];        }
 template<class T> T&     matrix<T>::operator()(size_t i, size_t j)       {  return val[i*col+j];  }
 template<class T> T&     matrix<T>::operator()(size_t i          )       {  return val[i];        }
 template<class T> const T* matrix<T>::data(void) const{ return val.data(); }
+template<class T> const std::vector<T>& matrix<T>::vector(void) const {  return val;  }
 
 // Basic operations (incremental)
 template<class T> matrix<T>& operator+=(matrix<T>& m, T t){
@@ -452,6 +452,11 @@ template<class T> matrix<T> rotabout(int k, T th){  // rotation about k-th coord
 
 
 // Complex/real matrix conversion
+template<class T> matrix<std::complex<T>> complex(const matrix<T>& m){
+  matrix<std::complex<T>> mc(m.nrow(),m.ncol());
+  for(size_t k=0; k<m.dim(); k++) mc(k)=m(k);
+  return mc;
+}
 template<class T> matrix<T> real(const matrix<std::complex<T> >& m){
   matrix<T> mr(m.nrow(),m.ncol());
   for(size_t k=0; k<m.dim(); k++) mr(k)=m(k).real();

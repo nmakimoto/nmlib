@@ -22,6 +22,9 @@ template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& 
 template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x, const matrix<T>& dx , bool romberg=false);  // (dfi/dxj)_ij
 template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& x,        const T & dt , bool romberg=false);  // (dfi/dxj)_ij
 
+// Hessian of scalar-valued function f: R^n --> R
+template<class Func,class T> matrix<T> hessian(const Func& f, const matrix<T>& x, const matrix<T>& dx);  // (d^2f/dxidxj)_ij
+
 
 /******** Implementation ********/
 
@@ -75,6 +78,33 @@ template<class Func,class T> matrix<T> jacobian(const Func& f, const matrix<T>& 
   matrix<T> dx(x.dim());
   for(size_t i=0; i<dx.dim(); i++) dx(i)=dt;  // dx=(dt ... dt)^T
   return jacobian(f,x,dx,romberg);
+}
+
+// (d^2f/dxidxj)_ij - note that too small dx may cause loss of digits
+template<class Func,class T> matrix<T> hessian(const Func& f, const matrix<T>& x, const matrix<T>& dx){
+  const size_t n=x.dim();
+  matrix<T> hf(n,n);
+  matrix<T> df=gradient(f,x,dx,true);
+  for(size_t i=0; i<n; i++){
+    for(size_t j=0; j<n; j++){
+      if( j<i ){ hf(i,j)=hf(j,i); continue; }
+      matrix<T> x1=x;
+      if( j==i ){
+	x1(i)=x(i)+dx(i);  hf(i,i)+=f(x1);
+	x1(i)=x(i)-dx(i);  hf(i,i)+=f(x1);
+	hf(i,i)-=T(2)*f(x);
+	hf(i,i)/=dx(i)*dx(i);
+      }
+      else{
+	x1(i)=x(i)+dx(i);  x1(j)=x(j)+dx(j);  hf(i,j)+=f(x1);
+	x1(i)=x(i)+dx(i);  x1(j)=x(j)-dx(j);  hf(i,j)-=f(x1);
+	x1(i)=x(i)-dx(i);  x1(j)=x(j)+dx(j);  hf(i,j)-=f(x1);
+	x1(i)=x(i)-dx(i);  x1(j)=x(j)-dx(j);  hf(i,j)+=f(x1);
+	hf(i,j)/=dx(i)*dx(j)*T(4);
+      }
+    }
+  }
+  return hf;
 }
 
 

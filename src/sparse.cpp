@@ -11,22 +11,6 @@
 namespace nmlib{
 
 
-// Abbreviations
-#define FOR_K(M)    for(size_t K=0; K<M.ncol(); K++)
-#define FOR_IJ(M)   for(size_t I=0; I<M.nrow(); I++)  for(CI C=M.columns(I).begin(); C!=M.columns(I).end(); C++)
-#define FOR_IJ2(M)  for(size_t I=0; I<M.nrow(); I++)  for(IT C=M.columns(I).begin(); C!=M.columns(I).end(); C++)
-#define J     C->first
-#define M_IJ  C->second
-
-// Abbreviations
-typedef Sparse S;
-typedef Matrix M;
-typedef double T;
-typedef std::map<size_t,T> Row;
-typedef Row::const_iterator  CI;
-typedef Row::iterator        IT;
-
-
 /******************************** Range checks ********************************/
 
 // Range check for each operation
@@ -40,64 +24,85 @@ void chk(size_t r1, size_t c1, size_t r2, size_t c2, char op){
   msg<<"Sparse: ("<<r1<<","<<c1<<") "<< op << " ("<<r2<<","<<c2<<")";
   throw std::domain_error(msg.str());
 }
-void chk(const S& a, const S& b, char op){ chk(a.nrow(),a.ncol(),b.nrow(),b.ncol(),op); }
-void chk(const S& a, const M& b, char op){ chk(a.nrow(),a.ncol(),b.nrow(),b.ncol(),op); }
+void chk(const Sparse& a, const Sparse& b, char op){ chk(a.nrow(),a.ncol(),b.nrow(),b.ncol(),op); }
+void chk(const Sparse& a, const Matrix& b, char op){ chk(a.nrow(),a.ncol(),b.nrow(),b.ncol(),op); }
 
 
 /*********************************** Basic operations ***********************************/
 
 // Class methods
-S::Sparse(size_t r, size_t c): row(r),col(c) { val=std::vector<Row>(r); }
-size_t  S::nrow(void) const{ return row; }
-size_t  S::ncol(void) const{ return col; }
-T&   S::operator()(size_t i, size_t j)       { chk(i,j,row,col,'@'); return val[i][j]; }
-T    S::operator()(size_t i, size_t j) const { chk(i,j,row,col,'@'); CI c=val[i].find(j); return (c==val[i].end() ? 0 : c->second); }
+Sparse::Sparse(size_t r, size_t c): row(r),col(c) { val=std::vector<std::map<size_t,double>>(r); }
+size_t  Sparse::nrow(void) const{ return row; }
+size_t  Sparse::ncol(void) const{ return col; }
+double& Sparse::operator()(size_t i, size_t j)       { chk(i,j,row,col,'@'); return val[i][j]; }
+double  Sparse::operator()(size_t i, size_t j) const { chk(i,j,row,col,'@'); auto c=val[i].find(j); return (c==val[i].end() ? 0 : c->second); }
 
-void SparseConf::init_ilu0(const S& a){ lu=a; ilu0(lu); }
+void SparseConf::init_ilu0(const Sparse& a){ lu=a; ilu0(lu); }
 
 
 // Incremental operations
-S& operator+=(S& a, T s){ FOR_K(a) a(K,K)+=s; return a; }
-S& operator-=(S& a, T s){ a+=-s; return a; }
-S& operator*=(S& a, T s){ FOR_IJ2(a) M_IJ*=s; return a; }
-S& operator/=(S& a, T s){ a*=1/s; return a; }
-S& operator+=(S& a, const S& b){ chk(a,b,'+'); FOR_IJ(b) a(I,J)+=M_IJ; return a; }
-S& operator-=(S& a, const S& b){ chk(a,b,'-'); FOR_IJ(b) a(I,J)-=M_IJ; return a; }
+Sparse& operator+=(Sparse& a, double s){ for(size_t k=0; k<a.ncol(); k++) a(k,k)+=s; return a; }
+Sparse& operator-=(Sparse& a, double s){ a+=-s; return a; }
+Sparse& operator*=(Sparse& a, double s){ for(size_t i=0; i<a.nrow(); i++) for(auto& c: a.columns(i)) c.second*=s; return a; }
+Sparse& operator/=(Sparse& a, double s){ a*=1/s; return a; }
+Sparse& operator+=(Sparse& a, const Sparse& b){ chk(a,b,'+'); for(size_t i=0; i<b.nrow(); i++) for(const auto& c: b.columns(i)) a(i,c.first)+=c.second; return a; }
+Sparse& operator-=(Sparse& a, const Sparse& b){ chk(a,b,'-'); for(size_t i=0; i<b.nrow(); i++) for(const auto& c: b.columns(i)) a(i,c.first)-=c.second; return a; }
 
 
 // Basic operations
-S operator-(const S& a)     { S b(a); b*=-1.0; return b; }
-S operator+(const S& a, T s){ S b(a); b+=s; return b; }
-S operator-(const S& a, T s){ S b(a); b-=s; return b; }
-S operator*(const S& a, T s){ S b(a); b*=s; return b; }
-S operator/(const S& a, T s){ S b(a); b/=s; return b; }
-S operator+(T s, const S& a){ S b(a); b+=s; return b; }
-S operator-(T s, const S& a){ S b(a); b*=-1.0; b+=s; return b; }
-S operator*(T s, const S& a){ S b(a); return (b*=s); }
-//S operator/(T s, const S& a);
-S operator+(const S& a, const S& b){ S c(a); c+=b; return c; }
-S operator-(const S& a, const S& b){ S c(a); c-=b; return c; }
-S operator*(const S& a, const S& b){ chk(a,b,'*'); S c(a.nrow(),b.ncol()); FOR_K(c) FOR_IJ(a) c(I,K)+=M_IJ*b(J,K); return c; }
-M operator*(const S& a, const M& b){ chk(a,b,'*'); M c(a.nrow(),b.ncol()); FOR_K(c) FOR_IJ(a) c(I,K)+=M_IJ*b(J,K); return c; }
+Sparse operator-(const Sparse& a)          { Sparse b(a); b*=-1.0; return b; }
+Sparse operator+(const Sparse& a, double s){ Sparse b(a); b+=s; return b; }
+Sparse operator-(const Sparse& a, double s){ Sparse b(a); b-=s; return b; }
+Sparse operator*(const Sparse& a, double s){ Sparse b(a); b*=s; return b; }
+Sparse operator/(const Sparse& a, double s){ Sparse b(a); b/=s; return b; }
+Sparse operator+(double s, const Sparse& a){ Sparse b(a); b+=s; return b; }
+Sparse operator-(double s, const Sparse& a){ Sparse b(a); b*=-1.0; b+=s; return b; }
+Sparse operator*(double s, const Sparse& a){ Sparse b(a); return (b*=s); }
+//Sparse operator/(double s, const Sparse& a);
+Sparse operator+(const Sparse& a, const Sparse& b){ Sparse c(a); c+=b; return c; }
+Sparse operator-(const Sparse& a, const Sparse& b){ Sparse c(a); c-=b; return c; }
+Sparse operator*(const Sparse& a, const Sparse& b){
+  chk(a,b,'*');
+  Sparse ret(a.nrow(),b.ncol());
+  for(size_t j=0; j<ret.ncol(); j++)
+    for(size_t i=0; i<a.nrow(); i++)
+      for(const auto&  c: a.columns(i))  ret(i,j)+=c.second*b(c.first,j);
+  return ret;
+}
+Matrix operator*(const Sparse& a, const Matrix& b){
+  chk(a,b,'*');
+  Matrix ret(a.nrow(),b.ncol());
+  for(size_t j=0; j<ret.ncol(); j++)
+    for(size_t i=0; i<a.nrow(); i++)
+      for(const auto&  c: a.columns(i))  ret(i,j)+=c.second*b(c.first,j);
+  return ret;
+}
 
 
 // Utilities
-T norm (const S& a){ T s=0; FOR_IJ(a){ T t=M_IJ; s+=t*t; } return sqrt(s); }
-S tp   (const S& a){ S b(a.ncol(),a.nrow()); FOR_IJ(a) b(J,I)=M_IJ; return b; }
-M dense(const S& a){ M b(a.nrow(),a.ncol()); FOR_IJ(a) b(I,J)=M_IJ; return b; }
-M tpab (const S& a, const M& b){ chk(a.ncol(),a.nrow(),b.nrow(),b.ncol(),'*'); M c(b.nrow(),b.ncol()); FOR_K(c) FOR_IJ(a) c(J,K)+=M_IJ*b(I,K); return c; }
+double norm (const Sparse& a){ double s=0; for(size_t i=0; i<a.nrow(); i++) for(const auto& c: a.columns(i)){ double t=c.second; s+=t*t; } return sqrt(s); }
+Sparse tp   (const Sparse& a){ Sparse b(a.ncol(),a.nrow()); for(size_t i=0; i<a.nrow(); i++) for(const auto& c: a.columns(i)) b(c.first,i)=c.second; return b; }
+Matrix dense(const Sparse& a){ Matrix b(a.nrow(),a.ncol()); for(size_t i=0; i<a.nrow(); i++) for(const auto& c: a.columns(i)) b(i,c.first)=c.second; return b; }
+Matrix tpab (const Sparse& a, const Matrix& b){
+  chk(a.ncol(),a.nrow(),b.nrow(),b.ncol(),'*');
+  Matrix ret(b.nrow(),b.ncol());
+  for(size_t j=0; j<ret.ncol(); j++)
+    for(size_t i=0; i<a.nrow(); i++)
+      for(const auto& c: a.columns(i))  ret(c.first,j)+=c.second*b(i,j);
+  return ret;
+}
 
 
 /******************************** Sparse solvers ********************************/
 
 // Solve Ax=b (CG - Conjugate Gradient for symmetric positive definite A)
-M solve_cg(const S& a, const M& b, const SparseConf& cf){
+Matrix solve_cg(const Sparse& a, const Matrix& b, const SparseConf& cf){
   chk(a,b,'/');
 
-  M x,r,p,q;
-  T t,rr;
+  Matrix x,r,p,q;
+  double t,rr;
 
-  x=M(a.ncol());  if(cf.x0.dim()>0) x=cf.x0;
+  x=Matrix(a.ncol());  if(cf.x0.dim()>0) x=cf.x0;
   p=r=b-a*x;
   for(int j=0; j<cf.loop; j++){
     if(cf.verb) std::cerr<<"CG["<<j<<"]\t"<<norm(r)/norm(b)<<"\t"<<norm(a*x-b)<<"\n";
@@ -115,13 +120,13 @@ M solve_cg(const S& a, const M& b, const SparseConf& cf){
 
 
 // Solve Ax=b (BiCG - Bi-Conjugate Gradient)
-M solve_bcg(const S& a, const M& b, const SparseConf& cf){
+Matrix solve_bcg(const Sparse& a, const Matrix& b, const SparseConf& cf){
   chk(a,b,'/');
 
-  M x,r1,r2,p1,p2,q1,q2;
-  T t,rr;
+  Matrix x,r1,r2,p1,p2,q1,q2;
+  double t,rr;
 
-  x=M(a.ncol());  if(cf.x0.dim()>0) x=cf.x0;
+  x=Matrix(a.ncol());  if(cf.x0.dim()>0) x=cf.x0;
   p1=r1=b-a*x;
   p2=r2=r1;
   for(int j=0; j<cf.loop; j++){
@@ -143,16 +148,16 @@ M solve_bcg(const S& a, const M& b, const SparseConf& cf){
 
 
 // Solve Ax=b (PBCG - Preconditioned BiCG)
-M solve_pbcg(const S& a, const M& b, const SparseConf& cf){
+Matrix solve_pbcg(const Sparse& a, const Matrix& b, const SparseConf& cf){
   chk(a,b,'/');
 
-  M x,r1,r2,p1,p2,q1,q2;
-  T t,rr;
+  Matrix x,r1,r2,p1,p2,q1,q2;
+  double t,rr;
 
   Sparse lu0;  if(cf.lu.nrow()==0){ lu0=a; ilu0(lu0); }
   const Sparse& lu=(cf.lu.nrow()>0 ? cf.lu : lu0);
 
-  x=M(a.ncol());  if(cf.x0.dim()>0) x=cf.x0;
+  x=Matrix(a.ncol());  if(cf.x0.dim()>0) x=cf.x0;
   p1=r1=sluxb(lu,b-a*x);  //lu.prod_inv  (b-a*x);
   p2=r2=slutxb(lu,b-a*x);  //lu.prod_tpinv(b-a*x);
 
@@ -181,13 +186,13 @@ Matrix lux(const Sparse& lu, const Matrix&  x){
   // y=Ux
   Matrix y(x.nrow());
   for(size_t i=0; i<lu.nrow(); i++)
-    for(CI c1=lu.columns(i).find(i),c2=lu.columns(i).end(); c1!=c2; c1++)
+    for(auto c1=lu.columns(i).find(i),c2=lu.columns(i).end(); c1!=c2; c1++)
       y(i) += c1->second * x(c1->first);
 
   // z=Ly=LUx
   Matrix z(y);  // Lii=1
   for(size_t i=0; i<lu.nrow(); i++)
-    for(CI c1=lu.columns(i).begin(),c2=lu.columns(i).find(i); c1!=c2; c1++)
+    for(auto c1=lu.columns(i).begin(),c2=lu.columns(i).find(i); c1!=c2; c1++)
       z(i) +=  c1->second * y(c1->first);
 
   return z;
@@ -200,14 +205,14 @@ Matrix sluxb(const Sparse& lu, const Matrix& b){
 
   // x --> L^-1 x
   for(size_t i=0; i<lu.nrow(); i++){
-    CI c1=lu.columns(i).begin(), c2=lu.columns(i).find(i);
+    auto c1=lu.columns(i).begin(), c2=lu.columns(i).find(i);
     for(; c1!=c2; c1++) x(i) -= c1->second * x(c1->first);
     //x(i)/=1;
   }
 
   // x --> U^-1 x
   for(size_t i=lu.nrow()-1; /*i>=0*/; i--){
-    CI c1=lu.columns(i).find(i), c2=lu.columns(i).end();
+    auto c1=lu.columns(i).find(i), c2=lu.columns(i).end();
     for(c1++; c1!=c2; c1++) x(i) -= c1->second * x(c1->first);
     x(i)/=lu(i,i);  // = (bi - \sum_{j>i} Uij xj) / Uii
     if(i==0) break;
@@ -223,14 +228,14 @@ Matrix slutxb(const Sparse& lu, const Matrix& b){
 
   // x --> U^-T x
   for(size_t i=0; i<lu.ncol(); i++){
-    CI c1=lu.columns(i).find(i), c2=lu.columns(i).end();
+    auto c1=lu.columns(i).find(i), c2=lu.columns(i).end();
     x(i) /= c1->second; ;  // xi /= Uii
     for(c1++; c1!=c2; c1++) x(c1->first) -= c1->second * x(i);  // xj -= Uji*xi
   }
 
   // x --> L^-T x
   for(size_t i=lu.ncol()-1; /*i>=0*/; i--){
-    CI c1=lu.columns(i).begin(), c2=lu.columns(i).find(i);
+    auto c1=lu.columns(i).begin(), c2=lu.columns(i).find(i);
     //x(i)/=1;  // xi /== Lii
     for( ; c1!=c2; c1++) x(c1->first) -= c1->second * x(i);  // xj -= Lji*xi
     if(i==0) break;
@@ -246,18 +251,18 @@ Matrix slutxb(const Sparse& lu, const Matrix& b){
 void ilu0(Sparse& a){
   for(size_t i=0; i<a.nrow(); i++){
     std::map<size_t,double>& ai=a.columns(i);
-    IT aii=ai.find(i);  // Uii
+    auto aii=ai.find(i);  // Uii
     if( aii==ai.end() ) throw std::runtime_error("ILU(0): division by Aii=0");
 
-    for(IT aik=ai.begin(); aik!=aii; aik++){
+    for(auto aik=ai.begin(); aik!=aii; aik++){
       size_t k=aik->first;
-      Row& ak=a.columns(k);
+      auto& ak=a.columns(k);
       aik->second /= a(k,k);  // Lik
 
-      IT aij=aik;
+      auto aij=aik;
       for(aij++; aij!=ai.end(); aij++){
 	size_t j=aij->first;
-	IT akj=ak.find(j);
+	auto akj=ak.find(j);
 	if( akj!=ak.end() ) aij->second -= aik->second * akj->second;  // Uij
       }
     }

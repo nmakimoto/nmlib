@@ -12,7 +12,7 @@ all : $(BIN)
 test: $(BIN)
 	./$(BIN)
 clean:
-	-rm  $(BIN)  gtest-all.cpp  random.cpp  sparse.cpp  *.o  *.bak  *~
+	-rm  $(BIN)  gtest-all.cpp  sparse.cpp  *.o  *.bak  *~
 	#makedepend -Y
 depend:
 	makedepend -Y -I. -I../include $(SRC)
@@ -20,8 +20,6 @@ $(BIN): $(SRC:.cpp=.o)
 
 gtest-all.cpp:
 	cp  $(GTESTSRC)/src/gtest-all.cc  ./gtest-all.cpp
-random.cpp: ../src/random.cpp
-	cp  ../src/random.cpp ./
 sparse.cpp: ../src/sparse.cpp
 	cp  ../src/sparse.cpp ./
 

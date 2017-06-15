@@ -8,13 +8,23 @@
 using namespace nmlib;
 
 
+TEST(random,init){
+  Rng rng;
+  double xx[10];
+
+  for(int i=0; i<10; i++){ rng.init(0);   xx[i]=rng(); if(i>0) EXPECT_NE(xx[i-1],xx[i]); }
+  for(int i=0; i<10; i++){ rng.init(i);   xx[i]=rng(); if(i>0) EXPECT_NE(xx[i-1],xx[i]); }
+  for(int i=0; i<10; i++){ rng.init(123); xx[i]=rng(); if(i>0) EXPECT_EQ(xx[i-1],xx[i]); }
+}
+
+
 TEST(random,uniform){
   int n=1000000, k=10;
   double sgm1 = sqrt((1.0/k)*(1-1.0/k));  // stddev of binomial dist B(1/k)
   std::map<int,int> count;
 
-  init_rand(12345ULL);
-  for(int i=0; i<n; i++) count[int(urand()*k)]++;
+  Rng rng(12345ULL);
+  for(int i=0; i<n; i++) count[int(rng()*k)]++;
   for(int i=0; i<k; i++) EXPECT_NEAR(count[i]*1.0/n, 1.0/k, 3*sgm1/sqrt(n));
 }
 
@@ -23,10 +33,10 @@ TEST(random,white){
   int n=1000000;
   double s01=0,x0=0,x1=0;
 
-  init_rand(12345ULL);
+  Rng rng(12345ULL);
   for(int i=0; i<n; i++){
     x0=x1;
-    x1=urand()-0.5;
+    x1=rng()-0.5;
     s01+=x0*x1;
   }
   s01/=n;  // autocorrelation E X(t)X(t+1)
@@ -64,4 +74,69 @@ TEST(random,lowdiscrepancy){
         if(i!=j) EXPECT_NEAR(s2(i,j), 0.0, log(n)/n);  // uncorrelated
     }
   }
+}
+
+
+TEST(random,rejection){
+  int n=10000, div=10;
+  std::vector<int> cnt(div);
+
+
+  Rng rng(12345);
+  cnt=std::vector<int>(div);
+  for(int i=0; i<n; i++){
+    double x=rng.rand_pdf(sqrt,1,0,1);
+    int j=int(x*div);
+    cnt[j]++;
+  }
+  for(int j=0; j<div; j++){
+    double dx=1.0/div, x=j*dx, prob=pow(x+dx,1.5)-pow(x,1.5);
+    EXPECT_NEAR(prob*n, cnt[j], sqrt(cnt[j])*3);
+  }
+
+  Lds lds(12345);
+  cnt=std::vector<int>(div);
+  for(int i=0; i<n; i++){
+    double x=lds.rand_pdf(sqrt,1,0,1, {2,3});
+    int j=int(x*div);
+    cnt[j]++;
+  }
+  for(int j=0; j<div; j++){
+    double dx=1.0/div, x=j*dx, prob=pow(x+dx,1.5)-pow(x,1.5);
+    EXPECT_NEAR(prob*n, cnt[j], 5);
+  }
+}
+
+
+TEST(random,converter){
+  int n=10000;
+  Lds lds;
+  std::vector<int> cnt;
+
+  // Box-Muller
+  cnt=std::vector<int>(8);
+  double x1=3.186394e-01, x2=6.744898e-01, x3=1.150349e+00;  // p=5/8, 6/8, 7/8
+  for(int i=0; i<n; i++){
+    Matrix xu=lds({2,3});
+    double x=box_muller(xu);
+    int seg=0;
+    if(x<0){ seg+=0x4; x=-x; }
+    if     (x>x3) seg+=0x3;
+    else if(x>x2) seg+=0x2;
+    else if(x>x1) seg+=0x1;
+    cnt[seg]++;
+  }
+  for(auto c: cnt) EXPECT_NEAR(c, n/8, 10);
+
+  // I^2 --> S^2
+  cnt=std::vector<int>(8);
+  for(int i=0; i<n; i++){
+    Matrix x=conv_i2s2(lds({2,3}));
+    int seg=0;
+    if(x(0)>0) seg+=0x1;
+    if(x(1)>0) seg+=0x2;
+    if(x(2)>0) seg+=0x4;
+    cnt[seg]++;
+  }
+  for(auto c: cnt) EXPECT_NEAR(c, n/8, 5);
 }

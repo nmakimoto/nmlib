@@ -50,10 +50,10 @@ TEST(optimization,curvefit){
   Matrix th({1.1,2.2}), th0({1,1}), dth({1.e-6,1.e-6});
   Matrix xx(n), yy(n);
 
-  RNG rng(12345);
+  Rng rng(12345);
   for(size_t k=0; k<n; k++){
-    xx(k)=rng.nrand();
-    yy(k)=h(xx(k),th) + rng.nrand()*0.1;
+    xx(k)=rng.n();
+    yy(k)=h(xx(k),th) + rng.n()*0.1;
   }
 
   Matrix th1=curvefit(h,xx,yy,th0,dth);

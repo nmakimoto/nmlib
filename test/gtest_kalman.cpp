@@ -11,7 +11,7 @@ using namespace nmlib;
 
 
 // target model: linear motion with constant speed
-inline Matrix f(const Matrix& x, double dt){
+static Matrix f(const Matrix& x, double dt){
   int d=x.dim()/2;
   Matrix p=getsub(x,0,0,d,1);  // position
   Matrix v=getsub(x,d,0,d,1);  // velocity
@@ -19,7 +19,7 @@ inline Matrix f(const Matrix& x, double dt){
 }
 
 // sensor model: observe position
-inline Matrix h(const Matrix& x){
+static Matrix h(const Matrix& x){
   int d=x.dim()/2;
   Matrix p=getsub(x,0,0,d,1);  // position
   return p;

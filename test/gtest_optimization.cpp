@@ -10,12 +10,12 @@
 using namespace nmlib;
 
 
-inline double f(const Matrix& x){
+static double f(const Matrix& x){
   Matrix x0=Matrix({1.2,2.3,3.4});
   return inner(x-x0,x-x0)+4.5;
 }
 
-inline Matrix g(const Matrix& x){
+static Matrix g(const Matrix& x){
   Matrix x0=Matrix({1.2,2.3,3.4});
   Matrix y=x-x0;
   y(0)+= y(0)*y(0)*y(0);
@@ -24,7 +24,7 @@ inline Matrix g(const Matrix& x){
   return y;
 }
 
-inline double h(double x, const Matrix& th){
+static double h(double x, const Matrix& th){
   return (x-th(0))*sqrt(fabs(th(1)));
 }
 

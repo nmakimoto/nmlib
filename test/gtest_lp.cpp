@@ -10,7 +10,7 @@
 using namespace nmlib;
 
 
-inline bool nonnegative(const Matrix& v, double tol=0){
+static bool nonnegative(const Matrix& v, double tol=0){
   for(size_t i=0; i<v.dim(); i++)
     if(v(i)+tol<0) return false;
   return true;

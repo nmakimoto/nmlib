@@ -11,13 +11,13 @@
 using namespace nmlib;
 
 
-inline double urand(void){
+static double urand(void){
   return (random()+0.5)/RAND_MAX;
 }
-inline double urand(double x0,double x1){
+static double urand(double x0,double x1){
   return (x1-x0)*urand()+x0;
 }
-inline std::map<double,double> sample_data(void){
+static std::map<double,double> sample_data(void){
   std::map<double,double> x2y;
   double x,y;
   for(int i=-10; i<=10; i++){

@@ -9,15 +9,15 @@ using namespace nmlib;
 
 
 // Random sample generators
-inline double urand1(void    ){
+static double urand1(void    ){
   return (random()%RAND_MAX+0.5)/RAND_MAX;
 }
-inline Matrix random_vector(size_t n){
+static Matrix random_vector(size_t n){
   Matrix x(n);
   for(size_t i=0; i<n; i++) x(i)=2*urand1()-1;
   return x;
 }
-inline Sparse random_sparse(size_t n, size_t w, size_t k){
+static Sparse random_sparse(size_t n, size_t w, size_t k){
   Sparse a(n,n);
   for(size_t i=0; i<n; i++)
     for(size_t j=0; j<n; j++)

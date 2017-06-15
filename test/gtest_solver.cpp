@@ -10,10 +10,10 @@
 using namespace nmlib;
 
 
-inline double f_11(double x){
+static double f_11(double x){
   return cos(x);
 }
-inline Matrix f_nn(const Matrix& x){
+static Matrix f_nn(const Matrix& x){
   Matrix y(2);
   y(0)=cos(x(0)*0.7+x(1)*0.3);
   y(1)=sin(x(0)*x(0)*0.3-x(1)*x(1)*0.4);

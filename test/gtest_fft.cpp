@@ -15,8 +15,8 @@ typedef std::complex<double> Cpx;
 typedef std::vector<Cpx>  VecC;
 typedef matrix<Cpx> MatC;
 
-inline double urand1(void){ return (random()%RAND_MAX+0.5)/RAND_MAX; }
-inline VecC random_sample(size_t n){
+static double urand1(void){ return (random()%RAND_MAX+0.5)/RAND_MAX; }
+static VecC random_sample(size_t n){
   VecC vc(n);
   for(size_t k=0; k<n; k++){ vc[k]=Cpx(urand1()*2-1, urand1()*2-1); }
   return vc;

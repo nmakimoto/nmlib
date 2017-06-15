@@ -9,9 +9,9 @@
 using namespace nmlib;
 
 
-inline double f_11(double x){ return cos(x); }
-inline double f_n1(const Matrix& x){ return cos(x(0))*cos(2*x(1)); }
-inline Matrix f_nm(const Matrix& x){ Matrix y(3); y(0)=cos(x(0)-x(1)); y(1)=sin(x(0)-x(1)); y(2)=sin(x(0)); return y; }
+static double f_11(double x){ return cos(x); }
+static double f_n1(const Matrix& x){ return cos(x(0))*cos(2*x(1)); }
+static Matrix f_nm(const Matrix& x){ Matrix y(3); y(0)=cos(x(0)-x(1)); y(1)=sin(x(0)-x(1)); y(2)=sin(x(0)); return y; }
 
 
 TEST(diff,gradient11){

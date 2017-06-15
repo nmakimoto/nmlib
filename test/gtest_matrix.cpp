@@ -10,15 +10,15 @@ using namespace nmlib;
 
 
 // Sample data generators
-inline double urand1(void){
+static double urand1(void){
   return (random()%RAND_MAX+0.5)/RAND_MAX;
 }
-inline Matrix mrand(size_t r, size_t c){
+static Matrix mrand(size_t r, size_t c){
   Matrix m(r,c);
   for(size_t k=0; k<m.dim(); k++) m(k)=urand1()*2-1;
   return m;
 }
-inline Matrix exp(const Matrix& m){
+static Matrix exp(const Matrix& m){
   Matrix s=m+1.0;
   Matrix t=m;
   for(int i=2; i<100; i++){

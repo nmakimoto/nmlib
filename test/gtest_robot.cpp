@@ -10,7 +10,7 @@ using namespace nmlib;
 
 
 // sample data
-inline void init_robot(Robot& rbt, Matrix& th, Matrix& hom){
+static void init_robot(Robot& rbt, Matrix& th, Matrix& hom){
   Matrix y90=rotabout(1,M_PI/2), z90=rotabout(2,M_PI/2);
 
   rbt = Robot();

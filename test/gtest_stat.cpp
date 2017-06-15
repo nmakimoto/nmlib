@@ -9,10 +9,10 @@ using namespace nmlib;
 
 
 // Sample data generators
-inline double urand1(void){
+static double urand1(void){
   return (random()%RAND_MAX+0.5)/RAND_MAX;
 }
-inline Matrix mrand(size_t r, size_t c){
+static Matrix mrand(size_t r, size_t c){
   Matrix m(r,c);
   for(size_t k=0; k<m.dim(); k++) m(k)=urand1()*2-1;
   return m;

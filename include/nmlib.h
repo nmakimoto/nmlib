@@ -13,12 +13,13 @@
 #include "lp.h"
 #include "matrix.h"
 #include "matrix_decomp.h"
+#include "optimization.h"
 #include "polynomial.h"
-#include "random.h"  // compile and link random.cpp to use non-class RNG functions
+#include "random.h"
 #include "robot.h"
 #include "route.h"
 #include "solver.h"
-#include "sparse.h"  // compile and link sparse.cpp to use sparse solvers
+#include "sparse.h"
 #include "spline.h"
 #include "stat.h"
 

@@ -105,7 +105,7 @@ Matrix slutxb(const Sparse& lu, const Matrix& b);  // (LU)^-T b (solve LU^T x=b)
 /******** Implementation ********/
 
 // Class methods
-inline Sparse::Sparse(size_t r, size_t c): row(r),col(c) { val=std::vector<std::map<size_t,double>>(r); }
+inline Sparse::Sparse(size_t r, size_t c): row(r),col(c),val(r) {}
 inline size_t  Sparse::nrow(void) const{ return row; }
 inline size_t  Sparse::ncol(void) const{ return col; }
 inline double& Sparse::operator()(size_t i, size_t j){
@@ -122,10 +122,24 @@ inline void SparseConf::init_ilu0(const Sparse& a){ lu=a; ilu0(lu); }
 
 
 // Incremental operations
-inline Sparse& operator+=(Sparse& a, double s){ for(size_t k=0; k<a.ncol(); k++) a(k,k)+=s; return a; }
-inline Sparse& operator-=(Sparse& a, double s){ a+=-s; return a; }
-inline Sparse& operator*=(Sparse& a, double s){ for(size_t i=0; i<a.nrow(); i++) for(auto& c: a.columns(i)) c.second*=s; return a; }
-inline Sparse& operator/=(Sparse& a, double s){ a*=1/s; return a; }
+inline Sparse& operator+=(Sparse& a, double s){
+  for(size_t k=0; k<a.ncol(); k++) a(k,k)+=s;
+  return a;
+}
+inline Sparse& operator-=(Sparse& a, double s){
+  a+=-s;
+  return a;
+}
+inline Sparse& operator*=(Sparse& a, double s){
+  for(size_t i=0; i<a.nrow(); i++)
+    for(auto& c: a.columns(i))
+      c.second*=s;
+  return a;
+}
+inline Sparse& operator/=(Sparse& a, double s){
+  a*=1/s;
+  return a;
+}
 inline Sparse& operator+=(Sparse& a, const Sparse& b){
   if( !(a.nrow()==b.nrow() && a.ncol()==b.ncol()) )
     throw std::domain_error("operator +=(Sparse,Sparse): invalid dimensions");
@@ -162,7 +176,8 @@ inline Sparse operator*(const Sparse& a, const Sparse& b){
   Sparse ret(a.nrow(),b.ncol());
   for(size_t j=0; j<ret.ncol(); j++)
     for(size_t i=0; i<a.nrow(); i++)
-      for(const auto&  c: a.columns(i))  ret(i,j)+=c.second*b(c.first,j);
+      for(const auto& c: a.columns(i))
+	ret(i,j)+=c.second*b(c.first,j);
   return ret;
 }
 inline Matrix operator*(const Sparse& a, const Matrix& b){
@@ -171,22 +186,45 @@ inline Matrix operator*(const Sparse& a, const Matrix& b){
   Matrix ret(a.nrow(),b.ncol());
   for(size_t j=0; j<ret.ncol(); j++)
     for(size_t i=0; i<a.nrow(); i++)
-      for(const auto&  c: a.columns(i))  ret(i,j)+=c.second*b(c.first,j);
+      for(const auto& c: a.columns(i))
+	ret(i,j)+=c.second*b(c.first,j);
   return ret;
 }
 
 
 // Utilities
-inline double norm (const Sparse& a){ double s=0; for(size_t i=0; i<a.nrow(); i++) for(const auto& c: a.columns(i)){ double t=c.second; s+=t*t; } return sqrt(s); }
-inline Sparse tp   (const Sparse& a){ Sparse b(a.ncol(),a.nrow()); for(size_t i=0; i<a.nrow(); i++) for(const auto& c: a.columns(i)) b(c.first,i)=c.second; return b; }
-inline Matrix dense(const Sparse& a){ Matrix b(a.nrow(),a.ncol()); for(size_t i=0; i<a.nrow(); i++) for(const auto& c: a.columns(i)) b(i,c.first)=c.second; return b; }
+inline double norm (const Sparse& a){
+  double s=0;
+  for(size_t i=0; i<a.nrow(); i++){
+    for(const auto& c: a.columns(i)){
+      double t=c.second;
+      s+=t*t;
+    }
+  }
+  return sqrt(s);
+}
+inline Sparse tp   (const Sparse& a){
+  Sparse b(a.ncol(),a.nrow());
+  for(size_t i=0; i<a.nrow(); i++)
+    for(const auto& c: a.columns(i))
+      b(c.first,i)=c.second;
+  return b;
+}
+inline Matrix dense(const Sparse& a){
+  Matrix b(a.nrow(),a.ncol());
+  for(size_t i=0; i<a.nrow(); i++)
+    for(const auto& c: a.columns(i))
+      b(i,c.first)=c.second;
+  return b;
+}
 inline Matrix tpab (const Sparse& a, const Matrix& b){
   if( a.nrow()!=b.nrow() )
     throw std::domain_error("tpab(Sparse,Matrix): invalid dimensions");
   Matrix ret(b.nrow(),b.ncol());
   for(size_t j=0; j<ret.ncol(); j++)
     for(size_t i=0; i<a.nrow(); i++)
-      for(const auto& c: a.columns(i))  ret(c.first,j)+=c.second*b(i,j);
+      for(const auto& c: a.columns(i))
+	ret(c.first,j)+=c.second*b(i,j);
   return ret;
 }
 
@@ -199,7 +237,7 @@ inline Matrix solve_cg(const Sparse& a, const Matrix& b, const SparseConf& cf){
   Matrix x,r,p,q;
   double t,rr;
 
-  x=Matrix(a.ncol());  if(cf.x0.dim()>0) x=cf.x0;
+  x=(cf.x0.dim()>0 ? cf.x0 : Matrix(a.ncol()));
   p=r=b-a*x;
   for(int j=0; j<cf.loop; j++){
     if(cf.verb) std::cerr<<"CG["<<j<<"]\t"<<norm(r)/norm(b)<<"\t"<<norm(a*x-b)<<"\n";
@@ -278,6 +316,33 @@ inline Matrix solve_pbcg(const Sparse& a, const Matrix& b, const SparseConf& cf)
 }
 
 
+// ILU(0) - incomplete LU decomposition
+// - A typical preconditioner without fill-in
+// - Decomposition is complete when A is a band matrix
+inline void ilu0(Sparse& a){
+  if( a.nrow()!=a.ncol() ) throw std::domain_error("ilu0(Sparse): invalid dimensions");
+
+  for(size_t i=0; i<a.nrow(); i++){
+    std::map<size_t,double>& ai=a.columns(i);
+    auto aii=ai.find(i);  // Uii
+    if( aii==ai.end() ) throw std::runtime_error("ilu0(Sparse): division by Aii=0");
+
+    for(auto aik=ai.begin(); aik!=aii; aik++){
+      size_t k=aik->first;
+      auto& ak=a.columns(k);
+      aik->second /= a(k,k);  // Lik
+
+      auto aij=aik;
+      for(aij++; aij!=ai.end(); aij++){
+	size_t j=aij->first;
+	auto akj=ak.find(j);
+	if( akj!=ak.end() ) aij->second -= aik->second * akj->second;  // Uij
+      }
+    }
+  }
+}
+
+
 // b=LUx
 inline Matrix lux(const Sparse& lu, const Matrix&  x){
   if( !(lu.nrow()==lu.ncol() && lu.ncol()==x.nrow() && x.ncol()==1) )
@@ -348,33 +413,6 @@ inline Matrix slutxb(const Sparse& lu, const Matrix& b){
   }
 
   return x;
-}
-
-
-// ILU(0) - incomplete LU decomposition
-// - A typical preconditioner without fill-in
-// - Decomposition is complete when A is a band matrix
-inline void ilu0(Sparse& a){
-  if( a.nrow()!=a.ncol() ) throw std::domain_error("ilu0(Sparse): invalid dimensions");
-
-  for(size_t i=0; i<a.nrow(); i++){
-    std::map<size_t,double>& ai=a.columns(i);
-    auto aii=ai.find(i);  // Uii
-    if( aii==ai.end() ) throw std::runtime_error("ilu0(Sparse): division by Aii=0");
-
-    for(auto aik=ai.begin(); aik!=aii; aik++){
-      size_t k=aik->first;
-      auto& ak=a.columns(k);
-      aik->second /= a(k,k);  // Lik
-
-      auto aij=aik;
-      for(aij++; aij!=ai.end(); aij++){
-	size_t j=aij->first;
-	auto akj=ak.find(j);
-	if( akj!=ak.end() ) aij->second -= aik->second * akj->second;  // Uij
-      }
-    }
-  }
 }
 
 

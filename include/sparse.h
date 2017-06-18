@@ -8,10 +8,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <sstream>
 #include <stdexcept>
 #include "matrix.h"
-//#include "io.h"
 
 namespace nmlib{
 
@@ -106,26 +104,19 @@ Matrix slutxb(const Sparse& lu, const Matrix& b);  // (LU)^-T b (solve LU^T x=b)
 
 /******** Implementation ********/
 
-inline void chk(size_t r1, size_t c1, size_t r2, size_t c2, char op){
-  if( (op=='@' && r1<r2  && c1<=c2)  ||
-      (op=='+' && r1==r2 && c1==c2)  ||
-      (op=='-' && r1==r2 && c1==c2)  ||
-      (op=='*' && c1==r2)  ||
-      (op=='/' && r1==c1 && c1==r2 && c2==1) ) return;
-  std::stringstream msg;
-  msg<<"Sparse: ("<<r1<<","<<c1<<") "<< op << " ("<<r2<<","<<c2<<")";
-  throw std::domain_error("Sparse: invalid size or range");
-}
-inline void chk(const Sparse& a, const Sparse& b, char op){ chk(a.nrow(),a.ncol(),b.nrow(),b.ncol(),op); }
-inline void chk(const Sparse& a, const Matrix& b, char op){ chk(a.nrow(),a.ncol(),b.nrow(),b.ncol(),op); }
-
-
 // Class methods
 inline Sparse::Sparse(size_t r, size_t c): row(r),col(c) { val=std::vector<std::map<size_t,double>>(r); }
 inline size_t  Sparse::nrow(void) const{ return row; }
 inline size_t  Sparse::ncol(void) const{ return col; }
-inline double& Sparse::operator()(size_t i, size_t j)       { chk(i,j,row,col,'@'); return val[i][j]; }
-inline double  Sparse::operator()(size_t i, size_t j) const { chk(i,j,row,col,'@'); auto c=val[i].find(j); return (c==val[i].end() ? 0 : c->second); }
+inline double& Sparse::operator()(size_t i, size_t j){
+  if( !(i<nrow() && j<ncol()) ) throw std::domain_error("Sparse::operator(): out of range");
+  return val[i][j];
+}
+inline double  Sparse::operator()(size_t i, size_t j) const {
+  if( !(i<nrow() && j<ncol()) ) throw std::domain_error("Sparse::operator() const: out of range");
+  const auto& c=val[i].find(j);
+  return (c==val[i].end() ? 0 : c->second);
+}
 
 inline void SparseConf::init_ilu0(const Sparse& a){ lu=a; ilu0(lu); }
 
@@ -135,8 +126,22 @@ inline Sparse& operator+=(Sparse& a, double s){ for(size_t k=0; k<a.ncol(); k++)
 inline Sparse& operator-=(Sparse& a, double s){ a+=-s; return a; }
 inline Sparse& operator*=(Sparse& a, double s){ for(size_t i=0; i<a.nrow(); i++) for(auto& c: a.columns(i)) c.second*=s; return a; }
 inline Sparse& operator/=(Sparse& a, double s){ a*=1/s; return a; }
-inline Sparse& operator+=(Sparse& a, const Sparse& b){ chk(a,b,'+'); for(size_t i=0; i<b.nrow(); i++) for(const auto& c: b.columns(i)) a(i,c.first)+=c.second; return a; }
-inline Sparse& operator-=(Sparse& a, const Sparse& b){ chk(a,b,'-'); for(size_t i=0; i<b.nrow(); i++) for(const auto& c: b.columns(i)) a(i,c.first)-=c.second; return a; }
+inline Sparse& operator+=(Sparse& a, const Sparse& b){
+  if( !(a.nrow()==b.nrow() && a.ncol()==b.ncol()) )
+    throw std::domain_error("operator +=(Sparse,Sparse): invalid dimensions");
+  for(size_t i=0; i<b.nrow(); i++)
+    for(const auto& c: b.columns(i))
+      a(i,c.first)+=c.second;
+  return a;
+}
+inline Sparse& operator-=(Sparse& a, const Sparse& b){
+  if( !(a.nrow()==b.nrow() && a.ncol()==b.ncol()) )
+    throw std::domain_error("operator -=(Sparse,Sparse): invalid dimensions");
+  for(size_t i=0; i<b.nrow(); i++)
+    for(const auto& c: b.columns(i))
+      a(i,c.first)-=c.second;
+  return a;
+}
 
 
 // Basic operations
@@ -152,7 +157,8 @@ inline Sparse operator*(double s, const Sparse& a){ Sparse b(a); return (b*=s); 
 inline Sparse operator+(const Sparse& a, const Sparse& b){ Sparse c(a); c+=b; return c; }
 inline Sparse operator-(const Sparse& a, const Sparse& b){ Sparse c(a); c-=b; return c; }
 inline Sparse operator*(const Sparse& a, const Sparse& b){
-  chk(a,b,'*');
+  if( a.ncol()!=b.nrow() )
+    throw std::domain_error("operator *(Sparse,Sparse): invalid dimensions");
   Sparse ret(a.nrow(),b.ncol());
   for(size_t j=0; j<ret.ncol(); j++)
     for(size_t i=0; i<a.nrow(); i++)
@@ -160,7 +166,8 @@ inline Sparse operator*(const Sparse& a, const Sparse& b){
   return ret;
 }
 inline Matrix operator*(const Sparse& a, const Matrix& b){
-  chk(a,b,'*');
+  if( a.ncol()!=b.nrow() )
+    throw std::domain_error("operator *(Sparse,Matrix): invalid dimensions");
   Matrix ret(a.nrow(),b.ncol());
   for(size_t j=0; j<ret.ncol(); j++)
     for(size_t i=0; i<a.nrow(); i++)
@@ -174,7 +181,8 @@ inline double norm (const Sparse& a){ double s=0; for(size_t i=0; i<a.nrow(); i+
 inline Sparse tp   (const Sparse& a){ Sparse b(a.ncol(),a.nrow()); for(size_t i=0; i<a.nrow(); i++) for(const auto& c: a.columns(i)) b(c.first,i)=c.second; return b; }
 inline Matrix dense(const Sparse& a){ Matrix b(a.nrow(),a.ncol()); for(size_t i=0; i<a.nrow(); i++) for(const auto& c: a.columns(i)) b(i,c.first)=c.second; return b; }
 inline Matrix tpab (const Sparse& a, const Matrix& b){
-  chk(a.ncol(),a.nrow(),b.nrow(),b.ncol(),'*');
+  if( a.nrow()!=b.nrow() )
+    throw std::domain_error("tpab(Sparse,Matrix): invalid dimensions");
   Matrix ret(b.nrow(),b.ncol());
   for(size_t j=0; j<ret.ncol(); j++)
     for(size_t i=0; i<a.nrow(); i++)
@@ -185,7 +193,8 @@ inline Matrix tpab (const Sparse& a, const Matrix& b){
 
 // Solve Ax=b (CG - Conjugate Gradient for symmetric positive definite A)
 inline Matrix solve_cg(const Sparse& a, const Matrix& b, const SparseConf& cf){
-  chk(a,b,'/');
+  if( !(a.nrow()==a.ncol() && a.ncol()==b.nrow() && b.ncol()==1) )
+    throw std::domain_error("solve_cg(Sparse,Matrix): invalid dimensions");
 
   Matrix x,r,p,q;
   double t,rr;
@@ -209,7 +218,8 @@ inline Matrix solve_cg(const Sparse& a, const Matrix& b, const SparseConf& cf){
 
 // Solve Ax=b (BiCG - Bi-Conjugate Gradient)
 inline Matrix solve_bcg(const Sparse& a, const Matrix& b, const SparseConf& cf){
-  chk(a,b,'/');
+  if( !(a.nrow()==a.ncol() && a.ncol()==b.nrow() && b.ncol()==1) )
+    throw std::domain_error("solve_bcg(Sparse,Matrix): invalid dimensions");
 
   Matrix x,r1,r2,p1,p2,q1,q2;
   double t,rr;
@@ -237,7 +247,8 @@ inline Matrix solve_bcg(const Sparse& a, const Matrix& b, const SparseConf& cf){
 
 // Solve Ax=b (PBCG - Preconditioned BiCG)
 inline Matrix solve_pbcg(const Sparse& a, const Matrix& b, const SparseConf& cf){
-  chk(a,b,'/');
+  if( !(a.nrow()==a.ncol() && a.ncol()==b.nrow() && b.ncol()==1) )
+    throw std::domain_error("solve_pbcg(Sparse,Matrix): invalid dimensions");
 
   Matrix x,r1,r2,p1,p2,q1,q2;
   double t,rr;
@@ -269,6 +280,9 @@ inline Matrix solve_pbcg(const Sparse& a, const Matrix& b, const SparseConf& cf)
 
 // b=LUx
 inline Matrix lux(const Sparse& lu, const Matrix&  x){
+  if( !(lu.nrow()==lu.ncol() && lu.ncol()==x.nrow() && x.ncol()==1) )
+    throw std::domain_error("lux(Sparse,Matrix): invalid dimensions");
+
   // y=Ux
   Matrix y(x.nrow());
   for(size_t i=0; i<lu.nrow(); i++)
@@ -287,6 +301,9 @@ inline Matrix lux(const Sparse& lu, const Matrix&  x){
 
 // (LU)^-1 b (solve LUx=b)
 inline Matrix sluxb(const Sparse& lu, const Matrix& b){
+  if( !(lu.nrow()==lu.ncol() && lu.ncol()==b.nrow() && b.ncol()==1) )
+    throw std::domain_error("sluxb(Sparse,Matrix): invalid dimensions");
+
   Matrix x(b);
 
   // x --> L^-1 x
@@ -310,6 +327,9 @@ inline Matrix sluxb(const Sparse& lu, const Matrix& b){
 
 // (LU)^-T b (solve LU^T x=b)
 inline Matrix slutxb(const Sparse& lu, const Matrix& b){
+  if( !(lu.nrow()==lu.ncol() && lu.ncol()==b.nrow() && b.ncol()==1) )
+    throw std::domain_error("slutxb(Sparse,Matrix): invalid dimensions");
+
   Matrix x(b);
 
   // x --> U^-T x
@@ -335,10 +355,12 @@ inline Matrix slutxb(const Sparse& lu, const Matrix& b){
 // - A typical preconditioner without fill-in
 // - Decomposition is complete when A is a band matrix
 inline void ilu0(Sparse& a){
+  if( a.nrow()!=a.ncol() ) throw std::domain_error("ilu0(Sparse): invalid dimensions");
+
   for(size_t i=0; i<a.nrow(); i++){
     std::map<size_t,double>& ai=a.columns(i);
     auto aii=ai.find(i);  // Uii
-    if( aii==ai.end() ) throw std::runtime_error("ILU(0): division by Aii=0");
+    if( aii==ai.end() ) throw std::runtime_error("ilu0(Sparse): division by Aii=0");
 
     for(auto aik=ai.begin(); aik!=aii; aik++){
       size_t k=aik->first;

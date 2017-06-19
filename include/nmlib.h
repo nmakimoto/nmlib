@@ -8,6 +8,7 @@
 #include "chrono.h"
 #include "diff.h"
 #include "fft.h"
+#include "integral.h"
 #include "io.h"
 #include "kalman.h"
 #include "lp.h"

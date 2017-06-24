@@ -14,6 +14,7 @@
 #include "lp.h"
 #include "matrix.h"
 #include "matrix_decomp.h"
+#include "ode.h"
 #include "optimization.h"
 #include "polynomial.h"
 #include "random.h"

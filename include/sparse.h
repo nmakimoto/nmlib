@@ -49,6 +49,20 @@ public:
 };
 
 
+// Configuration for sparse eigensolver
+struct SparseEigenConf{
+  SparseEigenConf(void): x0(), mu0(0), tol(1.e-8), loop(100), warmup(0), pbcg(false), verb(false) {}
+
+  Matrix x0;    // initial guess of an eigenvector
+  double mu0;   // initial guess of an eigenvalue
+  double tol;   // tolerance for convergence check
+  int    loop;  // max iteration
+  int    warmup;// number of iteration to magnify eigens near mu0
+  bool   pbcg;  // use PBCG with ILU(0) preconditioner
+  bool   verb;  // verbosity
+};
+
+
 /******** Utility I/F ********/
 
 // Incremental operations
@@ -100,6 +114,9 @@ void   ilu0(Sparse& a);  // incomplete LU decomposition ILU(0) (overwrites A)
 Matrix lux   (const Sparse& lu, const Matrix& x);  // LUx
 Matrix sluxb (const Sparse& lu, const Matrix& b);  // (LU)^-1 b (solve LUx=b)
 Matrix slutxb(const Sparse& lu, const Matrix& b);  // (LU)^-T b (solve LU^T x=b)
+
+// Sparse eigensolver
+Matrix eigenvec(const Sparse& a0, const SparseEigenConf& cf1=SparseEigenConf(), const SparseConf& cf20=SparseConf());
 
 
 /******** Implementation ********/
@@ -413,6 +430,38 @@ inline Matrix slutxb(const Sparse& lu, const Matrix& b){
   }
 
   return x;
+}
+
+
+// Sparse eigensolver by shifted inverse iteration
+inline Matrix eigenvec(const Sparse& a0, const SparseEigenConf& cf1, const SparseConf& cf20){
+  Sparse amu=a0;
+  SparseConf cf2=cf20;
+  Matrix x, x_old;
+  double mu=cf1.mu0, err=0, err_old;
+
+  x=(cf1.x0.dim() ? cf1.x0 : cf2.x0.dim() ? cf2.x0 : Matrix(a0.nrow()).fill(1));
+  x/=norm(x);
+
+  for(int i=0; i<cf1.loop; i++){
+    x_old=x;
+    err_old=norm(a0*x-mu*x);
+
+    for(size_t i=0; i<a0.nrow(); i++) amu(i,i)=a0(i,i)-mu;
+    cf2.x0=x;
+    if( cf1.pbcg ){ cf2.init_ilu0(amu); x=solve_pbcg(amu,x,cf2); }
+    else x=solve_cg(amu,x,cf2);
+    x/=norm(x);
+    if( cf1.warmup<=i ) mu=inner(a0*x,x);  // use mu0 at an early stage to magnify eigens near mu0
+    err=norm(a0*x-mu*x);
+
+    if( cf1.warmup<i && err_old<cf1.tol && !(err<err_old) ) return x_old;
+    if( cf1.verb ) std::cerr << "EIGEN["<<i<<"]\terr="<<err<<"\tmu="<<mu<<"\tcos="<<inner(x,x_old)<<"\n";
+    if( !std::isfinite(err) ) break;
+  }
+
+  if( cf1.verb ) std::cerr<<"EIGEN: perhaps poor convergence.\n";
+  return (std::isfinite(err) ? x : x_old);
 }
 
 

@@ -123,3 +123,26 @@ TEST(sparse,solver){
   a+=tp(a);
   x=solve_cg  (a,b);  EXPECT_NEAR(norm(a*x-b)/norm(b), 0, 1.e-8);
 }
+
+
+// Eigensolver
+TEST(sparse,eigen){
+  const size_t k=10,n=k*k;
+  Sparse a(n,n);
+  for(size_t i=0; i<n  ; i++ ) a(i,i)=4;
+  for(size_t i=0; i<n-1; i++ ) a(i,i+1)=a(i+1,i)=-1;
+  for(size_t i=0; i<n-k; i+=k) a(i,i+k)=a(i+k,i)=-1;
+
+  SparseEigenConf cf;  // optional
+  cf.mu0=7;
+  cf.warmup=5;
+  cf.pbcg=true;
+
+  Matrix x;
+  double mu,err;
+  x=eigenvec(a,cf);
+  mu=inner(a*x,x);
+  err=norm(a*x-mu*x)/norm(x);
+  EXPECT_NEAR(norm(x),1,1.e-8);
+  EXPECT_LE(err,1.e-8);
+}

@@ -39,7 +39,7 @@ private:
 class SparseConf{
 public:
   SparseConf(void): tol(1.e-8), loop(100), x0(), lu(), verb(false) {}
-  void init_ilu0(const Sparse& a);  // initialize preconditioner(ILU0)
+  Sparse& init_ilu0(const Sparse& a);  // initialize preconditioner(ILU0)
 
   double  tol;   // tolerance |Ax-b|/|b|
   int     loop;  // max iteration
@@ -110,7 +110,7 @@ Matrix solve_bcg (const Sparse& a, const Matrix& b, const SparseConf& cf=SparseC
 Matrix solve_pbcg(const Sparse& a, const Matrix& b, const SparseConf& cf=SparseConf());  // Preconditioned BiCG
 
 // Preconditioners
-void   ilu0(Sparse& a);  // incomplete LU decomposition ILU(0) (overwrites A)
+Sparse& ilu0(Sparse& a);  // incomplete LU decomposition ILU(0) (overwrites A)
 Matrix lux   (const Sparse& lu, const Matrix& x);  // LUx
 Matrix sluxb (const Sparse& lu, const Matrix& b);  // (LU)^-1 b (solve LUx=b)
 Matrix slutxb(const Sparse& lu, const Matrix& b);  // (LU)^-T b (solve LU^T x=b)
@@ -135,7 +135,7 @@ inline double  Sparse::operator()(size_t i, size_t j) const {
   return (c==val[i].end() ? 0 : c->second);
 }
 
-inline void SparseConf::init_ilu0(const Sparse& a){ lu=a; ilu0(lu); }
+inline Sparse& SparseConf::init_ilu0(const Sparse& a){ lu=a; return ilu0(lu); }
 
 
 // Incremental operations
@@ -336,7 +336,7 @@ inline Matrix solve_pbcg(const Sparse& a, const Matrix& b, const SparseConf& cf)
 // ILU(0) - incomplete LU decomposition
 // - A typical preconditioner without fill-in
 // - Decomposition is complete when A is a band matrix
-inline void ilu0(Sparse& a){
+inline Sparse& ilu0(Sparse& a){
   if( a.nrow()!=a.ncol() ) throw std::domain_error("ilu0(Sparse): invalid dimensions");
 
   for(size_t i=0; i<a.nrow(); i++){
@@ -357,6 +357,7 @@ inline void ilu0(Sparse& a){
       }
     }
   }
+  return a;
 }
 
 

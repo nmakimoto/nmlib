@@ -450,14 +450,16 @@ inline Matrix eigenvec(const Sparse& a0, const SparseEigenConf& cf1, const Spars
 
     for(size_t i=0; i<a0.nrow(); i++) amu(i,i)=a0(i,i)-mu;
     cf2.x0=x;
-    if( cf1.pbcg ){ cf2.init_ilu0(amu); x=solve_pbcg(amu,x,cf2); }
-    else x=solve_cg(amu,x,cf2);
+    bool use_pbcg=(cf1.pbcg && std::isfinite(norm(cf2.init_ilu0(amu))));
+    if( cf1.verb && cf1.pbcg && !use_pbcg ) std::cerr<<"EIGEN["<<i<<"]: broken preconditioner (not used)\n";
+    if( use_pbcg ) x=solve_pbcg(amu,x,cf2);
+    else           x=solve_cg  (amu,x,cf2);
     x/=norm(x);
     if( cf1.warmup<=i ) mu=inner(a0*x,x);  // use mu0 at an early stage to magnify eigens near mu0
     err=norm(a0*x-mu*x);
 
     if( cf1.warmup<i && err_old<cf1.tol && !(err<err_old) ) return x_old;
-    if( cf1.verb ) std::cerr << "EIGEN["<<i<<"]\terr="<<err<<"\tmu="<<mu<<"\tcos="<<inner(x,x_old)<<"\n";
+    if( cf1.verb ) std::cerr<<"EIGEN["<<i<<"]\terr="<<err<<"\tmu="<<mu<<"\tcos="<<inner(x,x_old)<<"\n";
     if( !std::isfinite(err) ) break;
   }
 

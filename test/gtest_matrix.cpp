@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include <cstdlib>  // random
+#include <functional>  // operators
 #include "matrix.h"
 using namespace nmlib;
 
@@ -162,6 +163,20 @@ TEST(matrix,inverse){
   EXPECT_NEAR(norm(pow(m1, 5)-m1*m1*m1*m1*m1), 0, 1.e-12);
   EXPECT_NEAR(norm(pow(m1,-5)-inv(pow(m1,5))), 0, 1.e-12);
   EXPECT_NEAR(norm(pow(m1, 0)-1.0)           , 0, 1.e-12);
+}
+
+
+// Element-wise operations
+TEST(matrix,elementwise){
+  Matrix x={1,2,3}, y;
+  const std::multiplies<double> mul;
+  y=op(x,sqrt);     EXPECT_LE( norm(y-Matrix({1,sqrt(2),sqrt(3)})), 1.e-8 );
+  y=op(x,mul,2.0);  EXPECT_LE( norm(y-Matrix({2,4,6})), 1.e-8 );
+  y=op(x,mul,x);    EXPECT_LE( norm(y-Matrix({1,4,9})), 1.e-8 );
+  opeq(y,sqrt);     EXPECT_LE( norm(y-Matrix({1,2,3})), 1.e-8 );
+  opeq(y,mul,2.0);  EXPECT_LE( norm(y-Matrix({2,4,6})), 1.e-8 );
+  opeq(y,mul,x);    EXPECT_LE( norm(y-Matrix({2,8,18})),1.e-8 );
+  y=Matrix({1,2});  EXPECT_THROW(op(x,mul,y), std::domain_error);
 }
 
 

@@ -75,6 +75,14 @@ template<class T> matrix<T> operator-(const matrix<T>& m1, const matrix<T>& m2);
 template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2);  // M1*M2
 //template<class T> matrix<T> operator/(const matrix<T>& m1, const matrix<T>& m2);  // M1/M2 (ambiguous)
 
+// Element-wise operations
+template<class T,class OP> matrix<T>& opeq(      matrix<T>& m0,const OP& op1);                       // (op1(Mij))-->M
+template<class T,class OP> matrix<T>& opeq(      matrix<T>& m1,const OP& op2, const T& t );          // (op2(Mij,t))-->M
+template<class T,class OP> matrix<T>& opeq(      matrix<T>& m1,const OP& op2, const matrix<T>& m2);  // (op2(Mij,Mij))-->M
+template<class T,class OP> matrix<T>  op  (const matrix<T>& m0,const OP& op1);                       // (op1(Mij))
+template<class T,class OP> matrix<T>  op  (const matrix<T>& m1,const OP& op2, const T& t );          // (op2(Mij,t))
+template<class T,class OP> matrix<T>  op  (const matrix<T>& m1,const OP& op2, const matrix<T>& m2);  // (op2(Mij,Mij))
+
 // Miscelanaous operations
 template<class T> T          norm  (const matrix<T>& m);                        // norm |M|
 template<class T> T          norm  (const matrix<std::complex<T> >& m);         // norm |M| (complex M)
@@ -196,6 +204,35 @@ template<class T> matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2){
       m(i,j)=s;
     }
   return m;
+}
+
+
+// Element-wise operations
+template<class T,class OP> matrix<T>& opeq(matrix<T>& m0,const OP& op1){
+  for(size_t k=0; k<m0.dim(); k++) m0(k)=op1(m0(k));
+  return m0;
+}
+template<class T,class OP> matrix<T>& opeq(matrix<T>& m0,const OP& op2, const T& t){
+  for(size_t k=0; k<m0.dim(); k++) m0(k)=op2(m0(k),t);
+  return m0;
+}
+template<class T,class OP> matrix<T>& opeq(matrix<T>& m1,const OP& op2, const matrix<T>& m2){
+  if( !(m1.nrow()==m2.nrow() && m1.ncol()==m2.ncol()) )
+    throw std::domain_error("op(M,M): sizes mismatch");
+  for(size_t k=0; k<m1.dim(); k++) m1(k)=op2(m1(k),m2(k));
+  return m1;
+}
+template<class T,class OP> matrix<T> op(const matrix<T>& m0,const OP& op1){
+  matrix<T> m(m0);
+  return opeq(m,op1);
+}
+template<class T,class OP> matrix<T> op(const matrix<T>& m0,const OP& op2, const T& t){
+  matrix<T> m(m0);
+  return opeq(m,op2,t);
+}
+template<class T,class OP> matrix<T> op(const matrix<T>& m1,const OP& op2, const matrix<T>& m2){
+  matrix<T> m(m1);
+  return opeq(m,op2,m2);
 }
 
 

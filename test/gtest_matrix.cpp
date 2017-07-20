@@ -28,6 +28,20 @@ static Matrix exp(const Matrix& m){
   }
   return s;
 }
+template<class T> T det_by_cofactor(const matrix<T>& m){
+  size_t n=m.nrow();
+  if( n==1 ) return m(0,0);
+  T t=0;
+  for(size_t i=0; i<n; i++){
+    int sgn=(i%2==0 ? +1 : -1);
+    matrix<T> m1(n-1,n-1);
+    for(size_t i1=0; i1<n-1; i1++)
+      for(size_t j1=0; j1<n-1; j1++)
+	m1(i1,j1) = m(i1+(i1<i ? 0 : 1), j1+1);
+    t += T(sgn) * m(i,0) * det_by_cofactor(m1);
+  }
+  return t;
+}
 
 
 // Initialization
@@ -146,6 +160,65 @@ TEST(matrix,arithmetic){
   m3=m1-t;       for(size_t k=0; k<9; k++) EXPECT_DOUBLE_EQ(m3(k), (k+1.0)+(k/3==k%3 ?  2 : 0));
   m3=t+m1;       for(size_t k=0; k<9; k++) EXPECT_DOUBLE_EQ(m3(k), (k+1.0)+(k/3==k%3 ? -2 : 0));
   m3=t-m1;       for(size_t k=0; k<9; k++) EXPECT_DOUBLE_EQ(m3(k),-(k+1.0)+(k/3==k%3 ? -2 : 0));
+}
+
+
+// Gaussian elimination
+TEST(matrix,elimination){
+  size_t n=4;
+  for(int i=0; i<10; i++){
+    Matrix m=mrand(n,n), x(n,0), m1;
+
+    for(int flg=0; flg<4; flg++){
+      bool norm_diag=(flg%2), elim_upper=(flg/2);
+      m1=m;
+      x=Matrix(n,n)+1.0;
+      gaussian_elimination(m1,x,norm_diag,elim_upper);
+      m1=x*m;  // M1: result of elimination operation X
+
+      for(size_t i=0; i<n; i++)
+	for(size_t j=0; j<n; j++)
+	  if     (i>j)                 EXPECT_NEAR(m1(i,j),0,1.e-12);
+	  else if(i==j &&  norm_diag ) EXPECT_NEAR(m1(i,j),1,1.e-12);
+	  else if(i<j  &&  elim_upper) EXPECT_NEAR(m1(i,j),0,1.e-12);
+
+      if( !norm_diag  ) EXPECT_GE(norm(getdiag(m1)-Matrix(n).fill(1)), 1.e-12);
+      setdiag(m1,Matrix(n));
+      if( !elim_upper ) EXPECT_GE(norm(m1), 1.e-12);
+    }
+  }
+}
+
+
+// Determinant
+TEST(matrix,det){
+  typedef std::complex<double> C;
+  for(size_t d=1; d<=5; d++){  // implementation may vary for dim<=3
+    for(int i=0; i<10; i++){
+      Matrix m=mrand(d,d);
+      matrix<C> mc = complex(mrand(d,d)) + complex(mrand(d,d))*C(0,1);
+      EXPECT_NEAR(det(m), det_by_cofactor(m), 1.e-12);
+      EXPECT_LE(std::norm(det(mc)-det_by_cofactor(mc)), 1.e-12);
+    }
+  }
+}
+
+
+// Solve AX=B
+TEST(matrix,solve){
+  typedef std::complex<double> C;
+  size_t d=5;
+  for(size_t nrow=1; nrow<d+1; nrow++){
+    for(int i=0; i<10; i++){
+      Matrix a=mrand(d,d), b=mrand(d,nrow), x=solve(a,b);
+      EXPECT_LE(norm(a*x-b), 1.e-12);
+
+      matrix<C> ac = complex(mrand(d,d   )) + complex(mrand(d,d   ))*C(0,1);
+      matrix<C> bc = complex(mrand(d,nrow)) + complex(mrand(d,nrow))*C(0,1);
+      matrix<C> xc = solve(ac,bc);
+      EXPECT_LE(norm(ac*xc-bc), 1.e-12);
+    }
+  }
 }
 
 

@@ -87,6 +87,7 @@ template<class T,class OP> matrix<T>  op  (const matrix<T>& m1,const OP& op2, co
 template<class T> T          norm  (const matrix<T>& m);                        // norm |M|
 template<class T> T          norm  (const matrix<std::complex<T> >& m);         // norm |M| (complex M)
 template<class T> T          inner (const matrix<T>& m1, const matrix<T>& m2);  // inner product <M1,M2>
+template<class T> T          det   (const matrix<T>& m);                        // determinant
 template<class T> matrix<T>  inv   (const matrix<T>& m);                        // inverse M^-1
 template<class T> matrix<T>  pow   (const matrix<T>& m, int n);                 // power M^n (n<0 is ok)
 template<class T> matrix<T>  tp    (const matrix<T>& m);                        // transpose M^T
@@ -100,6 +101,8 @@ template<class T> matrix<T>  getdiag(const matrix<T>& m);
 template<class T> void       setdiag(      matrix<T>& m, const matrix<T>& v);
 template<class T> matrix<T>  hcat  (const matrix<T>& m1, const matrix<T>& m2);  // horizontal concatenation
 template<class T> matrix<T>  vcat  (const matrix<T>& m1, const matrix<T>& m2);  // vertical concatenation
+template<class T> matrix<T>  solve (const matrix<T>& m1, const matrix<T>& m2);  // M1^-1 M2
+template<class T> int        gaussian_elimination(matrix<T>& a, matrix<T>& b, bool norm_d, bool elim_u);
 template<class T> void       sort_columns_by_value(matrix<T>& m, const matrix<T>& v);
 
 // 3D geometry
@@ -256,36 +259,77 @@ template<class T> T inner(const matrix<T>& m1, const matrix<T>& m2){
 }
 
 
+// Determinant
+template<class T> T det(const matrix<T>& m){
+  const size_t n=m.nrow();
+  if( m.nrow()!=m.ncol() ) throw std::domain_error("det(M): not square");
+  if( n==2 ) return m(0,0)*m(1,1)-m(1,0)*m(0,1);
+  if( n==3 ) return
+	       m(0,0)*(m(1,1)*m(2,2)-m(2,1)*m(1,2)) +
+	       m(1,0)*(m(2,1)*m(0,2)-m(0,1)*m(2,2)) +
+	       m(2,0)*(m(0,1)*m(1,2)-m(1,1)*m(0,2));
+  matrix<T> m1(m),dummy(n,0);
+  T t=gaussian_elimination(m1,dummy,false,false);
+  for(size_t k=0; k<n; k++) t*=m1(k,k);
+  return t;
+}
 // Inverse M^-1
 template<class T> matrix<T> inv(const matrix<T>& m){
+  const size_t n=m.nrow();
   if( m.nrow()!=m.ncol() ) throw std::domain_error("inv(M): not square");
-  matrix<T> m1=m;
-  matrix<T> m2=matrix<T>(m.nrow(),m.nrow())+T(1);  // container of m^-1
+  matrix<T> m1(m), m2(n,n);
+  m2+=T(1);
+  gaussian_elimination(m1,m2,true,true);
+  return m2;
+}
+// Solve M1 X = M2
+template<class T> matrix<T> solve(const matrix<T>& m1, const matrix<T>& m2){
+  const size_t n=m1.nrow();
+  if( !(m1.nrow()==m1.ncol() && m2.nrow()==n) ) throw std::domain_error("solve(): not square");
+  matrix<T> a(m1), x(m2);
+  gaussian_elimination(a,x,true,true);
+  return x;
+}
 
-  for(size_t k=0; k<m.nrow(); k++){
-    // swapping: k-th row <--> i0-th row
+
+// Gaussian elimination (solve AX=B by successive fundamentarl row operations)
+template<class T> int gaussian_elimination(matrix<T>& a, matrix<T>& b, bool norm_d, bool elim_u){
+  const size_t na=a.ncol(), nb=b.ncol();
+  if( !(a.nrow()==a.ncol() && b.nrow()==na) ) throw std::domain_error("gaussian_elimination(): sizes mismatch");
+
+  int sgn=+1;  // sign of permutation of rows
+
+  for(size_t k=0; k<na; k++){
+    // pivoting: k-th <--> i0-th row
     size_t i0=k;
-    for(size_t i=k+1; i<m1.nrow(); i++)
-      if(std::abs(m1(i,k))>std::abs(m1(i0,k))) i0=i;  // i0=argmax_{i>k} |m1(i,k)|
+    for(size_t i=k+1; i<na; i++)
+      if(std::abs(a(i,k))>std::abs(a(i0,k))) i0=i;  // i0=argmax_{i>k} |a(i,k)|
     if(i0!=k){
-      for(size_t j=k; j<m1.nrow(); j++) std::swap(m1(k,j),m1(i0,j));
-      for(size_t j=0; j<m2.nrow(); j++) std::swap(m2(k,j),m2(i0,j));
+      for(size_t j=k; j<na; j++) std::swap(a(k,j),a(i0,j));
+      for(size_t j=0; j<nb; j++) std::swap(b(k,j),b(i0,j));
+      sgn=-sgn;
     }
 
-    // elimination: m1(i,k) --> \delta(i,k)
-    T t;
-    t=m1(k,k);
-    for(size_t j=k; j<m1.ncol(); j++) m1(k,j)/=t;  // (division-by-zero handling?)
-    for(size_t j=0; j<m2.ncol(); j++) m2(k,j)/=t;
-    for(size_t i=0; i<m1.nrow(); i++){
-      if(i==k) continue;
-      t=m1(i,k);
-      for(size_t j=k; j<m1.ncol(); j++) m1(i,j)-=m1(k,j)*t;
-      for(size_t j=0; j<m2.ncol(); j++) m2(i,j)-=m2(k,j)*t;
+    // normalization: a(k,k) --> 1
+    T t0=a(k,k);
+    if( norm_d ){
+      T t=T(1)/t0;  // (division-by-zero handling?)
+      for(size_t j=k+1; j<na; j++) a(k,j)*=t;  a(k,k)=1;
+      for(size_t j=0;   j<nb; j++) b(k,j)*=t;
+    }
+
+    // elimination: a(i,k) --> 0 for i!=k
+    for(size_t i=0; i<na; i++){
+      if( i==k ) continue;
+      T t=a(i,k);
+      if( (i<k && !elim_u)  ||  t==T(0) ) continue;
+      if( !norm_d ) t/=t0;
+      for(size_t j=k+1; j<na; j++) a(i,j)-=a(k,j)*t;  a(i,k)=0;
+      for(size_t j=0;   j<nb; j++) b(i,j)-=b(k,j)*t;
     }
   }
 
-  return m2;
+  return sgn;
 }
 
 

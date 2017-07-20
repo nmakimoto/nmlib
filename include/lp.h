@@ -16,18 +16,20 @@ namespace nmlib {
 
 class LP{
 public:
+  enum Status { Unknown, Infeasible, Feasible, Optimal, Unbounded };  // status of solution
+
   LP(void);
   LP(const Matrix& a, const Matrix& b, const Matrix& c);  // max cx s.t. Ax<=b and x>=0
 
-  void init(const Matrix& a, const Matrix& b, const Matrix& c);
-  int  solve      (int max_iter=-1, bool bland_rule=true);
-  int  solve_stdlp(int max_iter=-1, bool bland_rule=true, bool aux_prob=false);
-  int  solve_auxlp(int max_iter=-1, bool bland_rule=true);
-  int  choose_axis(int& i0, int& j0, bool aux_prob, bool bland_rule);
-  void pivot(int i0, int j0);
+  void   init(const Matrix& a, const Matrix& b, const Matrix& c);
+  Status solve      (int max_iter=-1, bool bland_rule=true);
+  Status solve_stdlp(int max_iter=-1, bool bland_rule=true, bool aux_prob=false);
+  Status solve_auxlp(int max_iter=-1, bool bland_rule=true);
+  Status choose_axis(int& i0, int& j0, bool aux_prob, bool bland_rule);
+  void   pivot(int i0, int j0);
 
   Matrix vertex(void) const;  // basic solution
-  int    status(void) const;
+  Status status(void) const;
 
   Matrix tbl;
   matrix<int> idx;
@@ -78,34 +80,34 @@ inline void LP::init(const Matrix& aa, const Matrix& bb, const Matrix& cc){
 
 
 // solve LP: max cx s.t. Ax<=b, x>=0
-// status: -1(infeasible), 0(feasible), +1(optimal), +2(unbounded)
-inline int LP::solve(int iter, bool bland){
-  if(solve_auxlp(iter,true)<0) return -1;  // infeasible
-  return  solve_stdlp(iter,bland,false);  // feasible(0), optimal(1) or unbounded(2)
+inline LP::Status LP::solve(int iter, bool bland){
+  Status s1=solve_auxlp(iter,true);
+  if( s1!=Feasible ) return s1;
+  return  solve_stdlp(iter,bland,false);
 }
 
 
 // solve standard LP: max cx s.t. Ax+s=b, x>=0, s>=0  where b>=0
-inline int LP::solve_stdlp(int iter, bool bland, bool aux){
+inline LP::Status LP::solve_stdlp(int iter, bool bland, bool aux){
   int r=tbl.nrow()-2, c=tbl.ncol()-2;
 
   for(int i=0; i<r; i++)
-    if(tbl(i,c+1)<0) return -1;  // infeasible (not b>=0)
+    if(tbl(i,c+1)<0) return Unknown;  // (not b>=0)
   for(int i=0; i<r; i++)
-    if(!aux && idx(c+1+i)<0) return -1;  // infeasible (aux var is basic)
+    if(!aux && idx(c+1+i)<0) return Infeasible;  // (aux var is basic)
   while(iter--){
     int i0,j0;
     choose_axis(i0,j0,aux,bland);
-    if(j0<0) return 1;  // optimal
-    if(i0<0) return 2;  // unbounded
+    if(j0<0) return Optimal;
+    if(i0<0) return Unbounded;
     pivot(i0,j0);
   }
-  return 0;  // just feasible
+  return Feasible;
 }
 
 
 // solve auxiliary LP: max -t s.t. Ax-t+s=b and x>=0, s>=0, t>=0
-inline int LP::solve_auxlp(int iter, bool bland){
+inline LP::Status LP::solve_auxlp(int iter, bool bland){
   int r=tbl.nrow()-2, c=tbl.ncol()-2;
   if(idx(c)>=0) throw std::runtime_error("LP::solve_auxlp(): aux variable not found at c-th column");
 
@@ -114,21 +116,23 @@ inline int LP::solve_auxlp(int iter, bool bland){
     if(tbl(i,c+1)<tbl(i0,c+1)) i0=i;
   if(tbl(i0,c+1)<0){
     pivot(i0,c);
-    solve_stdlp(iter,bland,true);  // bland=true is recommended to make sure aux var of feasible LP becomes nonbasic
+    Status s1 =
+      solve_stdlp(iter,bland,true);  // bland=true is recommended to make sure aux var of feasible LP becomes nonbasic
+    if( s1==Infeasible || s1==Unknown ) return Unknown;  // should never happen...
   }
 
   int j0=-1;  // j0 := column of aux var
   for(int j=0; j<c+1; j++)
     if(idx(j)<0) j0=j;
-  if(j0<0) return -1;  // aux var is basic, i.e., infeasible (unless degenerate)
+  if(j0<0) return Infeasible;  // aux var is basic, i.e., original problem is infeasible (unless degenerate)
 
   for(int i=0; i<r+2; i++) tbl(i,j0)=0;  // forget about auxiliary problem
-  return 0;
+  return Feasible;  // current status of original problem
 }
 
 
 // choose axis for pivoting
-inline int LP::choose_axis(int& i0, int &j0, bool aux, bool bland){
+inline LP::Status LP::choose_axis(int& i0, int &j0, bool aux, bool bland){
   int r=tbl.nrow()-2, c=tbl.ncol()-2, r1=r, c1=c+1;
   if(aux) r1++;
 
@@ -138,19 +142,19 @@ inline int LP::choose_axis(int& i0, int &j0, bool aux, bool bland){
     if(tbl(r1,j)<=0) continue;
     else if(j0<0) j0=j;
     else if(bland && idx(j)<idx(j0)) j0=j;  // j0:=argmin_j idx(j) s.t. c(j)>0
-    else if(tbl(r1,j0)<tbl(r1,j)) j0=j;  // j0:=argmax_i c(j)
+    else if(tbl(r1,j0)<tbl(r1,j))    j0=j;  // j0:=argmax_i c(j)
   };
-  if(j0<0) return 1;  // optimal
+  if(j0<0) return Optimal;  // no improving axis
 
   for(int i=0; i<r; i++){
     if(tbl(i,j0)<=0) continue;
     else if(i0<0) i0=i;
-    else if(bland && idx(c1+i)<idx(c1+i0) && tbl(i,c1)==0) i0=i;  // j0:=argmin_i idx(i) s.t. b(i)=0
-    else if(tbl(i,c1)/tbl(i,j0)<tbl(i0,c1)/tbl(i0,j0)) i0=i;  // i0:=argmin_i b(i)/A(i,j0) where A(i,j0)>0
+    else if(bland && idx(c1+i)<idx(c1+i0) && tbl(i,c1)==0) i0=i;  // i0:=argmin_i idx(i) s.t. b(i)=0
+    else if(tbl(i,c1)/tbl(i,j0)<tbl(i0,c1)/tbl(i0,j0))     i0=i;  // i0:=argmin_i b(i)/A(i,j0) where A(i,j0)>0
   }
-  if(i0<0) return 2;  // unbounded
+  if(i0<0) return Unbounded;  // no limiting axis
 
-  return 0;
+  return Feasible;  // finite improvement
 }
 
 
@@ -187,27 +191,27 @@ inline Matrix LP::vertex(void) const{
 
 
 // status of tableau: -1(not feasible), 0(feasible), +1(optimal), +2(unbounded)
-inline int LP::status(void) const {
+inline LP::Status LP::status(void) const {
   int r=tbl.nrow()-2, c=tbl.ncol()-2, i, j;
 
   for(i=0; i<r; i++)
-    if(tbl(i,c+1)<0) return -1;  // currently not feasible (not b>=0)
+    if(tbl(i,c+1)<0) return Unknown;  // (not b>=0)
 
   for(i=0; i<r; i++)
-    if(idx(c+1+i)<0) return -1;  // infeasible (aux var is basic)
+    if(idx(c+1+i)<0) return Infeasible;  // (aux var is basic)
 
   for(j=0; j<c+1; j++)
     if(0<tbl(r,j)) break;
-  if(j==c+1) return 1;  // optimal (c<=0)
+  if(j==c+1) return Optimal;  // (c<=0)
 
   for(j=0; j<c+1; j++){
     if(idx(j)<0 || tbl(r,j)<=0) continue;
     for(i=0; i<r; i++)
       if(0<tbl(i,j)) break;
-    if(i==r) return 2;  // unbounded (c_j>0 and a_*j<=0)
+    if(i==r) return Unbounded;  // (c_j>0 and a_*j<=0)
   }
 
-  return 0;  // currently just feasible, no further knowledge
+  return Feasible;  // currently just feasible, no further knowledge
 }
 
 

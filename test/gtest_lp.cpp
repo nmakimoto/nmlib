@@ -20,7 +20,7 @@ static bool nonnegative(const Matrix& v, double tol=0){
 TEST(lp,optimal){
   Matrix a,b,c,x,y;
   LP lp;
-  int ret;
+  LP::Status ret;
 
   str2any("2 3   3 2 1   2 5 3", a);
   str2any("2 1   10 15", b);
@@ -30,7 +30,7 @@ TEST(lp,optimal){
   lp.init(a,b,c);
   ret=lp.solve();
   x  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(x,1.e-8));
   EXPECT_TRUE(nonnegative(b-a*x,1.e-8));
 
@@ -38,7 +38,7 @@ TEST(lp,optimal){
   lp.init(-tp(a),-c,-b);
   ret=lp.solve();
   y  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(y));
   EXPECT_TRUE(nonnegative(tp(a)*y-c,1.e-8));
 
@@ -50,7 +50,7 @@ TEST(lp,optimal){
 TEST(lp,unbounded){
   Matrix a,b,c,x,y;
   LP lp;
-  int ret;
+  LP::Status ret;
 
   str2any("3 2   -2 -1   -1 -1   -1 -2", a);
   str2any("3 1   -8 -6 -8", b);
@@ -60,7 +60,7 @@ TEST(lp,unbounded){
   lp.init(a,b,c);
   ret=lp.solve();
   x  =lp.vertex();
-  EXPECT_EQ(ret,2);
+  EXPECT_EQ(ret,LP::Unbounded);
   EXPECT_TRUE(nonnegative(x,1.e-8));
   EXPECT_TRUE(nonnegative(b-a*x,1.e-8));
 
@@ -68,7 +68,7 @@ TEST(lp,unbounded){
   lp.init(-tp(a),-c,-b);
   ret=lp.solve();
   y  =lp.vertex();
-  EXPECT_EQ(ret,-1);
+  EXPECT_EQ(ret,LP::Infeasible);
   EXPECT_FALSE(nonnegative(tp(a)*y-c,1.e-8));
 }
 
@@ -76,7 +76,7 @@ TEST(lp,unbounded){
 TEST(lp,infeasible){
   Matrix a,b,c,x,y;
   LP lp;
-  int ret;
+  LP::Status ret;
 
   str2any("2 2   1 -2   -3 6", a);
   str2any("2 1   -2 -1", b);
@@ -86,14 +86,14 @@ TEST(lp,infeasible){
   lp.init(a,b,c);
   ret=lp.solve();
   x  =lp.vertex();
-  EXPECT_EQ(ret,-1);
+  EXPECT_EQ(ret,LP::Infeasible);
   EXPECT_FALSE(nonnegative(b-a*x,1.e-8));
 
   // dual: infeasible
   lp.init(-tp(a),-c,-b);
   ret=lp.solve();
   y  =lp.vertex();
-  EXPECT_EQ(ret,-1);
+  EXPECT_EQ(ret,LP::Infeasible);
   EXPECT_FALSE(nonnegative(tp(a)*y-c));
 }
 
@@ -101,7 +101,7 @@ TEST(lp,infeasible){
 TEST(lp,degenerate){
   Matrix a,b,c,x,y;
   LP lp;
-  int ret;
+  LP::Status ret;
 
   // feasible region is a thin triangle near 45-deg line
   // x=(1/2,1/2) is optimal, max cx=1
@@ -120,14 +120,14 @@ TEST(lp,degenerate){
   lp.init(a,b,c);
   ret=lp.solve();
   x  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(x,1.e-8));
   EXPECT_TRUE(nonnegative(b-a*x,1.e-8));
 
   lp.init(-tp(a),-c,-b);
   ret=lp.solve();
   y  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(y,1.e-8));
   EXPECT_TRUE(nonnegative(tp(a)*y-c,1.e-8));
 
@@ -139,7 +139,7 @@ TEST(lp,degenerate){
 TEST(lp,cyclic){
   Matrix a,b,c,x,y;
   LP lp;
-  int ret;
+  LP::Status ret;
 
   // example where cycling may occur with a usual pivot rule
   str2any("3 4   1 -11 -5 18   1 -3 -1 2   1 0 0 0", a);
@@ -150,7 +150,7 @@ TEST(lp,cyclic){
   lp.init(a,b,c);
   ret=lp.solve();
   x  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(x,1.e-8));
   EXPECT_TRUE(nonnegative(b-a*x,1.e-8));
 
@@ -158,7 +158,7 @@ TEST(lp,cyclic){
   lp.init(-tp(a),-c,-b);
   ret=lp.solve();
   y  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(y));
   EXPECT_TRUE(nonnegative(tp(a)*y-c,1.e-8));
 
@@ -169,7 +169,7 @@ TEST(lp,cyclic){
 TEST(lp,large){
   Matrix a,b,c,x,y;
   LP lp;
-  int ret;
+  LP::Status ret;
 
   // feasible region tightly bounds a disk |x-2c|<=|c|
   // x=3c is one of the optimal solutions and the optimal value is 3|c|^2
@@ -189,7 +189,7 @@ TEST(lp,large){
   lp.init(a,b,c);
   ret=lp.solve();
   x  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(x,1.e-8));
   EXPECT_TRUE(nonnegative(b-a*x,1.e-8));
 
@@ -197,7 +197,7 @@ TEST(lp,large){
   lp.init(-tp(a),-c,-b);
   ret=lp.solve();
   y  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(y,1.e-8));
   EXPECT_TRUE(nonnegative(tp(a)*y-c,1.e-8));
 
@@ -208,7 +208,7 @@ TEST(lp,large){
   lp.init(a,b,-c);
   ret=lp.solve();
   x  =lp.vertex();
-  EXPECT_EQ(ret,1);
+  EXPECT_EQ(ret,LP::Optimal);
   EXPECT_TRUE(nonnegative(x,1.e-8));
   EXPECT_TRUE(nonnegative(b-a*x,1.e-8));
   EXPECT_NEAR(inner(c,x), 1*inner(c,c), 1.e-8);  // x=c is optimal

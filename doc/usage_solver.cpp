@@ -10,7 +10,7 @@ using namespace nmlib;
 
 // Sample functions to be solved
 inline double f(double        x){  return x*x;  }  // R-->R
-inline Matrix F(const Matrix& x){  return Matrix(inner(x,x), x(1)/x(0), x(2)/x(0));  }  // R^3-->R^3
+inline Matrix F(const Matrix& x){  return Matrix({inner(x,x), x(1)/x(0), x(2)/x(0)});  }  // R^3-->R^3
 
 
 int main(void){
@@ -26,8 +26,8 @@ int main(void){
   std::cout<<"Bisection:\n"<<x0<<' '<<xb<<'\n'<<y0<<' '<<f(xb)<<'\n';
 
   // Solve F(X)=Y0 by multi-dimensional Newton
-  Matrix X0=Matrix(1,2,3), Y0=F(X0);
-  Matrix X1=Matrix(2,3,4), dX=Matrix(1,1,1)*1.e-6;
+  Matrix X0={1,2,3}, Y0=F(X0);
+  Matrix X1={2,3,4}, dX=Matrix({1,1,1})*1.e-6;
   Matrix X=solve(F,Y0,X1,dX);
   std::cout<<"Newton(multi-dimensional):\n"<<X0<<'\n'<<X<<'\n'<<Y0<<'\n'<<F(X)<<'\n';
   

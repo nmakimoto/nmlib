@@ -5,25 +5,33 @@
 
 
 #include <iostream>
-#include "random.h"  // *rand(), lsd()
+#include "random.h"
 using namespace nmlib;
 
 
 int main(void){
-  init_rand(12345);  // initialize RNG with seed
+  Rng rng(12345);  // seed is optional
+  Lds lds;
+
+  auto pdf = [](double x){ return sqrt(1-x*x); };  // example probability density function
+  double pdf_max=1;                                // and its upper bound (used by rejection)
 
   for(int seq=0; seq<100; seq++){
-    unsigned long long i;
-    double xu,xn,xe,xl;
+    int dim=3;
+    double x, a=0, b=1;
+    Matrix y;
 
-    i =irand();  // [0,2^64-1] uniform RNG
-    xu=urand();  // U(0,1) uniform
-    xn=nrand();  // N(0,1) gaussian
-    xe=erand();  // Ex(1)  exponential
+    x=rng();       // U(0,1) uniform
+    x=rng.u(a,b);  // U(a,b) uniform
+    x=rng.n(a,b);  // N(a,b^2) gaussian
+    x=rng.e(a);    // Ex(a)  exponential
+    x=rng.rand_pdf(pdf,pdf_max,a,b);  // sample of given PDF
+    y=rng.u(a,b,dim);  // U(a,b)^dim uniform
+    y=rng.n(a,b,dim);  // N(a,b^2)^dim gaussian
+    //...some other methods...
 
-    xl=corput(seq,2);  // LDS (base=2 vander Corput)
-
-    std::cout<<i<<' '<<xu<<' '<<xn<<' '<<xe<<' '<<xl<<'\n';
+    x=lds();      // LDS on (0,1)
+    //...methods analogous to RNG...
   }
   return 0;
 }

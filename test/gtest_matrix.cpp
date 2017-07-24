@@ -78,17 +78,23 @@ TEST(matrix,init){
   EXPECT_TRUE(m1.nrow()==6 && m1.ncol()==1);
   for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m1(i), (i+1)*1.1, 1.e-8);
 
-  m2=Matrix(2,3,aa);
+  m2=Matrix();
+  m2=Matrix(2,3,aa+0,aa+6);
   EXPECT_TRUE(m2.nrow()==2 && m2.ncol()==3);
   for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m2(i), m1(i), 1.e-8);
 
-  m2=Matrix(2,3,vv.data());
+  m2=Matrix();
+  m2=Matrix(2,3,vv.begin(),vv.end());
   EXPECT_TRUE(m2.nrow()==2 && m2.ncol()==3);
   for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m2(i), m1(i), 1.e-8);
 
-  m2=Matrix(2,3,vv.begin());
+  m2=Matrix();
+  m2.init(2,3,aa+0,aa+6);
   EXPECT_TRUE(m2.nrow()==2 && m2.ncol()==3);
   for(size_t i=0; i<m1.dim(); i++) EXPECT_NEAR(m2(i), m1(i), 1.e-8);
+
+  EXPECT_THROW(Matrix (2,3,aa+0,aa+5), std::domain_error);
+  EXPECT_THROW(m2.init(2,3,aa+0,aa+5), std::domain_error);
 }
 
 
@@ -255,7 +261,7 @@ TEST(matrix,elementwise){
 
 // Submatrix (set/get)
 TEST(matrix,submat){
-  Matrix m1,m2,m3;
+  Matrix m1,m2,m3,m4;
   m1=mrand(3,4);
   m2=mrand(3,4);
   for(size_t j=0; j<m1.ncol(); j++) setvec(m2,j,getvec(m1,j));
@@ -269,6 +275,12 @@ TEST(matrix,submat){
   for(size_t k=0; k<12; k++) EXPECT_DOUBLE_EQ(m2(k),m1(k));
   m2.fill(11.1);
   for(size_t k=0; k<12; k++) EXPECT_DOUBLE_EQ(m2(k),11.1);
+
+  m1=m2=mrand(3,4);
+  m3=m4=mrand(5,2);
+  m1.swap(m3);
+  EXPECT_DOUBLE_EQ(norm(m2-m3),0);
+  EXPECT_DOUBLE_EQ(norm(m1-m4),0);
 
   m1=mrand(7,7);
   m2=getdiag(m1);

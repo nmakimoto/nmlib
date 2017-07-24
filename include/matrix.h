@@ -27,13 +27,15 @@ public:
   matrix(const std::vector<T>& v);            // column vector
   matrix(const std::initializer_list<T>& v);  // column vector M={x,y,z..}
   matrix(const std::initializer_list<std::initializer_list<T>>& v);  // column vectors M={{x1,y1,z1..},{x2,y2,z2..}..}
-  template<class It> matrix(size_t r, size_t c, const It& first);  // (It: pointer or iterator)
+  template<class It> matrix         (size_t r, size_t c, const It& first, const It& last);
+  template<class It> matrix<T>& init(size_t r, size_t c, const It& first, const It& last);
 
   size_t nrow(void) const;  // number of rows
   size_t ncol(void) const;  // number of columns
   size_t dim (void) const;  // number of components
   matrix<T>& resize(size_t r, size_t c);
   matrix<T>& fill  (T z);
+  matrix<T>& swap(matrix<T>& m);
 
   T  operator()(size_t i, size_t j) const;  // get t=M(i,j)
   T& operator()(size_t i, size_t j);        // set M(i,j)=t
@@ -149,13 +151,20 @@ template<class T>        matrix<T>::matrix(const std::initializer_list<std::init
     j++;
   }
 }
-template<class T> template<class It> matrix<T>::matrix(size_t r, size_t c, const It& first)
-  : row(r),col(c),val(r*c) {  for(size_t k=0; k<r*c; k++) val[k]=*(first+k);  }
+template<class T> template<class It> matrix<T>::matrix(size_t r, size_t c, const It& first, const It& last)
+  : row(r),col(c),val(first,last) {
+  if(row*col!=val.size()) throw std::domain_error("matrix: init: illegal size");
+}
+template<class T> template<class It> matrix<T>& matrix<T>::init(size_t r, size_t c, const It& first, const It& last){
+  matrix<T> m(r,c,first,last);
+  return this->swap(m);
+}
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
 template<class T> size_t matrix<T>::ncol(void) const {  return col;  }
 template<class T> size_t matrix<T>::dim (void) const {  return row*col;  }
 template<class T> matrix<T>& matrix<T>::resize(size_t r, size_t c) {  row=r; col=c; val.resize(r*c); return *this;  }
 template<class T> matrix<T>& matrix<T>::fill  (T z)                {  std::fill(val.begin(),val.end(),z); return *this;  }
+template<class T> matrix<T>& matrix<T>::swap  (matrix<T>& m)       {  std::swap(row,m.row); std::swap(col,m.col); val.swap(m.val); return *this;  }
 template<class T> T      matrix<T>::operator()(size_t i, size_t j) const {  return val[i*col+j];  }
 template<class T> T      matrix<T>::operator()(size_t i          ) const {  return val[i];        }
 template<class T> T&     matrix<T>::operator()(size_t i, size_t j)       {  return val[i*col+j];  }

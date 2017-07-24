@@ -30,6 +30,7 @@ public:
   template<class It> matrix         (size_t r, size_t c, const It& first, const It& last);
   template<class It> matrix<T>& init(size_t r, size_t c, const It& first, const It& last);
 
+  bool   good(void) const;  // health check
   size_t nrow(void) const;  // number of rows
   size_t ncol(void) const;  // number of columns
   size_t dim (void) const;  // number of components
@@ -159,6 +160,12 @@ template<class T> template<class It> matrix<T>::matrix(size_t r, size_t c, const
 template<class T> template<class It> matrix<T>& matrix<T>::init(size_t r, size_t c, const It& first, const It& last){
   matrix<T> m(r,c,first,last);
   return this->swap(m);
+}
+template<class T> bool   matrix<T>::good(void) const {
+  bool ok = (row*col==val.size());
+  for(auto x: val)
+    ok &= std::isfinite(std::real(x)) && std::isfinite(std::imag(x));
+  return ok;
 }
 template<class T> size_t matrix<T>::nrow(void) const {  return row;  }
 template<class T> size_t matrix<T>::ncol(void) const {  return col;  }

@@ -105,8 +105,6 @@ TEST(matrix,component){
   for(size_t i=0; i<m1.nrow(); i++)  for(size_t j=0; j<m1.ncol(); j++)  EXPECT_DOUBLE_EQ(m1(i,j), i*10+j+0.1);
   for(size_t k=0; k<m1.dim(); k++)  m1(k)=k+0.1;
   for(size_t k=0; k<m1.dim(); k++)  EXPECT_DOUBLE_EQ(m1(k), k+0.1);
-  const double* p=m1.data();
-  for(size_t k=0; k<m1.dim(); k++) EXPECT_DOUBLE_EQ(m1(k), p[k]);
 }
 
 
@@ -514,4 +512,18 @@ TEST(matrix,complex){
       if(i==j) EXPECT_NEAR(d(i,j).imag()   , 0, 1.e-8);
       else     EXPECT_NEAR(std::abs(d(i,j)), 0, 1.e-8);
     }
+}
+
+
+TEST(matrix,io){
+  typedef double R;
+  typedef std::complex<R> C;
+  matrix<R> m1={{1.1,2.1,3.1},{1.2,2.2,3.2}}, m2;
+  matrix<C> m3=complex(m1), m4;
+  std::stringstream str1, str2, str3, str4;
+
+  m2=matrix<R>();  write(str1,m1);  read (str1,m2);  EXPECT_LE(norm(m1-m2),1.e-8);
+  m2=matrix<R>();  str2<<m1;        str2>>m2;        EXPECT_LE(norm(m1-m2),1.e-8);
+  m4=matrix<C>();  write(str3,m3);  read (str3,m4);  EXPECT_LE(norm(m3-m4),1.e-8);
+  m4=matrix<C>();  str4<<m3;        str4>>m4;        EXPECT_LE(norm(m3-m4),1.e-8);
 }

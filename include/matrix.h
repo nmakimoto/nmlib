@@ -41,8 +41,7 @@ public:
   T& operator()(size_t i, size_t j);        // set M(i,j)=t
   T  operator()(size_t i) const;  // get t=V(i)
   T& operator()(size_t i);        // set V(i)=t
-  const T* data(void) const;  // raw pointer
-  const std::vector<T>& vector(void) const;
+  const std::vector<T>& as_vector(void) const;
 
 private:
   size_t row,col;      // dimensions
@@ -127,6 +126,8 @@ template<class T> matrix<T> conj(const matrix<T>& m);
 // stream I/O
 template<class T> std::istream& operator>>(std::istream& str,       matrix<T>& m);  // str>>M
 template<class T> std::ostream& operator<<(std::ostream& str, const matrix<T>& m);  // str<<M
+template<class T> std::istream& read (std::istream& str,       matrix<T>& m);  // binary I/O
+template<class T> std::ostream& write(std::ostream& str, const matrix<T>& m);
 
 
 /******** Implementation ********/
@@ -169,8 +170,7 @@ template<class T> T      matrix<T>::operator()(size_t i, size_t j) const {  retu
 template<class T> T      matrix<T>::operator()(size_t i          ) const {  return val[i];        }
 template<class T> T&     matrix<T>::operator()(size_t i, size_t j)       {  return val[i*col+j];  }
 template<class T> T&     matrix<T>::operator()(size_t i          )       {  return val[i];        }
-template<class T> const T* matrix<T>::data(void) const{ return val.data(); }
-template<class T> const std::vector<T>& matrix<T>::vector(void) const {  return val;  }
+template<class T> const std::vector<T>& matrix<T>::as_vector(void) const {  return val;  }
 
 // Basic operations (incremental)
 template<class T> matrix<T>& operator+=(matrix<T>& m, T t){
@@ -588,8 +588,8 @@ template<class T> std::istream& read(std::istream& str, matrix<T>& m){
   str.read((char*)&r,sizeof(r));
   str.read((char*)&c,sizeof(c));
   if(!str) return str;
-  m=matrix<T>(r,c);
-  str.read((char*)&m(0),sizeof(m(0))*r*c);  // note: assumes contiguous memory
+  m.resize(r,c);
+  str.read((char*)(&m(0)),sizeof(T)*m.dim());  // contiguity of v is assumed
   return str;
 }
 template<class T> std::ostream& write(std::ostream& str, const matrix<T>& m){
@@ -597,8 +597,8 @@ template<class T> std::ostream& write(std::ostream& str, const matrix<T>& m){
   str.write((char*)&r,sizeof(r));
   str.write((char*)&c,sizeof(c));
   if(!str) return str;
-  const T* p=m.data();
-  str.write((char*)p,sizeof(p[0])*r*c);
+  const std::vector<T>& v=m.as_vector();
+  str.write((char*)(v.data()),sizeof(T)*v.size());  // contiguity of v is assumed
   return str;
 }
 

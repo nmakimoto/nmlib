@@ -30,11 +30,18 @@ Matrix regression (const Matrix& xx, const Matrix& yy, bool add_b=true);  // coe
 inline double pdf_normal(double x){  return exp(-x*x/2)/sqrt(2*M_PI);  }
 inline double cdf_normal(double x){  return erfc(-x/sqrt(2))/2;  }
 inline double pvalue_normal(double p){
-  if(0.5+1.e-10<p) return -pvalue_normal(1-p);  // avoid cancelling and ensure monotonic convergence
-  double x=0,x0=1;
-  while(x<x0){
-    x0=x;
-    x-=(cdf_normal(x)-p)/pdf_normal(x);
+  if( !std::isfinite(p) ) return p;  // +-inf,nan
+  if( !(0<p && p<1) ) return std::numeric_limits<double>::infinity()*(p>0 ? +1 : -1);  // not in (0,1)
+  if( 0.5+1.e-12<p ) return -pvalue_normal(1-p);  // avoid cancellation and ensure monotonic convergence
+
+  double x=0, eps=std::numeric_limits<double>::epsilon();
+  while( cdf_normal(x-1)>p ) x-=1;
+  while(1){
+    double y=cdf_normal(x)-p, dy=pdf_normal(x), dx=y/dy;
+    if( y==0 || dy==0 || !std::isfinite(dx) ) break;
+    if( x<=x-dx ) break;
+    x=x-dx;
+    if( dx < 2*(1+std::abs(x))*eps ) break;  // workaround for infinite loop
   }
   return x;
 }

@@ -93,13 +93,13 @@ template<class Func> Matrix opt_amoeba(const Func& f, std::vector<Matrix>& xx, s
 // Levenberg-Marquardt optimization - find argmin_x ||f(x)||^2 near x0
 template<class Func> Matrix opt_lma(const Func& f, const Matrix& x0, const Matrix& dx, double lambda, double nu){
   Matrix x=x0, y=f(x), jf=jacobian(f,x,dx), hf=tp(jf)*jf;
-  while(true){
+  while(1){
     Matrix x1,y1,hf1;
     hf1 = hf;
     for(size_t k=0; k<hf1.nrow(); k++) hf1(k,k)*=1+lambda;
     x1 = x - inv(hf1)*tp(jf)*y;
     y1 = f(x1);
-    if( std::isnan(norm(x1)) || std::isinf(norm(x1)) ) break;
+    if( !std::isfinite(norm(x1)) ) break;
     if( norm(x1-x)==0 ) break;  // converged
     if( norm(y1)<norm(y) ){ x=x1; y=y1; jf=jacobian(f,x,dx); hf=tp(jf)*jf; if(1+lambda!=1) lambda/=nu; continue; }
     lambda*=nu;

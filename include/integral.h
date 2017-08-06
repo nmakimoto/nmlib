@@ -68,12 +68,13 @@ inline Matrix weight_gq(size_t n){
   Polynomial p0=legendre<double>(n), q0=diff(p0), p=p0, q=q0;
   Matrix tw(n,2);
 
-  double x=1;
+  double x=1, eps=std::numeric_limits<double>::epsilon();
   for(size_t k=0; k<n; k++){
     while(1){
       double dx=p(x)/q(x);
       if( x<=x-dx ) break;
       x=x-dx;
+      if( dx<2*eps ) break;  // workaround for infinite loop
     }
     x-=p0(x)/q0(x);  // k-th largest zero of Legendre found by Newton
 

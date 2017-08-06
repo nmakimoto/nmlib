@@ -416,10 +416,11 @@ template<class T> matrix<T> eigen(const matrix<T>& m0, double tol, int iter){
     for(size_t j=0; j<n; j++){ p=m(i0,j); q=m(j0,j); m(i0,j)=c*p+        s *q; m(j0,j)=-std::conj(s)*p+c*q; }  // M=R^T*M
 
     // error after rotation - check for convergence
-    double err1=0;
+    double err1=0, eps=std::numeric_limits<double>::epsilon();
     for(size_t k=0; k<n; k++)
       err1 += (k==i0 ? 0 : std::norm(m(k,i0))+std::norm(m(i0,k))) + (k==j0 ? 0 :std::norm(m(k,j0))+std::norm(m(j0,k)));
     if(!(tol<err1 && err1<err0)) break;
+    if( err0-err1 < (err0+err1)*eps ) break;  // workaround for infinite loop
   }
 
   return u;

@@ -30,5 +30,5 @@ TEST(route,dijkstra){
   Route::Path path;
   path=route(11,88);  EXPECT_NEAR(route.length(path), 10*7+1*7, 1.e-10);
   path=route(91,99);  EXPECT_NEAR(route.length(path), 10*8    , 1.e-10);
-  path=route(11,99);  EXPECT_EQ(path.size(), 0);
+  path=route(11,99);  EXPECT_EQ(path.size(), 0U);
 }

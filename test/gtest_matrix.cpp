@@ -95,10 +95,14 @@ TEST(matrix,init){
 
   EXPECT_THROW(Matrix (2,3,aa+0,aa+5), std::domain_error);
   EXPECT_THROW(m2.init(2,3,aa+0,aa+5), std::domain_error);
+}
 
+
+// Health
+TEST(matrix,good){
+  Matrix m1=mrand(2,3);
   m1(1,2)=1;      EXPECT_TRUE (m1.good());
   m1(1,2)=1/0.0;  EXPECT_FALSE(m1.good());
-  m1(1,2)=1;      EXPECT_TRUE (m1.good());
   m1(1,2)=0/0.0;  EXPECT_FALSE(m1.good());
 }
 

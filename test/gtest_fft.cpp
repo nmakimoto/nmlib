@@ -44,7 +44,7 @@ TEST(fft,size){
     EXPECT_NEAR(norm(MatC(ifft( fft(xx)))-MatC(xx))/sqrt(n), 0, 1.e-8);
     EXPECT_NEAR(norm(MatC( fft(ifft(xx)))-MatC(xx))/sqrt(n), 0, 1.e-8);
   }
-  xx=VecC();   EXPECT_EQ(fft(xx).size(), 0);
+  xx=VecC();   EXPECT_EQ(fft(xx).size(), 0U);
   xx=VecC(20); EXPECT_THROW(fft(xx), std::domain_error);
   xx=VecC(31); EXPECT_THROW(fft(xx), std::domain_error);
 }

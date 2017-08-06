@@ -10,11 +10,14 @@ using namespace nmlib;
 
 TEST(random,init){
   Rng rng;
-  double xx[10];
+  std::map<double,int> xx1,xx2,xx3;
 
-  for(int i=0; i<10; i++){ rng.init(0);   xx[i]=rng(); if(i>0) EXPECT_NE(xx[i-1],xx[i]); }
-  for(int i=0; i<10; i++){ rng.init(i);   xx[i]=rng(); if(i>0) EXPECT_NE(xx[i-1],xx[i]); }
-  for(int i=0; i<10; i++){ rng.init(123); xx[i]=rng(); if(i>0) EXPECT_EQ(xx[i-1],xx[i]); }
+  for(int i=0; i<10; i++){ rng.init();    xx1[rng()]=1; }  // random seed
+  for(int i=0; i<10; i++){ rng.init(i);   xx2[rng()]=1; }
+  for(int i=0; i<10; i++){ rng.init(123); xx3[rng()]=1; }
+  EXPECT_EQ(xx1.size(), 10U);
+  EXPECT_EQ(xx2.size(), 10U);
+  EXPECT_EQ(xx3.size(),  1U);
 }
 
 

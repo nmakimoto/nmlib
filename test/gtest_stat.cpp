@@ -34,8 +34,8 @@ TEST(stat,normal){
   // boundary
   for(double p: {0.5-1.e-10, 0.5-0.9e-10, 0.5, 0.5+0.9e-10, 0.5+1.e-10, 0.5+1.1e-10})
     EXPECT_NEAR(cdf_normal(pvalue_normal(p)), p, 1.e-12);
-  for(double p: {+1.e-10, 1-1.e-10}) EXPECT_FALSE(std::isinf(pvalue_normal(p)));
-  for(double p: {-1.e-10, 1+1.e-10}) EXPECT_TRUE (std::isinf(pvalue_normal(p)));
+  for(double p: {+1.e-10, 1-1.e-10}) EXPECT_TRUE(std::isfinite(pvalue_normal(p)));
+  for(double p: {-1.e-10, 1+1.e-10}) EXPECT_TRUE(std::isinf   (pvalue_normal(p)));
 }
 
 

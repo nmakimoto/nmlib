@@ -25,7 +25,7 @@ TEST(io,vector){
 
   str1 << "3  +11.1  2.22e1  3.33e+1";
   str1 >> xx;
-  EXPECT_EQ(xx.size(),3);
+  EXPECT_EQ(xx.size(), 3U);
   for(size_t i=0; i<xx.size(); i++) EXPECT_NEAR(xx[i], (i+1)*11.1, 1.e-8);
 
   xx.push_back(44.4);
@@ -40,7 +40,7 @@ TEST(io,map){
 
   str1 << "3  11  +11.1  22  222e-1  33  3.33e+1";
   str1 >> xx;
-  EXPECT_EQ(xx.size(),3);
+  EXPECT_EQ(xx.size(), 3U);
   int k=0;
   for(std::map<int,double>::const_iterator i=xx.begin(); i!=xx.end(); i++){
     k++;
@@ -66,7 +66,7 @@ TEST(io,string){
 
   s = "3 11 11.1 22 22.2 33 33.3";
   std::map<int,double> xx = str2any<std::map<int,double> >(s);
-  EXPECT_EQ(xx.size(),3);
+  EXPECT_EQ(xx.size(), 3U);
   int k=0;
   for(std::map<int,double>::const_iterator i=xx.begin(); i!=xx.end(); i++){
     k++;
@@ -90,8 +90,7 @@ TEST(io,userclass){
   Dummy x;
 
   x=str2any<Dummy>(s);
-  EXPECT_EQ(any2str(x),"11\t22\t");
-
-  x=str2any<Dummy>(s);
-  EXPECT_EQ(any2str(x,3),"1.100e+01\t2.200e+01\t");  // precision=3
+  EXPECT_EQ(any2str(x), "11\t22\t");
+  EXPECT_EQ(any2str(x,5).find("1.10000e+"), 0U);  // precision=5
+  EXPECT_NE(any2str(x,3).find("\t2.200e+"), std::string::npos);
 }

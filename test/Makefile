@@ -1,8 +1,12 @@
+# This is a makefile of nmlib unit test. Google Test is required.
+# Edit the following three lines as appropriate and run `make all && make test`.
 GTESTINC=/usr/include
 GTESTSRC=/usr/src/gtest
+MYCONF=-O #-U__STRICT_ANSI__ -D_USE_MATH_DEFINES -Drandom=rand
+
 
 CC=g++
-CXXFLAGS=-Wall -Wextra -O -I../include -I$(GTESTINC) -I$(GTESTSRC) -std=c++11
+CXXFLAGS=-std=c++11 -Wall -Wextra -I../include -I$(GTESTINC) -I$(GTESTSRC) $(MYCONF)
 LDLIBS=-lpthread
 SRC=$(wildcard gtest_*.cpp) gtest-all.cpp
 BIN=gtest_main

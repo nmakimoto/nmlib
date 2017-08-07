@@ -12,21 +12,21 @@ A tiny C++ math library
 
 This is a C++ header library for mathematical calculations. Main features include:
 
-  - Matrix calculations (basic operations, eigenvalues, etc.)
-  - Nonlinear equation solvers and optimizers
-  - ODE solvers
-  - LP solvers
-  - Sparse matrix solvers
-  - Statistics (basic statistics, linear regression, PCA)
-  - Numerical integration and differentiation
-  - Spline interpolation
-  - FFT
-  - Random number generators and low-discrepancy sequences
-  - Dijkstra shortest path algorithm
+  - [Matrix calculations](#matrixh) (basic operations, eigenvalues, etc.)
+  - [Nonlinear equation solvers](#solverh) and [optimizers](#optimizationh)
+  - [ODE solvers](#odeh)
+  - [LP solvers](#lph)
+  - [Sparse matrix solvers](#sparseh)
+  - [Statistics](#stath) (basic statistics, linear regression, PCA)
+  - [Numerical integration](#integralh) and differentiation
+  - [Spline interpolation](#splineh)
+  - [FFT](#ffth)
+  - [Random number generators and low-discrepancy sequences](#randomh)
+  - [Dijkstra shortest path algorithm](#routeh)
   - Kalman filter
-  - Robot kinematics
-  - Chronograph
-  - Generic I/O utilities
+  - [Robot kinematics](#roboth)
+  - [Chronograph](#chronoh)
+  - [Generic I/O utilities](#ioh)
 
 and others. Design policy is "simple and easy." Enjoy!
 
@@ -34,11 +34,11 @@ and others. Design policy is "simple and easy." Enjoy!
 ### How to use
 
 - C++11 compiler is required.
-- Copy `include/*.h` to an include path and add the following lines in your code. All is ready.
-    `#include "nmlib.h"`
+- Copy `include/*.h` to an include path and add the following lines in your code. All is ready.\
+    `#include "nmlib.h"` \
     `using namespace nmlib;`
-- The code should work on any OS, except that binary I/O may fail on Windows due to CR/LF conversion.
-  Unit test environment: ubuntu 16.04 / g++ 5.4.0 with -std=c++11 option / googletest 1.7.0.
+- The code is tested on ubuntu 16.04 / g++ 5.4.0 with -std=c++11 -O3 options / googletest 1.7.0.\
+  Using `g++ -Ofast` may cause trouble with Inf/NaN and is not recommended.
 - Below is an example usage. See `include/*.h` for full functionality.
 
 
@@ -53,7 +53,7 @@ This is a matrix template library, a cruicial part of nmlib. It is also used thr
 - 3D geometric operations (cross product, rotation, etc.)
 - Decompositions (LU/LUP, QR, SVD)
 
-```c++
+```
 Matrix a={{3,4},{4,3}}, b={5,6}, x;
 x=inv(a)*b;
 
@@ -66,7 +66,7 @@ d=tp(u)*a*u;  // diagonal matrix D=U'AU of corresponding eigenvalues
 ## chrono.h
 - Simple stopwatch
 
-```c++
+```
 Chrono ch;
 //...task...
 double t=ch.lap();  // elapsed time[sec] since constructed or last reset
@@ -90,7 +90,7 @@ x=ifft(y);
 - Generic converters of type T to/from std::string
 - Generic I/O utils of std::map<T> and std::vector<T> to/from std::iostream
 
-```c++
+```
 typedef double T;  // any type with stream I/O operators (<< and >>), such as Matrix and double
 T x;
 std::string s="3.14";
@@ -103,24 +103,26 @@ s=any2str(x);
 - Numerical integration by Simpson's rule / Gaussian quadrature / DE (double exponential) formula
 - Pseudo Monte Carlo multiple integration
 
-```c++
+```
 double a=0, b=1, h=0.1, y;
 int ndiv=100, iter=1000000;
 
-double f(double x);
+double f(double x);         // typical integrand type
 y=integral   (f,a,b,ndiv);  // integral of f(x) over [a,b] by Simpson
 y=integral_gq(f,a,b,ndiv);  // integral of f(x) over [a,b] by Gaussian quadrature
 y=integral_de(f,ndiv,h);    // infinite integral of f(x) by DE formula
 
 double g(const Matrix& x);
-y=integral_mc(g,{a,a,a},{b,b,b},{2,3,5},iter);  // integral of g(x) over [a,b]^3 by pseudo MC ({2,3,5}: base of Halton)
+Matrix x0={a,a,a}, x1={b,b,b};
+Lds::Uvec base={2,3,5};
+y=integral_mc(g,x0,x1,base,iter);  // integral of g(x) over [a,b]^3 by pseudo MC
 ```
 
 
 ## lp.h
 - LP solver by 2-step simplex
 
-```c++
+```
 Matrix a,b,c;
 std::cin >> a >> b >> c;
 
@@ -135,7 +137,7 @@ Matrix x=lp.vertex();     // retrieve current basic solution
 - Generic solvers for ODE initial value problem: dy/dt=f(t,y) on [t0,t1], y(t0)=y0
 - 4th order classical / impllicit / adaptive Runge-Kutta
 
-```c++
+```
 typedef Matrix Y;                             // type of y (typically Matrix or double)
 Y      f(double t, const Y& y);
 Y      y0={1.0,2.0,3.0};
@@ -148,7 +150,7 @@ t2y = solve_ode_rk4i(f,y0,t0,t1,ndiv);        // implicit
 t2y = solve_ode_rk4a(f,y0,t0,t1,ndiv,tol);    // adaptive (aka embedded)
 
 //Spline g(t2y);  // can be used to interpolate scalar-valued solution (when Y=double)
-//for(double t=0; t<3.01; t+=0.1) std::cout << t << '\\t' << g(t) << '\\t' << g.grad(t) << '\\n';
+//for(double t=0; t<3.01; t+=0.1) std::cout << t << '\t' << g(t) << '\t' << g.grad(t) << '\n';
 ```
 
 
@@ -157,8 +159,8 @@ t2y = solve_ode_rk4a(f,y0,t0,t1,ndiv,tol);    // adaptive (aka embedded)
 - Nonlinear least squares by Levenberg-Marquardt (aka LMA)
 - Nonlinear least square curvefit by LMA
 
-```c++
-Matrix th_opt, th_ini={...}, dth={...};  // optimal parameter \\theta, initial guess, step of numerical diff.
+```
+Matrix th_opt, th_ini={...}, dth={...};  // optimal parameter \theta, initial guess, step of numerical diff.
 
 double f(const Matrix& th);
 int    iter=1000;
@@ -171,7 +173,7 @@ th_opt=opt_lma(g,th_ini,dth);            // argmin_th ||g(th)||^2
 double h(double x, const Matrix& th);
 Matrix xx, yy;
 std::cin >> xx >> yy;                    // sample data for 1D curvefit y=h(x|th)
-th_opt=curvefit(h,xx,yy,th_ini,dth);     // argmin_th \\sum_k |y_k- h(x_k,th)|^2
+th_opt=curvefit(h,xx,yy,th_ini,dth);     // argmin_th \sum_k |y_k- h(x_k,th)|^2
 ```
 
 
@@ -180,7 +182,7 @@ th_opt=curvefit(h,xx,yy,th_ini,dth);     // argmin_th \\sum_k |y_k- h(x_k,th)|^2
 - Low-discrepancy sequence (van der Corput, Halton)
 - Rejection sampling from given PDF
 
-```c++
+```
 Rng rng;
 Lds lds;
 auto pdf = [](double x){ return sqrt(1-x*x); };  // example probability density function
@@ -201,7 +203,7 @@ for(int i=0; i<100; i++){
 - Forward / Inverse kinematics of 6-axis manipulator
 - Example robot model is built-in and used by the default constructor Robot()
 
-```c++
+```
 Matrix angle0, homog0, angle, homog;  // joint angle vectors and homogeneous transformation matrices
 angle0 = {0,0,0,0,0,0};
 homog0 = homtrsf({1000,1000,1000},{{1,0,0},{0,1,0},{0,0,1}});
@@ -215,7 +217,7 @@ angle = robot.ik(homog0,angle0);      // solve IK near angle0
 ## route.h
 - Dijkstra shortest-path algorithm on oriented graph
 
-```c++
+```
 Route route;
 
 route.dist[5][7]=10;  // set distance of adjacent nodes as necessary
@@ -225,7 +227,7 @@ route.dist[7][2]=12;
 //...
 
 auto path=route(5,2);
-for(auto node: path) std::cout << node << '\\n';
+for(auto node: path) std::cout << node << '\n';
 ```
 
 
@@ -233,7 +235,7 @@ for(auto node: path) std::cout << node << '\\n';
 - 1D/multidim nonlinear equation solver (Newton)
 - 1D nonlinear equation solver (bisection)
 
-```c++
+```
 typedef Matrix T;              // type of variables (typically Matrix or double)
 T f(const T& x);
 T y0=..., x0=..., dx=...;      // target, initial guess, step of numerical diff.
@@ -249,7 +251,7 @@ This is an experimental implementation of sparse matrix solvers.
 - Krylov sparse solvers (CG, BiCG, PBCG)
 - Symmetric eigensolver (shifted inverse iteration)
 
-```c++
+```
 int n=10000;
 Sparse a(n,n);
 Matrix b(n),x;
@@ -273,10 +275,10 @@ double mu=inner(x,a*x);
 - Natural spline / linear / nearest neighbour interpolation
 - Gradient of spline
 
-```c++
+```
 std::map<double,double> x2y={{1,1},{2,4},{3,3},{5,4}};
 Spline f(x2y);
-for(double x=0; x<5.01; x+=0.1) std::cout << x << '\\t' << f(x) << '\\t' << f.grad(x) << '\\n';
+for(double x=0; x<5.01; x+=0.1) std::cout << x << '\t' << f(x) << '\t' << f.grad(x) << '\n';
 ```
 
 
@@ -286,7 +288,7 @@ for(double x=0; x<5.01; x+=0.1) std::cout << x << '\\t' << f(x) << '\\t' << f.gr
 - Principal component analysis (PCA)
 - Density / cummulative probability / p-value of normal distribution
 
-```c++
+```
 Matrix xx, yy;
 std::cin >> xx >> yy;         // j-th column vector represents j-th sample
 const size_t dim=xx.nrow(), ndata=xx.ncol();

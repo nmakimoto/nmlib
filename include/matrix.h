@@ -509,22 +509,33 @@ template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w){  // V
 }
 template<class T> matrix<T> vec2rot(const matrix<T>& v){  // R^3=so(3)-->SO(3) (exp, rotation about v by angle |v|)
   if(!(v.nrow()==3 && v.ncol()==1)) throw std::domain_error("vec2rot(V): not a 3-vector");
-  double th=norm(v);
-  if(std::abs(th)<1.e-8){ matrix<T> r=vec2asym(v);  return r*r/T(2)+r+T(1); }
-  else{ matrix<T> r=vec2asym(v/th); return ((T(1)-cos(th))*r+sin(th))*r+T(1); }  // Rodrigues
+  T th=norm(v), c=cos(th), s=sin(th);
+  if( th<1.e-6 ) return c + vec2asym(v) + 0.5*v*tp(v);  // small angle
+  matrix<T> u=v/th;
+  return c + s*vec2asym(u) + (1-c)*u*tp(u);  // Rodrigues
 }
 template<class T> matrix<T> rot2vec(const matrix<T>& r){  // SO(3)-->so(3)=R^3 (log, local inverse of exp)
   if(!(r.nrow()==3 && r.ncol()==3)) throw std::domain_error("rot2vec(R): not a 3x3 matrix");
-  T c=(r(0,0)+r(1,1)+r(2,2)-1)/2;
-  T th=(c<=-1 ? M_PI : 1<=c ? 0 : acos(c));  // (singularities sin(th)=0 will be treated separately)
-  if(c<-0.99){
-    matrix<T> sym=(r+tp(r))/2.0-1.0, axis(3);
-    for(int k=0; k<3; k++) axis+=outer(getvec(sym,(k+1)%3), getvec(sym,(k+2)%3));
-    return (th/norm(axis))*axis;
-  }
-  matrix<T> axis({(r(2,1)-r(1,2))/2, (r(0,2)-r(2,0))/2, (r(1,0)-r(0,1))/2});
-  if(th<1.e-6) return (1+inner(axis,axis)/6)*axis;
-  else         return (th/sin(th))          *axis;
+  if( (r(0,0)+r(1,1)+r(2,2)-1)/2 > 1-0.5e-12 ) return matrix<T>({r(2,1),r(0,2),r(1,0)});  // cos(th)=(trR-1)/2=1-eps
+
+  matrix<T> m=r-T(1);  // Im(M)=rotation plane, Ker(M)=rotation axis
+  matrix<T> a0=getvec(m,0),  a1=getvec(m,1),  a2=getvec(m,2);  // Im
+  matrix<T> b0=outer(a1,a2), b1=outer(a2,a0), b2=outer(a0,a1); // Ker
+  T         s0=norm(a0),     s1=norm(a1),     s2=norm(a2);  // for stability
+  T         t0=norm(b0),     t1=norm(b1),     t2=norm(b2);
+
+  matrix<T> e0,e1,e2;  // basis of Im(M) and Ker(M)
+  e2 = (t0<=t2 && t1<=t2 ? b2 : t0<=t1 ? b1 : b0);
+  e0 = (s0<=s2 && s1<=s2 ? a2 : s0<=s1 ? a1 : a0);
+  e2/= norm(e2);
+  e0/= norm(e0);
+  e1 = outer(e2,e0);
+
+  T c,s,th;  // rotation angle
+  c=inner(r*e0,e0);
+  s=inner(r*e0,e1);
+  th=atan2(s,c);
+  return th*e2;
 }
 template<class T> matrix<T> asym2vec(const matrix<T>& a){  // so(3)-->R^3 (A-->V s.t. AX=VxX)
   if(!(a.nrow()==3 && a.ncol()==3)) throw std::domain_error("asym2vec(V): not a 3 by 3 matrix");

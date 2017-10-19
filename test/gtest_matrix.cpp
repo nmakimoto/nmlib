@@ -351,8 +351,8 @@ TEST(matrix,orthgonal){
 
 // 3D operation
 TEST(matrix,threedim){
-  Matrix m,v0,v1,v2;
-  double th;
+  Matrix m,v0,v1,v2,v;
+  double th,tol;
 
   m=mrand(3,3);
   v0=getvec(m,0);
@@ -372,24 +372,30 @@ TEST(matrix,threedim){
   EXPECT_NEAR(norm(vec2asym(th*v0)*v1-outer(th*v0,v1)), 0, 1.e-8);  // AX=VxX
 
   // v in R^3 <--> R in SO(3)  (rotation about v by angle |v|)
-  m=orth(mrand(3,3)+3.0);
-  v0=getvec(m,0);
-  v1=getvec(m,1);
-  v2=getvec(m,2);
-  th=urand1()*M_PI*2 * 0.1;
-  EXPECT_NEAR(norm(rot2vec(vec2rot(th*v0))-th*v0), 0, 1.e-8);  // V<-->R
-  EXPECT_NEAR(norm(vec2rot(rot2vec(orth(1.0+m*1.e-6)))-orth(1.0+m*1.e-6)), 0, 1.e-12);  // avoid loss of significance near R=1
-  EXPECT_NEAR(norm(rot2vec(Matrix(3,3)+1.0+1.e-15)), 0, 1.e-20);  // avoid NaN error near R=1
-  EXPECT_NEAR(norm(rot2vec(vec2rot(Matrix({0,0,M_PI*0.99}))) - Matrix({0,0,M_PI*0.99})), 0,  1.e-12);  // almost 180[deg] rotation
-  EXPECT_NEAR(norm(tp(vec2rot(th*v0))*vec2rot(th*v0)-1.0), 0, 1.e-8);  // R'R=1
-  EXPECT_NEAR(norm(vec2rot(th*v0)*v0-v0), 0, 1.e-8);  // RV=V
-  EXPECT_NEAR(norm(vec2rot(th*v0)*v1-( cos(th)*v1+sin(th)*v2)), 0, 1.e-8);
-  EXPECT_NEAR(norm(vec2rot(th*v0)*v2-(-sin(th)*v1+cos(th)*v2)), 0, 1.e-8);
-  th=5.e-9;  // very small angle
-  EXPECT_NEAR(norm(vec2rot(th*v0)*v0-v0), 0, 1.e-12);
-  EXPECT_NEAR(norm(vec2rot(th*v0)*v1-( cos(th)*v1+sin(th)*v2)), 0, 1.e-12);
-  EXPECT_NEAR(norm(vec2rot(th*v0)*v2-(-sin(th)*v1+cos(th)*v2)), 0, 1.e-12);
-  EXPECT_NEAR(norm(vec2rot(th*v0)-orth(vec2rot(th*v0))), 0, 1.e-16);
+  for(int i=0; i<1000; i++){
+    // rotation angle and tolerance
+    th  = (i%2 ? urand1()*M_PI : urand1()*2.e-6);  // usual(<pi) or extremely small
+    tol = 1.e-12;
+
+    // random M and V
+    m=orth(orth(mrand(3,3)));
+    if(det(m)<0) setvec(m,2,-getvec(m,2));
+    v0=getvec(m,0);
+    v1=getvec(m,1);
+    v2=getvec(m,2);
+    v=v0*th;
+
+    Matrix a1=rot2vec(m), r1=vec2rot(v), a2=rot2vec(r1), r2=vec2rot(a1);
+    EXPECT_TRUE(det(r1)>0);
+    EXPECT_LE(norm(tp(r1)*r1-1.0), tol);  // orthogonal
+    EXPECT_LE(norm(v-a2),          tol);  // Vec<-->Rot
+    EXPECT_LE(norm(m-r2),          tol);
+    EXPECT_LE(norm(r1*v0-v0),      tol);  // axis
+    EXPECT_NEAR(inner(r1*v1,v1), cos(th), tol);  // rotation in <V1,V2> plane
+    EXPECT_NEAR(inner(r1*v1,v2), sin(th), tol);
+    EXPECT_NEAR(inner(r1*v2,v1),-sin(th), tol);
+    EXPECT_NEAR(inner(r1*v2,v2), cos(th), tol);
+  }
 
   // rotation about coord axis
   th=urand1()*M_PI*2;

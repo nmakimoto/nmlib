@@ -516,7 +516,7 @@ template<class T> matrix<T> vec2rot(const matrix<T>& v){  // R^3=so(3)-->SO(3) (
 }
 template<class T> matrix<T> rot2vec(const matrix<T>& r){  // SO(3)-->so(3)=R^3 (log, local inverse of exp)
   if(!(r.nrow()==3 && r.ncol()==3)) throw std::domain_error("rot2vec(R): not a 3x3 matrix");
-  if( (r(0,0)+r(1,1)+r(2,2)-1)/2 > 1-0.5e-12 ) return matrix<T>({r(2,1),r(0,2),r(1,0)});  // cos(th)=(trR-1)/2=1-eps
+  if( (r(0,0)+r(1,1)+r(2,2)-1)/2 > 1-0.5e-12 ) return asym2vec(r-tp(r))*0.5;  // cos(th)=(trR-1)/2=1-eps
 
   matrix<T> m=r-T(1);  // Im(M)=rotation plane, Ker(M)=rotation axis
   matrix<T> a0=getvec(m,0),  a1=getvec(m,1),  a2=getvec(m,2);  // Im
@@ -524,18 +524,13 @@ template<class T> matrix<T> rot2vec(const matrix<T>& r){  // SO(3)-->so(3)=R^3 (
   T         s0=norm(a0),     s1=norm(a1),     s2=norm(a2);  // for stability
   T         t0=norm(b0),     t1=norm(b1),     t2=norm(b2);
 
-  matrix<T> e0,e1,e2;  // basis of Im(M) and Ker(M)
-  e2 = (t0<=t2 && t1<=t2 ? b2 : t0<=t1 ? b1 : b0);
-  e0 = (s0<=s2 && s1<=s2 ? a2 : s0<=s1 ? a1 : a0);
-  e2/= norm(e2);
-  e0/= norm(e0);
-  e1 = outer(e2,e0);
-
-  T c,s,th;  // rotation angle
-  c=inner(r*e0,e0);
-  s=inner(r*e0,e1);
-  th=atan2(s,c);
-  return th*e2;
+  a0 = (s0<=s2 && s1<=s2 ? a2 : s0<=s1 ? a1 : a0);
+  b0 = (t0<=t2 && t1<=t2 ? b2 : t0<=t1 ? b1 : b0);
+  a1 = r*a0;
+  b1 = outer(a0,a1);
+  T th = atan2(norm(b1),inner(a0,a1));
+  if( inner(b0,b1)<0 ) th=-th;
+  return (th/norm(b0))*b0;
 }
 template<class T> matrix<T> asym2vec(const matrix<T>& a){  // so(3)-->R^3 (A-->V s.t. AX=VxX)
   if(!(a.nrow()==3 && a.ncol()==3)) throw std::domain_error("asym2vec(V): not a 3 by 3 matrix");

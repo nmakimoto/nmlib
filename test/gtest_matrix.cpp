@@ -373,28 +373,17 @@ TEST(matrix,threedim){
 
   // v in R^3 <--> R in SO(3)  (rotation about v by angle |v|)
   for(int i=0; i<1000; i++){
-    // rotation angle and tolerance
-    th  = (i%2 ? urand1()*M_PI : urand1()*2.e-6);  // usual(<pi) or extremely small
-    tol = 1.e-12;
+    tol=3e-15;
+    th=(i%2==0 ? urand1()*M_PI : urand1()*2.e-6);  // usual / extremely small
+    v0=mrand(3,1);  v0/=norm(v0);
+    v1=mrand(3,1);  v1-=inner(v1,v0)*v0;  v1-=inner(v1,v0)*v0;  v1/=norm(v1);
+    v2=outer(v0,v1);
+    v = th*v0;
+    m = v0*tp(v0) + cos(th)*(v1*tp(v1)+v2*tp(v2)) + sin(th)*(v2*tp(v1)-v1*tp(v2));
 
-    // random M and V
-    m=orth(orth(mrand(3,3)));
-    if(det(m)<0) setvec(m,2,-getvec(m,2));
-    v0=getvec(m,0);
-    v1=getvec(m,1);
-    v2=getvec(m,2);
-    v=v0*th;
-
-    Matrix a1=rot2vec(m), r1=vec2rot(v), a2=rot2vec(r1), r2=vec2rot(a1);
-    EXPECT_TRUE(det(r1)>0);
-    EXPECT_LE(norm(tp(r1)*r1-1.0), tol);  // orthogonal
-    EXPECT_LE(norm(v-a2),          tol);  // Vec<-->Rot
-    EXPECT_LE(norm(m-r2),          tol);
-    EXPECT_LE(norm(r1*v0-v0),      tol);  // axis
-    EXPECT_NEAR(inner(r1*v1,v1), cos(th), tol);  // rotation in <V1,V2> plane
-    EXPECT_NEAR(inner(r1*v1,v2), sin(th), tol);
-    EXPECT_NEAR(inner(r1*v2,v1),-sin(th), tol);
-    EXPECT_NEAR(inner(r1*v2,v2), cos(th), tol);
+    EXPECT_LE(norm(rot2vec(m) - v), tol);
+    EXPECT_LE(norm(vec2rot(v) - m), tol);
+    EXPECT_LE(norm(vec2rot(v+2.0*M_PI*v0) - m), 3*tol);
   }
 
   // rotation about coord axis

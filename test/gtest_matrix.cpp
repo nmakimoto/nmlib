@@ -322,6 +322,22 @@ TEST(matrix,concat){
 }
 
 
+// Sort columns
+TEST(matrix,sortcol){
+  size_t nr=79,nc=50;
+  Matrix v=mrand(nc,1), m=mrand(nr,nc), m1=m;
+
+  std::vector<int> kk(nc);
+  for(size_t k=0; k<kk.size(); k++) kk[k]=k;
+  std::sort(kk.begin(), kk.end(), [&](size_t i,size_t j){ return v(i)<v(j); });
+
+  sort_columns_by_value(m1,v);
+  for(size_t j=0; j<nc; j++)
+    for(size_t i=0; i<nr; i++)
+      EXPECT_DOUBLE_EQ(m1(i,j),m(i,kk[j]));
+}
+
+
 // Transpose
 TEST(matrix,transpose){
   Matrix m1,m2,m3;

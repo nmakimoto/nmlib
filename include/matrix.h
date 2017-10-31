@@ -494,13 +494,15 @@ template<class T> matrix<T> vcat(const matrix<T>& m1, const matrix<T>& m2){
 }
 
 
+// Column sorting
 template<class T> void sort_columns_by_value(matrix<T>& m, const matrix<T>& v){
+  if( v.dim()!= m.ncol() ) throw std::domain_error("sort_column_by_value: sizes mismatch");
   std::vector<size_t> kk(v.dim());
-  std::iota(kk.begin(), kk.end(), 0);
+  for(size_t k=0; k<kk.size(); k++) kk[k]=k;
   std::sort(kk.begin(), kk.end(), [&](int i, int j){ return std::real(v(i))<std::real(v(j)); });
   matrix<T> m1=m;
   for(size_t k=0; k<v.dim(); k++)
-    if(k<m.ncol() && kk[k]<m1.ncol() && k!=kk[k]) setvec(m,k,getvec(m1,kk[k]));
+    if(k!=kk[k]) setvec(m,k,getvec(m1,kk[k]));
 }
 
 

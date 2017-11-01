@@ -121,7 +121,7 @@ TEST(stat,pca){
 
     EXPECT_NEAR(norm(tp(u)*u-1.0), 0, 1.e-8);  // U^T U=1
     EXPECT_NEAR(inner(outer(getvec(u,0),getvec(u,1)),getvec(u,2)), 1, 1.e-8);  // detU=+1
-    EXPECT_TRUE(0<d(2,2) && d(2,2)<d(1,1) && d(1,1)<d(0,0));  // sorted by eigenvalues
+    for(size_t k=0; k+1<d.ncol(); k++) EXPECT_GE(d(k,k), d(k+1,k+1));  // sorted by eigenvalues
     setdiag(d,Matrix(3));
     EXPECT_NEAR(norm(d), 0, 1.e-8);  // U^T V U=diag
   }

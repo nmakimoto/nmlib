@@ -92,22 +92,10 @@ inline Matrix principal(const Matrix& xx){
   u=eigen(v);  // eigenvectors of Var[X]
   d=tp(u)*v*u;
 
-  // sort eivenvectors in decreasing order of eigenvalue
   size_t n=u.ncol();
-  std::vector<std::pair<double,size_t> > d2j(n);
-  for(size_t j=0; j<n; j++) d2j[j]=std::pair<double,size_t>(-d(j,j),j);
-  std::sort(d2j.begin(),d2j.end());
-  Matrix u1(n,n);
-  for(size_t j=0; j<n; j++) setvec(u1,j,getvec(u,d2j[j].second));
-
-  // even permutation (det=+1)
-  bool odd=false;
-  for(size_t j=0; j<n; j++)
-    for(size_t k=j+1; k<n; k++)
-      if(d2j[j].second>d2j[k].second) odd=!odd;
-  if(odd) setvec(u1,n-1,-getvec(u1,n-1));
-
-  return u1;
+  sort_columns_by_value(u,-getdiag(d));  // decreasing order of eigenvalue
+  if( det(u)<0 ) setvec(u,n-1,-getvec(u,n-1));  // det=+1
+  return u;
 }
 
 

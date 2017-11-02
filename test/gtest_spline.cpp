@@ -74,6 +74,32 @@ TEST(spline,gradient){
 }
 
 
+TEST(spline,integral){
+  std::map<double,double> x2y = sample_data();
+  Spline f(x2y);
+  double xmin=x2y.begin()->first-1, xmax=x2y.rbegin()->first+1, xmid=(xmax+xmin)/2;
+
+  // continuity at nodal points
+  for(auto it: x2y){
+    double x=it.first, dx=1.e-6;
+    for(double x0 : {x, xmin, xmid, xmax}){
+      EXPECT_NEAR(f.integral(x0,x+dx,3), f.integral(x0,x-dx,3)+f(x)*dx*2, 1.e-8);
+      EXPECT_NEAR(f.integral(x0,x+dx,1), f.integral(x0,x-dx,1)+f(x)*dx*2, 1.e-8);
+    }
+  }
+  // differential of integral
+  int ndiv=100;
+  for(int k=0; k<=ndiv; k++){
+    double x=xmin+k*(xmax-xmin)/ndiv, dx=1.e-6;
+    EXPECT_NEAR( (f.integral(xmid,x+dx,3)-f.integral(xmid,x-dx,3))/(2*dx), f(x,3), 1.e-8);
+    EXPECT_NEAR( (f.integral(xmid,x+dx,1)-f.integral(xmid,x-dx,1))/(2*dx), f(x,1), 1.e-8);
+  }
+  // integration on linearly extrapolated region
+  EXPECT_NEAR(f.integral(xmin-1,xmin,3), f.integral(xmin-1,xmin,1), 1.e-8);
+  EXPECT_NEAR(f.integral(xmax,xmax+1,3), f.integral(xmax,xmax+1,1), 1.e-8);
+}
+
+
 TEST(spline,boundary){  // should be continuous up to 2nd derivative
   std::map<double,double> x2y = sample_data();
   Spline f(x2y);

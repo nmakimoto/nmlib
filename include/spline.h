@@ -26,6 +26,7 @@ public:
 
   T operator()(T x, int deg=3) const;  // interpolation at x (degree=0,1,3)
   T grad(T x) const;  // d/dx
+  T integral(T xa, T xb, int deg=3) const;   // definite integral over [xa,xb]
 
 private:
   std::vector<T> xx,yy,aa,bb,cc,dd;  // control points and spline coefficients
@@ -75,6 +76,30 @@ template<class T> T spline<T>::grad(T x) const{
   if(n-2<k){ k=n-2; x=xx[n-1]; }  // extrapolation (right)
   x-=xx[k];
   return (3*aa[k]*x+2*bb[k])*x+cc[k];
+}
+
+template<class T> T spline<T>::integral(T xa, T xb, int deg) const{
+  int n=xx.size();
+  T ya=operator()(xa), yb=operator()(xb);
+  if(n<3)   return (ya+yb)*(xb-xa)/2;
+  if(xb<xa) return -integral(xb,xa,deg);
+
+  auto f3 = [&](T x,int k){ x-=xx[k]; return (((aa[k]/4*x+bb[k]/3)*x+cc[k]/2)*x+dd[k])*x; };
+  auto f1 = [&](T x,int k){ return (yy[k]+operator()(x,1))*(x-xx[k])/2; };  // trapezoid
+  auto fe = [&](T x,T x0){ return (operator()(x0) + operator()(x)) * (x-x0)/2; };  // linear extrapolation
+
+  int ka = std::upper_bound(xx.begin(),xx.end(),xa)-xx.begin();
+  int kb = std::upper_bound(xx.begin(),xx.end(),xb)-xx.begin();
+
+  T sum=0;
+  sum += (kb==0 ? fe(xb,xx[0]) : kb==n ? fe(xb,xx[n-1]) : deg<3 ? f1(xb,kb-1) : f3(xb,kb-1));
+  sum -= (ka==0 ? fe(xa,xx[0]) : ka==n ? fe(xa,xx[n-1]) : deg<3 ? f1(xa,ka-1) : f3(xa,ka-1));
+
+  for(int k=ka; k<kb; k++ )
+    if(0<k && k<n)
+      sum += (deg<3 ? f1(xx[k],k-1) : f3(xx[k],k-1));
+
+  return sum;
 }
 
 // Calculation of spline coefficients

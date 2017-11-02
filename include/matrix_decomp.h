@@ -82,14 +82,14 @@ namespace nmlib{
     for(size_t k=0; k<n-1; k++){
       // v = Householder reflection direction
       matrix<T> b=getsub(r,k,k,n-k,1), v=b;
-      v(0)+=norm(v)*nm_sign(v(0));  // v/|v| <--> ek
+      v(0)+=norm(v)*nmmtx::sign(v(0));  // v/|v| <--> ek
       v/=T(norm(v));  // (handle division by zero...)
 
       // reflection - h=1-2vv^T; q=qh; r=hr;
       matrix<T> qv=getsub(q,0,k,n,n-k)*v, vr=tp(v)*getsub(r,k,0,n-k,n);
       for(size_t i=0; i<n; i++){
 	for(size_t j=0; j<n-k; j++){
-	  q(i,k+j)-=T(2)*qv(i)*nm_conj(v(j));  // q=qh
+	  q(i,k+j)-=T(2)*qv(i)*nmmtx::conj(v(j));  // q=qh
 	  r(k+j,i)-=T(2)*v(j)*vr(i);  // r=hr
 	}
       }
@@ -97,9 +97,9 @@ namespace nmlib{
 
     // normalizization - r(i,i)>=0
     for(size_t i=0; i<n; i++){
-      T s=nm_sign(r(i,i));
+      T s=nmmtx::sign(r(i,i));
       for(size_t j=0; j<n; j++){
-	r(i,j)*=nm_conj(s);
+	r(i,j)*=nmmtx::conj(s);
 	q(j,i)*=s;
       }
     }
@@ -117,17 +117,17 @@ namespace nmlib{
     for(size_t k=1; k<n-1; k++){
       // reflection vector v s.t. b:=lower (n-k) of (k-1)-th row <--> |b|ek
       matrix<T> v=getsub(d,k,k-1,n-k,1);
-      v(0)+=norm(v)*nm_sign(v(0));
+      v(0)+=norm(v)*nmmtx::sign(v(0));
       if(std::abs(v(0))<=tol) continue;  // eigen
       v/=T(norm(v));
 
       // h=1-2vv^T; d=uh; d=hdh;
       matrix<T> uv=getsub(u,0,k,n,n-k)*v;
       for(size_t i=0; i<n; i++)
-	for(size_t j=0; j<n-k; j++) u(i,k+j)-=T(2)*uv(i)*nm_conj(v(j));  // u=uh
+	for(size_t j=0; j<n-k; j++) u(i,k+j)-=T(2)*uv(i)*nmmtx::conj(v(j));  // u=uh
       matrix<T> dv=getsub(d,0,k,n,n-k)*v;
       for(size_t i=0; i<n; i++)
-	for(size_t j=0; j<n-k; j++) d(i,k+j)-=T(2)*dv(i)*nm_conj(v(j));  // d=dh
+	for(size_t j=0; j<n-k; j++) d(i,k+j)-=T(2)*dv(i)*nmmtx::conj(v(j));  // d=dh
       matrix<T> vd=tp(v)*getsub(d,k,0,n-k,n);
       for(size_t i=0; i<n; i++)
 	for(size_t j=0; j<n-k; j++) d(k+j,i)-=T(2)*v(j)*vd(i);  // d=hd
@@ -168,14 +168,14 @@ namespace nmlib{
 	T c,s,th;  // c=|dii|/r, s= dji/r (dii/|dii|)~
 	th=atan2(std::abs(d(j,i)),std::abs(d(i,i)));
 	c=cc(i)=cos(th);
-	s=ss(i)=sin(th) * nm_sign(nm_conj(d(i,i))) * nm_sign(d(j,i));  // choose sign to avoid underflow and to keep G unitary
-	for(size_t k=0; k<n1; k++){ T p=d(i,k),q=d(j,k); d(i,k)=c*p+nm_conj(s)*q; d(j,k)=-s*p+c*q; }  // D=G*D
+	s=ss(i)=sin(th) * nmmtx::sign(nmmtx::conj(d(i,i))) * nmmtx::sign(d(j,i));  // choose sign to avoid underflow and to keep G unitary
+	for(size_t k=0; k<n1; k++){ T p=d(i,k),q=d(j,k); d(i,k)=c*p+nmmtx::conj(s)*q; d(j,k)=-s*p+c*q; }  // D=G*D
       }
       for(size_t i=0; i<n1-1; i++){
 	size_t j=i+1;
 	T c=cc(i),s=ss(i),p,q;
-	for(size_t k=0; k<n; k++){ p=d(k,i); q=d(k,j); d(k,i)=c*p+s*q; d(k,j)=-nm_conj(s)*p+c*q; }  // D=D*G^T  G=| c s~|
-	for(size_t k=0; k<n; k++){ p=u(k,i); q=u(k,j); u(k,i)=c*p+s*q; u(k,j)=-nm_conj(s)*p+c*q; }  // U=U*G^T    |-s c |
+	for(size_t k=0; k<n; k++){ p=d(k,i); q=d(k,j); d(k,i)=c*p+s*q; d(k,j)=-nmmtx::conj(s)*p+c*q; }  // D=D*G^T  G=| c s~|
+	for(size_t k=0; k<n; k++){ p=u(k,i); q=u(k,j); u(k,i)=c*p+s*q; u(k,j)=-nmmtx::conj(s)*p+c*q; }  // U=U*G^T    |-s c |
       }
       d+=lam;
 

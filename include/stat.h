@@ -6,6 +6,9 @@
 
 
 #include <cmath>
+#include <algorithm>
+#include <limits>
+#include <stdexcept>
 #include "matrix.h"
 namespace nmlib{
 

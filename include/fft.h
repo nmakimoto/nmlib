@@ -9,6 +9,7 @@
 #include <vector>
 #include <complex>
 #include <cmath>
+#include <algorithm>
 #include <stdexcept>
 namespace nmlib{
 

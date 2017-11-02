@@ -7,6 +7,8 @@
 
 #include <vector>
 #include <cmath>
+#include <algorithm>
+#include <stdexcept>
 #include "diff.h"
 #include "matrix.h"
 namespace nmlib {

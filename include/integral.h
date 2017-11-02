@@ -4,9 +4,12 @@
 #define INTEGRAL_H
 
 
+#include <cmath>
+#include <limits>
 #include <stdexcept>
 #include "random.h"      // Low-discrepancy sequence
 #include "polynomial.h"  // Legendre
+#include "matrix.h"
 namespace nmlib{
 
 

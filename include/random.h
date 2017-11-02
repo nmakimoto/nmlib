@@ -5,8 +5,11 @@
 #define RANDOM_H
 
 
+#include <random>
+#include <vector>
 #include <cmath>
 #include <cstdint>
+#include <stdexcept>
 #include "matrix.h"
 namespace nmlib{
 

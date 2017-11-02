@@ -5,9 +5,10 @@
 #define SPARSE_H
 
 
-#include <iostream>
 #include <vector>
 #include <map>
+#include <cmath>
+#include <iostream>
 #include <stdexcept>
 #include "matrix.h"
 

@@ -5,8 +5,8 @@
 #define LP_H
 
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <stdexcept>
 #include "matrix.h"
 namespace nmlib {

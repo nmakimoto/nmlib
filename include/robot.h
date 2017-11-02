@@ -5,7 +5,9 @@
 #define ROBOT_H
 
 
+#include <cmath>
 #include <iostream>
+#include <stdexcept>
 #include "matrix.h"
 namespace nmlib{
 

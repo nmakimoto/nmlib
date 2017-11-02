@@ -7,8 +7,10 @@
 
 #include <vector>
 #include <complex>
+#include <initializer_list>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 #include <iostream>
 #include <stdexcept>
 namespace nmlib{

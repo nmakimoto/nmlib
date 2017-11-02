@@ -5,6 +5,11 @@
 #define MATRIX_DECOMP_H
 
 
+#include <vector>
+#include <complex>
+#include <cmath>
+#include <algorithm>
+#include <stdexcept>
 #include "matrix.h"
 namespace nmlib{
 

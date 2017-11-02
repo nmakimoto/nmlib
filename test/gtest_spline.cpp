@@ -98,7 +98,12 @@ TEST(spline,extrapolation){  // should be linear
   Spline f(x2y);
   double x0=x2y.begin()->first, xn=x2y.rbegin()->first;
   for(double dx=0; dx<10.5; dx+=1.0){
-    EXPECT_NEAR(f(x0-dx), f(x0)-f.grad(x0)*dx, 1.e-4);
-    EXPECT_NEAR(f(xn+dx), f(xn)+f.grad(xn)*dx, 1.e-4);
+    // deg=3,1: tangential line, deg=0: const
+    EXPECT_NEAR(f(x0-dx,3), f(x0)-f.grad(x0)*dx, 1.e-10);
+    EXPECT_NEAR(f(xn+dx,3), f(xn)+f.grad(xn)*dx, 1.e-10);
+    EXPECT_NEAR(f(x0-dx,1), f(x0)-f.grad(x0)*dx, 1.e-10);
+    EXPECT_NEAR(f(xn+dx,1), f(xn)+f.grad(xn)*dx, 1.e-10);
+    EXPECT_NEAR(f(x0-dx,0), f(x0), 1.e-10);
+    EXPECT_NEAR(f(xn+dx,0), f(xn), 1.e-10);
   }
 }

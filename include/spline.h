@@ -59,9 +59,10 @@ template<class T> T spline<T>::operator()(T x, int deg) const{
 
   int k0=std::upper_bound(xx.begin(),xx.end(),x)-xx.begin()-1;  // x in [xx[k0],xx[k0+1])
   int k1=std::max(std::min(k0,n-2),0);  // valid interval [xx[k1],xx[k1+1]]
-  if(deg<1) return (x-xx[k1]<xx[k1+1]-x ? yy[k1] : yy[k1+1]);  // nearest neighbour
-  if(deg<3) return yy[k1]+(yy[k1+1]-yy[k1])*(x-xx[k1])/(xx[k1+1]-xx[k1]);  // linear
-  if(k0!=k1) return (k0<0 ? cc[0]*(x-xx[0])+dd[0] : grad(xx[n-1])*(x-xx[n-1])+yy[n-1]);  // linear extrapolation
+  if(deg<1)   return (x-xx[k1]<xx[k1+1]-x ? yy[k1] : yy[k1+1]);  // nearest neighbour
+  if(k0== -1) return grad(xx[k1])*(x-xx[k1])+yy[k1];   // linear extrapolation (left)
+  if(k0==n-1) return grad(xx[k0])*(x-xx[k0])+yy[k0];  // linear extrapolation (right)
+  if(deg<3)   return yy[k1]+(yy[k1+1]-yy[k1])*(x-xx[k1])/(xx[k1+1]-xx[k1]);  // linear
   x-=xx[k1];
   return ((aa[k1]*x+bb[k1])*x+cc[k1])*x+dd[k1];  // cubic spline
 }

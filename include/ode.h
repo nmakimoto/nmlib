@@ -6,6 +6,7 @@
 
 
 #include <map>
+#include <cmath>
 #include "matrix.h"
 namespace nmlib{
 
@@ -24,10 +25,10 @@ template<class Func,class Y> std::map<double,Y> solve_ode_rk4a(const Func& f, co
 
 /******** Implementation ********/
 
-// private utils for implicit RK methods
-namespace ode{
-  inline double norm(double        x){ return (x<0 ? -x : x); }
-  inline double norm(const Matrix& x){ return nmlib::norm(x); }
+// private utils for implicit/adaptive RK methods
+namespace nmode{
+  template<class T> T norm(             T   x){ return std::abs(x); }
+  template<class T> T norm(const matrix<T>& x){ return nmlib::norm(x); }
 }
 
 
@@ -68,13 +69,13 @@ std::map<double,Y> solve_ode_rk4i(const Func& f, const Y& y0, double t0, double 
     Y k1,k2;
     k1=h*f(t+a1*h,y);
     k2=h*f(t+a2*h,y);
-    double err=hypot(ode::norm(k1),ode::norm(k2));
+    double err=hypot(nmode::norm(k1),nmode::norm(k2));
 
     while(1){
       Y dk1,dk2;  // solve dk=0 by newton - may sometimes fail...
       dk1 = k1 - h*f(t+a1*h, y+b11*k1+b12*k2);
       dk2 = k2 - h*f(t+a2*h, y+b21*k1+b22*k2);
-      double err2 = hypot(ode::norm(dk1),ode::norm(dk2));
+      double err2 = hypot(nmode::norm(dk1),nmode::norm(dk2));
       if( err<=err2 ) break;
       err=err2;
       k1-=dk1;
@@ -105,7 +106,7 @@ std::map<double,Y> solve_ode_rk4a(const Func& f, const Y& y0, double t0, double 
     dy1=(k1        +4.*k4 +k5)/6.;
     dy2=(k1 -3.*k3 +4.*k4    )/2.;
 
-    double err=ode::norm(dy1-dy2)/5;
+    double err=nmode::norm(dy1-dy2)/5;
     if( err>tol ){ n*=2; h/=2; continue; }
     n--;
     t=t1-n*h;  //t+=h;

@@ -6,7 +6,7 @@
 #include <cmath>
 #include "lp.h"
 #include "matrix.h"
-#include "io.h"
+#include "ioutil.h"
 using namespace nmlib;
 
 

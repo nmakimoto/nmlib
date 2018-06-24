@@ -6,7 +6,7 @@
 
 #include <iostream>
 #include "matrix.h"
-#include "io.h"  // str2any()
+#include "ioutil.h"  // str2any()
 using namespace nmlib;
 
 
@@ -36,7 +36,7 @@ void cheatsheet(const Matrix& A, const Matrix& B){
   V=Matrix(vec);        // column vector
   V={x,y,z};            // column vector
   M={{x,y,z},{x,y,z}};  // matrix consisting of multiple column vectors
-  M=str2any<Matrix>("3  2  0.0  0.1  1.0  1.1  2.0  2.1");  // (see "io.h")
+  M=str2any<Matrix>("3  2  0.0  0.1  1.0  1.1  2.0  2.1");  // (see "ioutil.h")
   std::string str=any2str(M);
   std::cin  >> M;
   std::cout << M;

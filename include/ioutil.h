@@ -1,8 +1,8 @@
 // I/O utilities
 
 
-#ifndef IO_H
-#define IO_H
+#ifndef IOUTIL_H
+#define IOUTIL_H
 
 
 #include <iostream>
@@ -79,4 +79,4 @@ template<class T> std::string any2str(const T& val, int prec){
 
 
 }  //namespace nmlib
-#endif //IO_H
+#endif //IOUTIL_H

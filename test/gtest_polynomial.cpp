@@ -7,7 +7,7 @@
 #include <map>
 #include <cmath>
 #include "polynomial.h"
-#include "io.h"
+#include "ioutil.h"
 #include "solver.h"  // for Legendre zeros
 using namespace nmlib;
 

@@ -9,7 +9,7 @@
 #include "diff.h"
 #include "fft.h"
 #include "integral.h"
-#include "io.h"
+#include "ioutil.h"
 #include "kalman.h"
 #include "lp.h"
 #include "matrix.h"

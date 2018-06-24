@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include "io.h"
+#include "ioutil.h"
 using namespace nmlib;
 
 
@@ -19,7 +19,7 @@ std::istream& operator>>(std::istream& str,       Dummy& x){ str >> x.r >> x.c; 
 std::ostream& operator<<(std::ostream& str, const Dummy& x){ str << x.r << '\t' << x.c << '\t'; return str; }
 
 
-TEST(io,vector){
+TEST(ioutil,vector){
   std::stringstream str1, str2;
   std::vector<double> xx;
 
@@ -34,7 +34,7 @@ TEST(io,vector){
 }
 
 
-TEST(io,map){
+TEST(ioutil,map){
   std::stringstream str1, str2;
   std::map<int,double> xx;
 
@@ -54,7 +54,7 @@ TEST(io,map){
 }
 
 
-TEST(io,string){
+TEST(ioutil,string){
   std::string s="12.3 45.6";
   double x;
   x=0;    str2any(s,x);        EXPECT_NEAR(x,12.3,1.e-8);
@@ -85,7 +85,7 @@ TEST(io,string){
 }
 
 
-TEST(io,userclass){
+TEST(ioutil,userclass){
   std::string s="11 22";
   Dummy x;
 

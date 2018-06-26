@@ -68,7 +68,7 @@ template<class T> void verify_svd(const matrix<T>& m, const matrix<T>& u, const 
   EXPECT_NEAR(norm(tp(v)*v-T(1)), 0, 1.e-8);
   for(size_t i=0; i<d.nrow(); i++)
   for(size_t j=0; j<d.ncol(); j++)
-    if(i!=j) EXPECT_NEAR(std::abs(d(i,j)), 0, 1.e-8);
+    if(i!=j){  EXPECT_NEAR(std::abs(d(i,j)), 0, 1.e-8);  }
 }
 
 
@@ -78,8 +78,8 @@ template<class T> void verify_eigen(const matrix<T>& m, const matrix<T>& u, cons
   EXPECT_NEAR(norm(tp(u)*u-T(1)), 0, 1.e-8);
   for(size_t i=0; i<n; i++){
     for(size_t j=0; j<n; j++){
-      if(i!=j) EXPECT_NEAR(std::abs(d(i,j)), 0, 1.e-8);
-      if(i==j) EXPECT_NEAR(std::imag(d(i,j)), 0, 1.e-8);
+      if(i!=j){  EXPECT_NEAR(std::abs(d(i,j)), 0, 1.e-8);  }
+      if(i==j){  EXPECT_NEAR(std::imag(d(i,j)), 0, 1.e-8);  }
     }
   }
 }

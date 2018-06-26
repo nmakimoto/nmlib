@@ -99,16 +99,16 @@ TEST(robot,jacobian){
       // upper 3 rows: compare velocity with difference quotients
       df1 = (hom2pos(rbt.fk(th0+dth/2.0,k)) - hom2pos(rbt.fk(th0-dth/2.0,k))) / dth(j);
       df2 = getsub(rbt.jacobian(th0,k), 0,j,3,1);
-      if(1.e-8 < norm(df1)) EXPECT_NEAR(norm(df2-df1), 0, norm(df1)*1.e-4);
-      if(1.e-8 < norm(df2)) EXPECT_NEAR(norm(df2-df1), 0, norm(df2)*1.e-4);
+      if(1.e-8 < norm(df1)){  EXPECT_NEAR(norm(df2-df1), 0, norm(df1)*1.e-4);  }
+      if(1.e-8 < norm(df2)){  EXPECT_NEAR(norm(df2-df1), 0, norm(df2)*1.e-4);  }
 
       // lower 3 rows: compare angular velocity with difference quotients
       df1 = rot2vec(hom2rot(rbt.fk(th0+dth/2.0,k)) * tp(hom2rot(rbt.fk(th0-dth/2.0,k)))) / dth(j);
       df2 = getsub(rbt.jacobian(th0,k), 3,j,3,1);
-      if(1.e-8 < norm(df1)) EXPECT_NEAR(norm(df2-df1), 0, norm(df1)*1.e-4);
-      if(1.e-8 < norm(df2)) EXPECT_NEAR(norm(df2-df1), 0, norm(df2)*1.e-4);
+      if(1.e-8 < norm(df1)){  EXPECT_NEAR(norm(df2-df1), 0, norm(df1)*1.e-4);  }
+      if(1.e-8 < norm(df2)){  EXPECT_NEAR(norm(df2-df1), 0, norm(df2)*1.e-4);  }
 
-      if(k==7) EXPECT_NEAR(norm(rbt.jacobian(th0)-rbt.jacobian(th0,k)), 0, 1.e-8);  // k=7 by default
+      if(k==7){  EXPECT_NEAR(norm(rbt.jacobian(th0)-rbt.jacobian(th0,k)), 0, 1.e-8);  }  // k=7 by default
     }
   }
 }

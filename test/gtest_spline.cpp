@@ -54,8 +54,8 @@ TEST(spline,lessthan3pt){
 
     EXPECT_NEAR(f2(x,3),a*x+b,1.e-12);
     EXPECT_NEAR(f2(x,1),a*x+b,1.e-12);
-    if(x<(x1+x2)/2-1.e-12) EXPECT_DOUBLE_EQ(f2(x,0), a*x1+b);
-    if(x>(x1+x2)/2+1.e-12) EXPECT_DOUBLE_EQ(f2(x,0), a*x2+b);
+    if(x<(x1+x2)/2-1.e-12){  EXPECT_DOUBLE_EQ(f2(x,0), a*x1+b);  }
+    if(x>(x1+x2)/2+1.e-12){  EXPECT_DOUBLE_EQ(f2(x,0), a*x2+b);  }
   }
   EXPECT_DOUBLE_EQ(f1(x2y.begin()->first), x2y.begin()->second);
   for(std::map<double,double>::const_iterator i=x2y.begin(); i!=x2y.end(); i++)

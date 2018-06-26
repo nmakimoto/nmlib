@@ -74,7 +74,7 @@ TEST(random,lowdiscrepancy){
     for(int i=0; i<dim; i++){
       EXPECT_NEAR(s1(i), 0.5, log(n)/n);  // unbiased
       for(int j=0; j<dim; j++)
-        if(i!=j) EXPECT_NEAR(s2(i,j), 0.0, log(n)/n);  // uncorrelated
+        if(i!=j){  EXPECT_NEAR(s2(i,j), 0.0, log(n)/n);  }  // uncorrelated
     }
   }
 }

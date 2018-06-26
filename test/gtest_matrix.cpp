@@ -191,13 +191,13 @@ TEST(matrix,elimination){
 
       for(size_t i=0; i<n; i++)
 	for(size_t j=0; j<n; j++)
-	  if     (i>j)                 EXPECT_NEAR(m1(i,j),0,1.e-12);
-	  else if(i==j &&  norm_diag ) EXPECT_NEAR(m1(i,j),1,1.e-12);
-	  else if(i<j  &&  elim_upper) EXPECT_NEAR(m1(i,j),0,1.e-12);
+	  if     (i>j)                {  EXPECT_NEAR(m1(i,j),0,1.e-12);  }
+	  else if(i==j &&  norm_diag ){  EXPECT_NEAR(m1(i,j),1,1.e-12);  }
+	  else if(i<j  &&  elim_upper){  EXPECT_NEAR(m1(i,j),0,1.e-12);  }
 
-      if( !norm_diag  ) EXPECT_GE(norm(getdiag(m1)-Matrix(n).fill(1)), 1.e-12);
+      if( !norm_diag  ){  EXPECT_GE(norm(getdiag(m1)-Matrix(n).fill(1)), 1.e-12);  }
       setdiag(m1,Matrix(n));
-      if( !elim_upper ) EXPECT_GE(norm(m1), 1.e-12);
+      if( !elim_upper ){  EXPECT_GE(norm(m1), 1.e-12);  }
     }
   }
 }
@@ -529,8 +529,8 @@ TEST(matrix,complex){
   EXPECT_NEAR(norm(tp(u)*u-Cpx(1)),0, 1.e-8);
   for(size_t i=0; i<m.nrow(); i++)
     for(size_t j=0; j<m.ncol(); j++){
-      if(i==j) EXPECT_NEAR(d(i,j).imag()   , 0, 1.e-8);
-      else     EXPECT_NEAR(std::abs(d(i,j)), 0, 1.e-8);
+      if(i==j){  EXPECT_NEAR(d(i,j).imag()   , 0, 1.e-8);  }
+      else    {  EXPECT_NEAR(std::abs(d(i,j)), 0, 1.e-8);  }
     }
 }
 

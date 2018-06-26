@@ -336,7 +336,8 @@ template<class T> int gaussian_elimination(matrix<T>& a, matrix<T>& b, bool norm
     T t0=a(k,k);
     if( norm_d ){
       T t=T(1)/t0;  // (division-by-zero handling?)
-      for(size_t j=k+1; j<na; j++) a(k,j)*=t;  a(k,k)=1;
+      for(size_t j=k+1; j<na; j++) a(k,j)*=t;
+      a(k,k)=1;
       for(size_t j=0;   j<nb; j++) b(k,j)*=t;
     }
 
@@ -346,7 +347,8 @@ template<class T> int gaussian_elimination(matrix<T>& a, matrix<T>& b, bool norm
       T t=a(i,k);
       if( (i<k && !elim_u)  ||  t==T(0) ) continue;
       if( !norm_d ) t/=t0;
-      for(size_t j=k+1; j<na; j++) a(i,j)-=a(k,j)*t;  a(i,k)=0;
+      for(size_t j=k+1; j<na; j++) a(i,j)-=a(k,j)*t;
+      a(i,k)=0;
       for(size_t j=0;   j<nb; j++) b(i,j)-=b(k,j)*t;
     }
   }

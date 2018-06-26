@@ -11,6 +11,11 @@
 #include <string>
 #include <sstream>
 #include <stdexcept>
+#if defined(_WIN32) || defined(_WIN64)  //binmode
+ #include <stdio.h>
+ #include <io.h>
+ #include <fcntl.h>
+#endif
 namespace nmlib{
 
 
@@ -28,6 +33,9 @@ template<class T> std::istream& operator>>(std::istream& str,       std::vector<
 template<class T> void        str2any(const std::string& str, T& val);
 template<class T> T           str2any(const std::string& str);
 template<class T> std::string any2str(const T& val,int prec=0);
+
+// change cin/cout/cerr to binary mode
+void binmode(void);
 
 
 /******** Implementation ********/
@@ -75,6 +83,22 @@ template<class T> std::string any2str(const T& val, int prec){
   if(prec>0){ ss.precision(prec); ss<<std::scientific; }
   ss<<val;
   return ss.str();
+}
+
+inline void binmode(void){
+#if defined(_WIN32) || defined(_WIN64)
+ #ifdef __GNUC__
+  // Windows MinGW
+  int fd[] = {STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO};
+  for(int i=0; i<3; i++) _setmode(fd[i],_O_BINARY);
+ #else
+  // Windows VisualStudio
+  int fd[] = {_fileno(stdin), _fileno(stdout), _fileno(stderr)};
+  for(int i=0; i<3; i++) _setmode(fd[i],_O_BINARY);
+ #endif
+#else
+  // Linux
+#endif
 }
 
 

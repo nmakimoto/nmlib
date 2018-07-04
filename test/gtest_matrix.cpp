@@ -400,6 +400,7 @@ TEST(matrix,threedim){
     EXPECT_LE(norm(rot2vec(m) - v), tol);
     EXPECT_LE(norm(vec2rot(v) - m), tol);
     EXPECT_LE(norm(vec2rot(v+2.0*M_PI*v0) - m), 3*tol);
+    EXPECT_LE(norm(vec2rot(v)*v1-rotate(v1,v)), tol);
   }
 
   // rotation about coord axis

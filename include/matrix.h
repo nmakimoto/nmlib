@@ -110,7 +110,8 @@ template<class T> int        gaussian_elimination(matrix<T>& a, matrix<T>& b, bo
 template<class T> void       sort_columns_by_value(matrix<T>& m, const matrix<T>& v);
 
 // 3D geometry
-template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w);  // V x W
+template<class T> matrix<T> outer   (const matrix<T>& x, const matrix<T>& y);  // X x Y
+template<class T> matrix<T> rotate  (const matrix<T>& x, const matrix<T>& v);  // rotate X around V by |V| (=vec2rot(V)*X)
 template<class T> matrix<T> vec2rot (const matrix<T>& v);  // R^3=so(3)-->SO(3) (exp, rotation about v by angle |v|)
 template<class T> matrix<T> rot2vec (const matrix<T>& r);  // SO(3)-->so(3)=R^3 (log, local inverse of the above)
 template<class T> matrix<T> vec2asym(const matrix<T>& v);  // R^3-->so(3) (AX=VxX)
@@ -513,14 +514,20 @@ template<class T> void sort_columns_by_value(matrix<T>& m, const matrix<T>& v){
 
 
 // 3D geometry
-template<class T> matrix<T> outer(const matrix<T>& v, const matrix<T>& w){  // V x W
-  if( !(v.nrow()==3 && w.ncol()==1 && v.nrow()==3 && v.ncol()==1) ) throw std::domain_error("outer(V,V): not 3-vectors");
-  return matrix<T>({v(1)*w(2)-w(1)*v(2), v(2)*w(0)-w(2)*v(0), v(0)*w(1)-w(0)*v(1)});
+template<class T> matrix<T> outer(const matrix<T>& x, const matrix<T>& y){  // X x Y
+  if( !(x.nrow()==3 && x.ncol()==1 && y.nrow()==3 && y.ncol()==1) ) throw std::domain_error("outer(X,Y): not 3-vectors");
+  return matrix<T>({x(1)*y(2)-y(1)*x(2), x(2)*y(0)-y(2)*x(0), x(0)*y(1)-y(0)*x(1)});
+}
+template<class T> matrix<T> rotate(const matrix<T>& x, const matrix<T>& v){  // rotate X around V by |V| (=vec2rot(V)*X)
+  T th=norm(v), c=cos(th), s=sin(th);
+  if( th<1e-6 ) return (inner(x,v)/2)*v + (1-th*th/6)*outer(v,x) + c*x;  // small angle
+  Matrix u=v/th;
+  return s*outer(u,x) + c*x + ((1-c)*inner(x,u))*u;  // Rodrigues
 }
 template<class T> matrix<T> vec2rot(const matrix<T>& v){  // R^3=so(3)-->SO(3) (exp, rotation about v by angle |v|)
   if(!(v.nrow()==3 && v.ncol()==1)) throw std::domain_error("vec2rot(V): not a 3-vector");
   T th=norm(v), c=cos(th), s=sin(th);
-  if( th<1.e-6 ) return c + vec2asym(v) + 0.5*v*tp(v);  // small angle
+  if( th<1.e-6 ) return 0.5*v*tp(v) + vec2asym((1-th*th/6)*v) + c;  // small angle
   matrix<T> u=v/th;
   return c + s*vec2asym(u) + (1-c)*u*tp(u);  // Rodrigues
 }
